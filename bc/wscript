@@ -1,0 +1,59 @@
+#!/usr/bin/env python
+# encoding: utf-8
+
+top = '.'
+out = 'tmp'
+
+package = 'bc'
+version = '1.06'
+unpacked = '%s-%s' % (package, version)
+tarball = '%s.tar.gz' % unpacked
+url = 'http://ftp.gnu.org/gnu/%s/%s' % (package, tarball)
+urlfile = '%s.url' % unpacked
+
+def configure(cfg):
+    return
+    
+def build(bld):
+    n_urlfile = bld.path.find_or_declare(urlfile)
+
+    d_download = bld.path.find_or_declare('download') 
+    n_tarball = d_download.make_node(tarball)
+
+    d_source = bld.path.find_or_declare('source')
+    d_unpacked = d_source.make_node(unpacked)
+    n_configure = d_unpacked.make_node('configure')
+
+    d_build = bld.path.find_or_declare('build/%s'% unpacked)
+    n_config_status = d_build.make_node('config.status')
+
+
+    bld(name = '%s_seturl'%package,
+        rule = "echo %s > ${TGT}"%url, 
+        update_outputs = True, target = n_urlfile)
+
+    bld(name = '%s_download'%package,
+        rule = "wget --quiet -nv --no-check-certificate -i ${SRC} -O ${TGT}",
+        source = n_urlfile, target = n_tarball)
+
+    bld(name = '%s_unpack'%package, 
+        rule = "tar -xzf ${SRC[0].abspath()} -C ${TGT[0].parent.parent.abspath()}",
+        source = n_tarball, target = n_configure)
+    
+    print n_configure, n_configure.abspath()
+    print n_config_status, n_config_status.abspath()
+    bld(name = '%s_prepare'%package,
+        rule = "${SRC[0].abspath()} --prefix=${PREFIX}",
+        source = n_configure,
+        target = n_config_status,
+        cwd = d_build.abspath()
+        )
+
+    n_build_result = d_build.make_node('bc/bc')
+    bld(name = '%s_build' % package,
+        rule = "make",
+        source = n_config_status,
+        target = n_build_result,
+        cwd = d_build.abspath())
+
+
