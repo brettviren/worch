@@ -12,22 +12,24 @@ urlfile = '%s.url' % unpacked
 
 def configure(cfg):
     return
+
+from waflib import TaskGen
     
+@TaskGen.feature('autoconf')
+def feature_autoconf(self):
+    print ('autoconf package "%s"' % self.package)
+    print ('self.keys() = %s' % str(', '.join(self.__dict__.keys())))
+    print ('self = %s' % self)
+    print ('self.bld = %s' % self.bld)
+
 def build(bld):
     urlnode = bld.path.find_or_declare(urlfile)
     print urlnode.abspath()
-    bld(name = 'hello_seturl',
-        rule = "echo %s > ${TGT}"%url, 
-        target = urlfile, update_outputs = True)
 
-    bld(name = 'hello_download',
-        rule = "wget --quiet -nv --no-check-certificate -i ${SRC} -O ${TGT}",
-        source = urlfile, target = tarball)
-
-    bld(name = 'hello_unpack', 
-        rule = "tar -xzf ${SRC} -C ${TGT[0].parent.parent}",
-        source = tarball, target = '%s/configure' % unpacked)
-    
-
-
+    bld(features = 'autoconf',
+        package = 'hello',
+        configure_options = '--prefix=${PREFIX}',
+        dependencies = {'prepare':'bc_install'},
+        
+)
 
