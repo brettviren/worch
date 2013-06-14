@@ -1,0 +1,9 @@
+#!/usr/bin/env python
+# encoding: utf-8
+
+def build(bld):
+    package = 'cmake'
+    features = bld.orch_pkgdata(package,'features')
+    bld(features = features, package_name = package)
+
+

@@ -16,5 +16,8 @@ def configure(cfg):
 def build(bld):
     bld.load('orch', tooldir='.')
     print 'build command: "%s": %s' % (bld.cmd, bld.root.make_node('foo/bar').abspath())
-    bld.recurse('hello bc')
+    packages = [x['package'] for x in bld.env.orch]
+    print 'Packages:', packages
+    bld.recurse(packages)
+
 
