@@ -39,5 +39,8 @@ def configure(cfg):
     from pprint import PrettyPrinter
     pp = PrettyPrinter(indent=2)
     cfg.orch_dump = lambda : pp.pprint({'packages':packages})
-
+    cfg.orch_pkgdata = lambda name, var=None: features.get_pkgdata(cfg.env.orch, name, var)
     return
+
+def build(bld):
+    bld.orch_pkgdata = lambda name, var=None: features.get_pkgdata(bld.env.orch, name, var)

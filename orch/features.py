@@ -6,15 +6,17 @@ pp = PrettyPrinter(indent=2)
 
 from waflib import TaskGen
 
-def get_pkgdata(orch, name):
+def get_pkgdata(orch, name, var = None):
     for pd in orch:
         if name == pd['package']:
+            if var:
+                return pd[var]
             return pd
     return None
     
 def get_deps(pd, step):
     deps = pd.get('depends')
-    if not deps: return
+    if not deps: return list()
     mine = []
     for dep in [x.strip() for x in deps.split(',')]:
         if ':' in dep:
@@ -24,15 +26,10 @@ def get_deps(pd, step):
                 continue
         else:
             mine.append(dep)
-    ret = ' '.join(mine)
-    #if ret:
-    #    print 'Package {package} step "{step}" depends: "{dep}"'.format(step=step,dep=ret,**pd)
-    return ret
-
-
-# policy
-def urlfilename(pd): 
-    return '{package}-{version}.url'.format(**pd)
+    if mine:
+        print 'Package {package} step "{step}" depends: "{dep}"'.\
+            format(step=step,dep=','.join(mine),**pd)
+    return mine
 
 
 tarball_requirements = {
@@ -52,13 +49,15 @@ class Paths(object):
         self.ctx = ctx
         self.pkgdata = pkgdata
         self.defs = defaults
-        
-    def get_var(self, name):
         f = dict(self.defs)
+        f.update(dict(self.ctx.env))
         f.update(self.pkgdata)
+        self._data = f
+
+    def get_var(self, name):
         val = self.pkgdata.get(name, self.defs.get(name))
         if not val: return
-        return self.check_return(name, val.format(**f))
+        return self.check_return(name, val.format(**self._data))
 
     def get_node(self, name, dir_node = None):
         var = self.get_var(name)
@@ -66,13 +65,20 @@ class Paths(object):
             return self.check_return('var:'+name)
         if dir_node:
             return self.check_return('node:%s/%s'%(name,var), dir_node.make_node(var))
-        path = self.ctx.path
+        path = self.ctx.bldnode
         if var.startswith('/'):
             path = self.ctx.root
-        return self.check_return('node:%s/%s'%(name,var),  path.find_or_declare(var))
+        return self.check_return('node:%s/%s'%(name,var),  path.make_node(var))
 
     def check_return(self, name, ret=None):
-        if ret: return ret
+        if ret: 
+            try:
+                full = ret.abspath()
+            except AttributeError:
+                full = ''
+            print 'Variable for {package}/{version}: {varname} = {value} ({full})'.\
+                format(varname=name, value=ret, full=full, **self._data)
+            return ret
         raise ValueError, 'Failed to get "%s" for package "%s"' % (name, self.pkgdata['package'])
 
 
@@ -82,6 +88,7 @@ def feature_tarball(self):
     Handle a tarball source.  Implements steps seturl, download and unpack
     '''
     pd = get_pkgdata(self.env.orch, self.package_name)
+    print 'Feature: tarball for package "{package}/{version}"'.format(**pd)
     paths = Paths(self.bld, pd, tarball_requirements)
 
     f_urlfile = paths.get_node('source_urlfile')
@@ -122,13 +129,9 @@ autoconf_requirements = {
 
 @TaskGen.feature('autoconf')
 def feature_autoconf(self):
-    #print 'Hello from feature "autoconf" for package "%s"' % self.autoconf_package
     pd = get_pkgdata(self.env.orch, self.package_name)
+    print 'Feature: autoconf for package "{package}/{version}"'.format(**pd)
     paths = Paths(self.bld, pd, autoconf_requirements)
-
-    # f_urlfile = bld.path.find_or_declare(urlfilename(pd))
-    # d_download = bld.path.find_or_declare(pd.get('download_dir','downloads'))
-    # n_tarball = d_download.make_node(pd.get('source_package'))
 
     d_source = paths.get_node('source_dir')
     d_unpacked = paths.get_node('source_unpacked', d_source)
@@ -140,21 +143,6 @@ def feature_autoconf(self):
     d_prefix = paths.get_node('install_dir')
     f_install_result = paths.get_node('install_target', d_prefix)
 
-    # bld(name = '{package}_seturl'.format(**pd),
-    #     rule = "echo %s > ${TGT}" % pd['source_url'], 
-    #     update_outputs = True, target = n_urlfile,
-    #     depends_on = get_deps(pd, 'seturl'))
-
-    # bld(name = '{package}_download'.format(**pd),
-    #     rule = "wget --quiet -nv --no-check-certificate -i ${SRC} -O ${TGT}",
-    #     source = n_urlfile, target = n_tarball,
-    #     depends_on = get_deps(pd, 'download'))
-
-    # bld(name = '{package}_unpack'.format(**pd), 
-    #     rule = "tar -xzf ${SRC[0].abspath()} -C ${TGT[0].parent.parent.abspath()}",
-    #     source = n_tarball, target = n_configure,
-    #     depends_on = get_deps(pd, 'unpack'))
-    
     self.bld(name = '{package}_prepare'.format(**pd),
         rule = "${SRC[0].abspath()} --prefix=%s" % d_prefix.abspath(),
         source = f_configure,
@@ -176,6 +164,15 @@ def feature_autoconf(self):
         cwd = d_build.abspath(),
         depends_on = get_deps(pd, 'install'))
 
-    #print 'goodbye'
-    #print self.__dict__
     return
+
+# from the waf book
+@TaskGen.feature('*') 
+@TaskGen.before_method('process_rule')
+def post_the_other(self):
+    deps = getattr(self, 'depends_on', []) 
+    for name in self.to_list(deps):
+        other = self.bld.get_tgen_by_name(name) 
+        print('other task generator tasks (before) %s' % other.tasks)
+        other.post() 
+        print('other task generator tasks (after) %s' % other.tasks)

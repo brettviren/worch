@@ -14,6 +14,7 @@ def configure(cfg):
     #cfg.recurse('hello')
 
 def build(bld):
+    bld.load('orch', tooldir='.')
     print 'build command: "%s": %s' % (bld.cmd, bld.root.make_node('foo/bar').abspath())
     bld.recurse('hello bc')
 
