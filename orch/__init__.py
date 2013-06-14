@@ -11,10 +11,8 @@ import features
 def options(opt):
     opt.add_option('--orch-config', action = 'store', default = 'orch.cfg',
                    help='Give an orchestration configuration file.')
-    opt.add_option('--orch-suite', action = 'store',
-                   help='Set the suite to orchestrate')
     opt.add_option('--orch-start', action = 'store', default = 'start',
-                   help='Set the suite to orchestrate')
+                   help='Set the section to start the orchestration')
 
 
 def configure(cfg):
@@ -24,8 +22,6 @@ def configure(cfg):
         raise ValueError, 'No such file: %s' % cfg.options.orch_config
 
     extra = dict(cfg.env)
-    if cfg.options.orch_suite:
-        extra['suite'] = cfg.options.orch_suite
 
     suite = deconf.load(cfg.options.orch_config, 
                         start = cfg.options.orch_start, 
@@ -33,7 +29,10 @@ def configure(cfg):
                         **extra)
 
     # only care about the leaf packages
-    packages = suite['suite'][0]['packages']
+    packages = []
+    for group in suite['groups']:
+        for package in group['packages']:
+            packages.append(package)
     cfg.env.orch = packages
     
     from pprint import PrettyPrinter

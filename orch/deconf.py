@@ -198,6 +198,7 @@ def example_formatter(string, **kwds):
     Example to add extra formatting
     '''
     kwds.setdefault('prefix','/tmp/simple')
+    kwds.setdefault('PREFIX','/tmp/simple')
     ret = extra_formatter(string, **kwds)
 
     if 'tagsdashed' in string:  # spew some crap to show our work
