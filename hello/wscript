@@ -2,4 +2,4 @@
 # encoding: utf-8
 
 def build(bld):
-    bld(features = 'autoconf', autoconf_package = 'hello')
+    bld(features = 'tarball autoconf', package_name = 'hello')
