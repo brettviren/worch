@@ -4,8 +4,16 @@
 top = '.'
 out = 'tmp'
 
+
+def options(opt):
+    opt.load('orch', tooldir='.')
+
 def configure(cfg):
-    cfg.recurse('bc')
+    cfg.load('orch', tooldir='.')
+    cfg.orch_dump()
+    #cfg.recurse('hello')
 
 def build(bld):
-    bld.recurse('bc')
+    print 'build command: "%s": %s' % (bld.cmd, bld.root.make_node('foo/bar').abspath())
+    bld.recurse('hello bc')
+

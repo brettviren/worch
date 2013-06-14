@@ -1,35 +1,5 @@
 #!/usr/bin/env python
 # encoding: utf-8
 
-top = '.'
-out = 'tmp'
-
-version = '2.8'
-unpacked = 'hello-%s' % version
-tarball = '%s.tar.gz' % unpacked
-url = 'http://ftp.gnu.org/gnu/hello/%s' % tarball
-urlfile = '%s.url' % unpacked
-
-def configure(cfg):
-    return
-
-from waflib import TaskGen
-    
-@TaskGen.feature('autoconf')
-def feature_autoconf(self):
-    print ('autoconf package "%s"' % self.package)
-    print ('self.keys() = %s' % str(', '.join(self.__dict__.keys())))
-    print ('self = %s' % self)
-    print ('self.bld = %s' % self.bld)
-
 def build(bld):
-    urlnode = bld.path.find_or_declare(urlfile)
-    print urlnode.abspath()
-
-    bld(features = 'autoconf',
-        package = 'hello',
-        configure_options = '--prefix=${PREFIX}',
-        dependencies = {'prepare':'bc_install'},
-        
-)
-
+    bld(features = 'autoconf', autoconf_package = 'hello')
