@@ -6,14 +6,6 @@ pp = PrettyPrinter(indent=2)
 
 from waflib import TaskGen
 
-def get_pkgdata(orch, name, var = None):
-    for pd in orch:
-        if name == pd['package']:
-            if var:
-                return pd[var]
-            return pd
-    return None
-    
 def get_deps(pd, step):
     deps = pd.get('depends')
     if not deps: return list()
@@ -45,6 +37,10 @@ tarball_requirements = {
 }
 
 class Paths(object):
+    '''
+    Each values relating to each feature
+    '''
+
     def __init__(self, ctx, pkgdata, defaults):
         self.ctx = ctx
         self.pkgdata = pkgdata
@@ -53,6 +49,10 @@ class Paths(object):
         f.update(dict(self.ctx.env))
         f.update(self.pkgdata)
         self._data = f
+
+        group = self.get_var('group')
+        self.ctx.set_group(group)
+        self.env = self.ctx.all_envs[group]
 
     def get_var(self, name):
         val = self.pkgdata.get(name, self.defs.get(name))
@@ -72,12 +72,12 @@ class Paths(object):
 
     def check_return(self, name, ret=None):
         if ret: 
-            try:
-                full = ret.abspath()
-            except AttributeError:
-                full = ''
-            print 'Variable for {package}/{version}: {varname} = {value} ({full})'.\
-                format(varname=name, value=ret, full=full, **self._data)
+            # try:
+            #     full = ret.abspath()
+            # except AttributeError:
+            #     full = ''
+            #print 'Variable for {package}/{version}: {varname} = {value} ({full})'.\
+            #    format(varname=name, value=ret, full=full, **self._data)
             return ret
         raise ValueError, 'Failed to get "%s" for package "%s"' % (name, self.pkgdata['package'])
 
@@ -87,9 +87,11 @@ def feature_tarball(self):
     '''
     Handle a tarball source.  Implements steps seturl, download and unpack
     '''
-    pd = get_pkgdata(self.env.orch, self.package_name)
-    print 'Feature: tarball for package "{package}/{version}"'.format(**pd)
+    pd = self.env.orch_packages[self.package_name]
+    print 'Feature: tarball for package "{package}/{version}" in group "{group}"'.format(**pd)
+
     paths = Paths(self.bld, pd, tarball_requirements)
+
 
     f_urlfile = paths.get_node('source_urlfile')
     d_download = paths.get_node('download_dir')
@@ -102,25 +104,28 @@ def feature_tarball(self):
     self.bld(name = '{package}_seturl'.format(**pd),
              rule = "echo %s > ${TGT}" % pd['source_url'], 
              update_outputs = True, target = f_urlfile,
-             depends_on = get_deps(pd, 'seturl'))
+             depends_on = get_deps(pd, 'seturl'),
+             env = paths.env)
 
     self.bld(name = '{package}_download'.format(**pd),
              rule = "wget --quiet -nv --no-check-certificate -i ${SRC} -O ${TGT}",
              source = f_urlfile, target = f_tarball,
-             depends_on = get_deps(pd, 'download'))
+             depends_on = get_deps(pd, 'download'),
+             env = paths.env)
 
     self.bld(name = '{package}_unpack'.format(**pd), 
              rule = "tar -xzf ${SRC[0].abspath()} -C ${TGT[0].parent.parent.abspath()}",
              source = f_tarball, target = f_unpack,
-             depends_on = get_deps(pd, 'unpack'))
+             depends_on = get_deps(pd, 'unpack'),
+             env = paths.env)
 
     return
 
 autoconf_requirements = {
     'source_dir': 'sources',
     'source_unpacked': '{package}-{version}',
-    'configure_script': 'configure',
-    'configure_target': 'config.status',
+    'prepare_script': 'configure',
+    'prepare_target': 'config.status',
     'build_dir': 'builds/{package}-{version}',
     'build_target': None,
     'install_dir': '{PREFIX}',
@@ -129,40 +134,51 @@ autoconf_requirements = {
 
 @TaskGen.feature('autoconf')
 def feature_autoconf(self):
-    pd = get_pkgdata(self.env.orch, self.package_name)
-    print 'Feature: autoconf for package "{package}/{version}"'.format(**pd)
+    pd = self.env.orch_packages[self.package_name]
+    print 'Feature: autoconf for package "{package}/{version}" in group "{group}"'.format(**pd)
     paths = Paths(self.bld, pd, autoconf_requirements)
 
     d_source = paths.get_node('source_dir')
     d_unpacked = paths.get_node('source_unpacked', d_source)
-    f_configure = paths.get_node('configure_script',d_unpacked)
+    f_prepare = paths.get_node('prepare_script',d_unpacked)
     d_build = paths.get_node('build_dir')
-    f_config_status = paths.get_node('configure_target', d_build)
+    f_prepare_result = paths.get_node('prepare_target', d_build)
     f_build_result = paths.get_node('build_target', d_build)
 
     d_prefix = paths.get_node('install_dir')
     f_install_result = paths.get_node('install_target', d_prefix)
 
+
     self.bld(name = '{package}_prepare'.format(**pd),
-        rule = "${SRC[0].abspath()} --prefix=%s" % d_prefix.abspath(),
-        source = f_configure,
-        target = f_config_status,
-        cwd = d_build.abspath(),
-        depends_on = get_deps(pd, 'prepare'))
+             rule = "${SRC[0].abspath()} --prefix=%s" % d_prefix.abspath(),
+             source = f_prepare,
+             target = f_prepare_result,
+             cwd = d_build.abspath(),
+             depends_on = get_deps(pd, 'prepare'),
+             env = paths.env)
 
     self.bld(name = '{package}_build'.format(**pd),
-        rule = "make",
-        source = f_config_status,
-        target = f_build_result,
-        cwd = d_build.abspath(),
-        depends_on = get_deps(pd, 'build'))
+             rule = "make",
+             source = f_prepare_result,
+             target = f_build_result,
+             cwd = d_build.abspath(),
+             depends_on = get_deps(pd, 'build'),
+             env = paths.env)
 
     self.bld(name = '{package}_install'.format(**pd),
-        rule = "make install",
-        source = f_build_result,
-        target = f_install_result,
-        cwd = d_build.abspath(),
-        depends_on = get_deps(pd, 'install'))
+             rule = "make install",
+             source = f_build_result,
+             target = f_install_result,
+             cwd = d_build.abspath(),
+             depends_on = get_deps(pd, 'install'),
+             env = paths.env)
+
+    # testing
+    # if pd['package'] != 'cmake':
+    #     self.bld(name = '{package}_which'.format(**pd),
+    #              rule = 'which cmake', env=paths.env,
+    #              depends_on = 'cmake_install')
+
 
     return
 
@@ -173,6 +189,6 @@ def post_the_other(self):
     deps = getattr(self, 'depends_on', []) 
     for name in self.to_list(deps):
         other = self.bld.get_tgen_by_name(name) 
-        print('other task generator tasks (before) %s' % other.tasks)
+        print('other task generator (%s) tasks (before) %s' % (name, other.tasks))
         other.post() 
-        print('other task generator tasks (after) %s' % other.tasks)
+        print('other task generator (%s) tasks (after) %s' % (name, other.tasks))

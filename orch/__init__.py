@@ -2,10 +2,10 @@
 # encoding: utf-8
 
 import os
+from glob import glob
 import deconf
 import features
-
-
+import envmunge
 
 # waf entries
 def options(opt):
@@ -15,31 +15,50 @@ def options(opt):
                    help='Set the section to start the orchestration')
 
 
+def bind_functions(ctx):
+    from pprint import PrettyPrinter
+    pp = PrettyPrinter(indent=2)
+    ctx.orch_dump = lambda : pp.pprint({'packages': ctx.env.orch_packages.keys(),
+                                        'groups': ctx.env.orch_groups.keys()})
+    ctx.orch_pkgdata = lambda name, var=None: \
+                       features.get_pkgdata(ctx.env.orch_packages, name, var)
+
 def configure(cfg):
     if not cfg.options.orch_config:
         raise RuntimeError, 'No Orchestration configuration file given (--orch-config)'
-    if not os.path.exists(cfg.options.orch_config):
-        raise ValueError, 'No such file: %s' % cfg.options.orch_config
+    orch_config = glob(cfg.options.orch_config)
 
     extra = dict(cfg.env)
 
-    suite = deconf.load(cfg.options.orch_config, 
-                        start = cfg.options.orch_start, 
-                        formatter = deconf.extra_formatter,
-                        **extra)
+    suite = deconf.load(orch_config, start = cfg.options.orch_start, 
+                        formatter = deconf.extra_formatter, **extra)
 
-    # only care about the leaf packages
-    packages = []
-    for group in suite['groups']:
-        for package in group['packages']:
-            packages.append(package)
-    cfg.env.orch = packages
-    
-    from pprint import PrettyPrinter
-    pp = PrettyPrinter(indent=2)
-    cfg.orch_dump = lambda : pp.pprint({'packages':packages})
-    cfg.orch_pkgdata = lambda name, var=None: features.get_pkgdata(cfg.env.orch, name, var)
+    envmunge.decompose(cfg, suite)
+
+    print 'Configure envs:', cfg.all_envs
+
+    bind_functions(cfg)
     return
 
 def build(bld):
-    bld.orch_pkgdata = lambda name, var=None: features.get_pkgdata(bld.env.orch, name, var)
+    from waflib.Build import POST_BOTH
+    bld.post_mode = POST_BOTH 
+
+    bind_functions(bld)
+
+    for grpname in bld.env.orch_group_list:
+        print 'Adding group: "%s"' 
+        bld.add_group(grpname)
+
+    print 'Build envs:',bld.all_envs
+
+    to_recurse = []
+    for pkgname, pkgdata in bld.env.orch_packages.items():
+        if os.path.exists('%s/wscript' % pkgname):
+            to_recurse.append(pkgname)
+            continue
+        feat = pkgdata.get('features')
+        bld(features = feat, package_name = pkgname)
+    if to_recurse:
+        bld.recurse(to_recurse)
+

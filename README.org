@@ -1,0 +1,28 @@
+Let the orchestration waf through the suite. 
+
+* What do?
+
+** Test the configuration
+
+#+BEGIN_EXAMPLE
+python orch/deconf.py examples/*.cfg
+#+END_EXAMPLE
+
+** Configure the build
+
+#+BEGIN_EXAMPLE
+waf --prefix=/path/to/install --orch-cfg=examples/*.cfg configure
+#+END_EXAMPLE
+
+** Do the build
+
+#+BEGIN_EXAMPLE
+waf
+#+END_EXAMPLE
+
+** Clean house
+
+#+BEGIN_EXAMPLE
+waf distclean
+#+END_EXAMPLE
+

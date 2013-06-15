@@ -1,6 +1,0 @@
-#!/usr/bin/env python
-# encoding: utf-8
-
-def build(bld):
-    package = 'bc'
-    bld(features = bld.orch_pkgdata(package,'features'), package_name = package)

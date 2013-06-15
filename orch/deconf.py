@@ -53,6 +53,7 @@ def parse(filename):
     'Parse the filename, return an uninterpreted object'
     from ConfigParser import SafeConfigParser
     cfg = SafeConfigParser()
+    cfg.optionxform = str       # want case sensitive
     cfg.read(filename)
     return cfg
 
@@ -167,6 +168,9 @@ def inflate(src, defaults = None):
     return ret
 
 def load(filename, start = 'start', formatter = str.format, **kwds):
+    '''
+    Return the fully parsed, interpreted, inflated and formatted suite.
+    '''
     cfg = parse(filename)
     data = interpret(cfg, start, **kwds)
     data2 = inflate(data)
@@ -238,4 +242,4 @@ def dump(filename, start='start', formatter=str.format):
 
 if '__main__' == __name__:
     import sys
-    dump(sys.argv[1], *sys.argv[2:])
+    dump(sys.argv[1:])
