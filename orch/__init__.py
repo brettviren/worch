@@ -54,7 +54,7 @@ def configure(cfg):
 
 def build(bld):
     from waflib.Build import POST_LAZY, POST_BOTH, POST_AT_ONCE
-    bld.post_mode = POST_BOTH
+    bld.post_mode = POST_BOTH # don't fuck with this
 
     bind_functions(bld)
 
