@@ -26,3 +26,5 @@ waf
 waf distclean
 #+END_EXAMPLE
 
+* Configuration:
+

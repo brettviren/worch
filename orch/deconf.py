@@ -205,12 +205,6 @@ def example_formatter(string, **kwds):
     kwds.setdefault('PREFIX','/tmp/simple')
     ret = extra_formatter(string, **kwds)
 
-    if 'tagsdashed' in string:  # spew some crap to show our work
-        from pprint import PrettyPrinter
-        pp = PrettyPrinter(indent=2)
-        print 'Applying special format to "%s" using:' % string
-        pp.pprint(kwds)
-        print 'Got: "%s' % ret
     return ret
 
 

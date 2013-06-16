@@ -3,9 +3,23 @@
 
 import os
 from glob import glob
-import deconf
+import pkgconf
 import features
 import envmunge
+
+# NOT from the waf book.  The waf book example for depends_on doesn't work
+from waflib import TaskGen
+@TaskGen.feature('*') 
+@TaskGen.before_method('process_rule')
+def post_the_other(self):
+    deps = getattr(self, 'depends_on', []) 
+    for name in self.to_list(deps):
+        print 'DEPENDS_ON:', self.name, name
+        other = self.bld.get_tgen_by_name(name) 
+        for ot in other.tasks:
+            print 'OTHER TASK:',type(ot),ot, ' before:',ot.before
+            ot.before.append(self.name)
+
 
 # waf entries
 def options(opt):
@@ -18,10 +32,10 @@ def options(opt):
 def bind_functions(ctx):
     from pprint import PrettyPrinter
     pp = PrettyPrinter(indent=2)
-    ctx.orch_dump = lambda : pp.pprint({'packages': ctx.env.orch_packages.keys(),
-                                        'groups': ctx.env.orch_groups.keys()})
+    ctx.orch_dump = lambda : pp.pprint({'packages': ctx.env.orch_package_list,
+                                        'groups': ctx.env.orch_group_list})
     ctx.orch_pkgdata = lambda name, var=None: \
-                       features.get_pkgdata(ctx.env.orch_packages, name, var)
+                       features.get_pkgdata(ctx.env.orch_package_dict, name, var)
 
 def configure(cfg):
     if not cfg.options.orch_config:
@@ -29,9 +43,7 @@ def configure(cfg):
     orch_config = glob(cfg.options.orch_config)
 
     extra = dict(cfg.env)
-
-    suite = deconf.load(orch_config, start = cfg.options.orch_start, 
-                        formatter = deconf.extra_formatter, **extra)
+    suite = pkgconf.load(orch_config, start = cfg.options.orch_start, **extra)
 
     envmunge.decompose(cfg, suite)
 
@@ -41,24 +53,25 @@ def configure(cfg):
     return
 
 def build(bld):
-    from waflib.Build import POST_BOTH
-    bld.post_mode = POST_BOTH 
+    from waflib.Build import POST_LAZY, POST_BOTH, POST_AT_ONCE
+    bld.post_mode = POST_BOTH
 
     bind_functions(bld)
 
     for grpname in bld.env.orch_group_list:
-        print 'Adding group: "%s"' 
+        print 'Adding group: "%s"' % grpname
         bld.add_group(grpname)
 
     print 'Build envs:',bld.all_envs
 
     to_recurse = []
-    for pkgname, pkgdata in bld.env.orch_packages.items():
+    for pkgname in bld.env.orch_package_list:
+        pkgdata = bld.env.orch_package_dict[pkgname]
         if os.path.exists('%s/wscript' % pkgname):
             to_recurse.append(pkgname)
             continue
         feat = pkgdata.get('features')
-        bld(features = feat, package_name = pkgname)
+        bld(name = '%s_%s' % (pkgname, feat.replace(' ','_')), features = feat, package_name = pkgname)
     if to_recurse:
         bld.recurse(to_recurse)
 

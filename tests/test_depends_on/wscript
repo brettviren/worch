@@ -1,0 +1,33 @@
+def configure(cfg):
+    return
+
+def build(bld):
+    from waflib.Build import POST_LAZY, POST_BOTH, POST_AT_ONCE
+    bld.post_mode = POST_LAZY
+
+    bld(name="TASK_D", rule="echo d")
+    bld(name="TASK_C", rule="echo c", depends_on='TASK_D')
+    bld(name="TASK_B", rule="echo b", depends_on='TASK_A_THREE')
+
+    bld(name="TASK_A_ONE", rule="echo a > ${TGT}", target="a1.txt")
+    bld(name="TASK_A_TWO", rule="cp ${SRC} ${TGT}", source="a1.txt", target="a2.txt")
+    bld(name="TASK_A_THREE", rule="cp ${SRC} ${TGT}", source="a2.txt", target="a3.txt")
+
+
+
+# from the waf book
+from waflib import TaskGen
+@TaskGen.feature('*') 
+@TaskGen.before_method('process_rule')
+def post_the_other(self):
+    deps = getattr(self, 'depends_on', []) 
+    for name in self.to_list(deps):
+        print 'DEPENDS_ON:', self.name, name
+        other = self.bld.get_tgen_by_name(name) 
+        for ot in other.tasks:
+            print 'OTHER TASK:',type(ot),ot, ' before:',ot.before
+            ot.before.append(self.name)
+
+        # print('other task generator (%s) tasks (before) %s' % (name, other.tasks))
+        # other.post() 
+        # print('other task generator (%s) tasks (after) %s' % (name, other.tasks))
