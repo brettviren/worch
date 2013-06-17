@@ -1,30 +1,101 @@
-Let the orchestration waf through the suite. 
+worch - Let the orchestration waf through the suite. 
 
-* What do?
+This package provides a [[https://code.google.com/p/waf/][waf]] based Python module [[./orch][orch]], short for "orchestrate", which allows the creation of a meta-build system for a suite of related packages.  
 
-** Test the configuration
+* Features
+
+Some features of worch:
+
+ - a concise, simple and flexible configuration text-based which can fully describe the installation of a complex suite
+
+ - the automated installation includes downloading of source archives, their unpacking, configuring, building, installing and any additional steps the user defines
+
+ - the user defines the installation conventions that dictate file/directory installation patterns
+
+ - batteries included for driving some popular native build mechanisms.  Most novel build systems can be accommodated at the configuration file level or by providing a =wscript= file.
+
+ - in order to assure proper build order while allowing parallel builds, dependencies can be defined either implicitly by linking installation steps via their input/output files or by explicitly declaring dependencies between any two steps by name
+
+ - idempotent build steps, repeating a build should not repeat successful steps
+
+ - no hidden failures, errors abort the installation
+
+ - packages can be grouped to assure parts of the suite are entirely built before others
+
+ - while heavy use of environment variables is discouraged one can define build environment variables in the configuration.  These can be applied on a per-package basis or can be defined on a package or group basis and applied to those packages which require them.
+
+* How to use Worch
+
+The use Worch consists largely of editing a configuration file set and running =waf= with the =orch= Python module to interpret them.  If highly custom installation of some package is required a =wscript= file may need to be developed.
+
+Worch comes with some example configuration files that build some simple Free Software programs.  To exercise them:
+
+** Install waf
+
+See the [[http://docs.waf.googlecode.com/git/book_17/single.html#_download_and_installation][waf book]] for instructions on installing waf.  The rest of this assumes that =waf= is in your =PATH= or otherwise defined as an shell alias/function.
+
+** Get Worch
 
 #+BEGIN_EXAMPLE
-python orch/deconf.py examples/*.cfg
+git clone https://github.com/brettviren/worch.git
+cd worch
 #+END_EXAMPLE
 
-** Configure the build
+** Run waf on the worch configuration files
 
 #+BEGIN_EXAMPLE
-waf --prefix=/path/to/install --orch-cfg=examples/*.cfg configure
+$ waf --prefix=/tmp/worch-simple-example \
+      --orch-config=examples/simple/*.cfg \
+      configure
+$ ls -l ./tmp
 #+END_EXAMPLE
 
-** Do the build
+Notes:
+
+ - multiple configuration files are given; they are effectively concatenated.  
+ - the =./tmp= directory is created as directed by the =out= variable in the =wscript= file and holds all intermediate build files
+ - if the =configure= step is repeated it requires repetition of the options as well.
 
 #+BEGIN_EXAMPLE
-waf
+$ waf [-j4] [-vvv] > log
+Waf: Entering directory `/home/bviren/work/lbne/waffle/worch/tmp'
+[ 1/18] cmake_seturl:  -> tmp/cmake-2.8.8.url
+[ 2/18] cmake_download: tmp/cmake-2.8.8.url -> tmp/downloads/cmake-2.8.8.tar.gz
+[ 3/18] cmake_unpack: tmp/downloads/cmake-2.8.8.tar.gz -> tmp/sources/cmake-2.8.8/bootstrap
+[ 4/18] cmake_prepare: tmp/sources/cmake-2.8.8/bootstrap -> tmp/builds/cmake-2.8.8-debug/cmake_install.cmake
+[ 5/18] cmake_build: tmp/builds/cmake-2.8.8-debug/cmake_install.cmake -> tmp/builds/cmake-2.8.8-debug/bin/cmake
+[ 6/18] cmake_install: tmp/builds/cmake-2.8.8-debug/bin/cmake -> ../../../../../../tmp/worch-simple-example/cmake/2.8.8/debug/bin/cmake
+[ 7/18] hello_seturl:  -> tmp/hello-2.8.url
+[ 8/18] bc_seturl:  -> tmp/bc-1.06.url
+[ 9/18] bc_download: tmp/bc-1.06.url -> tmp/downloads/bc-1.06.tar.gz
+[10/18] hello_download: tmp/hello-2.8.url -> tmp/downloads/hello-2.8.tar.gz
+[11/18] bc_unpack: tmp/downloads/bc-1.06.tar.gz -> tmp/sources/bc-1.06/configure
+[12/18] hello_unpack: tmp/downloads/hello-2.8.tar.gz -> tmp/sources/hello-2.8/configure
+[13/18] bc_prepare: tmp/sources/bc-1.06/configure -> tmp/builds/bc-1.06-debug/config.status
+[14/18] hello_prepare: tmp/sources/hello-2.8/configure -> tmp/builds/hello-2.8-debug/config.status
+[15/18] bc_build: tmp/builds/bc-1.06-debug/config.status -> tmp/builds/bc-1.06-debug/bc/bc
+[16/18] bc_install: tmp/builds/bc-1.06-debug/bc/bc -> ../../../../../../tmp/worch-simple-example/bc/1.06/debug/bin/bc
+[17/18] hello_build: tmp/builds/hello-2.8-debug/config.status -> tmp/builds/hello-2.8-debug/src/hello
+[18/18] hello_install: tmp/builds/hello-2.8-debug/src/hello -> ../../../../../../tmp/worch-simple-example/hello/2.8/debug/bin/hello
+Waf: Leaving directory `/home/bviren/work/lbne/waffle/worch/tmp'
+'build' finished successfully (8m3.605s)
+
+$ waf
+Waf: Entering directory `/home/bviren/work/lbne/waffle/worch/tmp'
+Waf: Leaving directory `/home/bviren/work/lbne/waffle/worch/tmp'
+'build' finished successfully (0.028s)
+
+$ ls -l /tmp/worch-simple-example
+bc  cmake  hello
 #+END_EXAMPLE
 
-** Clean house
+Notes:
 
-#+BEGIN_EXAMPLE
-waf distclean
-#+END_EXAMPLE
+ - parallelism can be used with the =-j= option, verbosity increased with =-v=
+ - logging from each step is kept atomic and is not printed until that step finishes
+ - ordering of steps is determined by dependencies
+ - rerunning =waf= does not repeat the successful steps
+ - waf users may expect an explicit "waf install" but it is not used by Worch
+ - all installation files are placed under the directory set by the =--prefix= option in the =configure= step
 
-* Configuration:
 
