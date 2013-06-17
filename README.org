@@ -24,7 +24,19 @@ Some features of worch:
 
  - while heavy use of environment variables is discouraged one can define build environment variables in the configuration.  These can be applied on a per-package basis or can be defined on a package or group basis and applied to those packages which require them.
 
-* How to use Worch
+
+* Concepts
+
+Some of the terms and concepts used by Worch.  
+
+ - suite :: the collection of all software to install with Worch
+ - packages :: software from a common source to be installed.  It has a name and a version
+ - groups :: a collection of related packages that must be fully installed independent from others in the suite
+ - steps :: the installation of a package is broken down into a linear chain of steps.  The default steps are "download", "unpack", "prepare", "build" and "install".  Fully qualified steps names include the name of the package on which they operate like: =<package>_<step>=
+ - features :: one or more steps collected together in a named and reusable manner
+ - dependencies :: one step may require a file to exist which another step declares that it will produce or an explicit dependency can be declared based on the step names
+
+* Getting started with Worch
 
 The use Worch consists largely of editing a configuration file set and running =waf= with the =orch= Python module to interpret them.  If highly custom installation of some package is required a =wscript= file may need to be developed.
 
@@ -37,17 +49,26 @@ See the [[http://docs.waf.googlecode.com/git/book_17/single.html#_download_and_i
 ** Get Worch
 
 #+BEGIN_EXAMPLE
-git clone https://github.com/brettviren/worch.git
-cd worch
+$ git clone https://github.com/brettviren/worch.git
+$ cd worch
 #+END_EXAMPLE
 
 ** Run waf on the worch configuration files
+
+Worch provides some ready-to-use configuration files under the [[./examples][examples]] sub-directory and below use the [[./examples/simple][simple example]].
+
+*** Configure
 
 #+BEGIN_EXAMPLE
 $ waf --prefix=/tmp/worch-simple-example \
       --orch-config=examples/simple/*.cfg \
       configure
-$ ls -l ./tmp
+Setting top to  : /home/bviren/work/lbne/waffle/worch 
+Setting out to  : /home/bviren/work/lbne/waffle/worch/tmp 
+'configure' finished successfully (0.065s)
+
+$ ls ./tmp
+c4che  config.log
 #+END_EXAMPLE
 
 Notes:
@@ -55,6 +76,8 @@ Notes:
  - multiple configuration files are given; they are effectively concatenated.  
  - the =./tmp= directory is created as directed by the =out= variable in the =wscript= file and holds all intermediate build files
  - if the =configure= step is repeated it requires repetition of the options as well.
+
+*** Build
 
 #+BEGIN_EXAMPLE
 $ waf [-j4] [-vvv] > log
@@ -85,8 +108,18 @@ Waf: Entering directory `/home/bviren/work/lbne/waffle/worch/tmp'
 Waf: Leaving directory `/home/bviren/work/lbne/waffle/worch/tmp'
 'build' finished successfully (0.028s)
 
-$ ls -l /tmp/worch-simple-example
-bc  cmake  hello
+$ ls ./tmp
+bc-1.06.url  builds  c4che  cmake-2.8.8.url  config.log  downloads hello-2.8.url  sources
+
+$ ls /tmp/worch-simple-example/*/*/*
+/tmp/worch-simple-example/bc/1.06/debug:
+bin  info  man
+
+/tmp/worch-simple-example/cmake/2.8.8/debug:
+bin  doc  man  share
+
+/tmp/worch-simple-example/hello/2.8/debug:
+bin  share
 #+END_EXAMPLE
 
 Notes:
@@ -97,5 +130,160 @@ Notes:
  - rerunning =waf= does not repeat the successful steps
  - waf users may expect an explicit "waf install" but it is not used by Worch
  - all installation files are placed under the directory set by the =--prefix= option in the =configure= step
+ - this example installs each package into a specific =<name>/<version>/<qualifier>= directory, but other patterns are possible
+
+
+* Configuration
+
+The main user interaction, besides running =waf= as above, is in writing configuration files.  
+
+The Worch configuration files are in the standard syntax expected by the Python =ConfigParser= module (aka "INI" format).  They consist of a number of named sections followed by key/value pair settings.  They section title is surrounded by square brackets "=[]=" and the key/value pairs are separated by either "===" or "=:=".
+
+#+BEGIN_EXAMPLE
+# this is a comment
+[section]
+key = value
+key: value
+#+END_EXAMPLE
+
+Worch adds to this simple syntax some interpolation that provides these features:
+
+ - string value interpolation
+ - hierarchical structure
+
+** Interpolation
+
+Most values are interpreted having a scalar string type.  These values may contain the names of other keys surrounded by  curly braces "={}=".  These will have their value replaced by Worch.
+
+#+BEGIN_EXAMPLE
+[section]
+key1 = World
+key2 = Hello {key1}
+#+END_EXAMPLE
+
+The result is that the value of =key2= will be "=Hello World=".  Keys must be used in the same hierarchical scope as they are defined.  The hierarchy is described in the next section.  In addition to interpolation being run on the keys in the configuration Worch provides a few additional key/value pairs:
+
+ - uname :: output of uname stored as =kernelname=, =hostname=, =kernelversion=, =vendorstring=, =machine=
+ - =platform= :: a name formed from the =kernelname= and =machine=
+ - =gcc_dumpversion= :: the native GCC version
+ - =gcc_dumpmachine= :: the native GCC notion of the hosting machine architecture
+ - =gcc_multiarch= :: the native multiarch string (Debian extension)
+ - =libc_version= :: the libc version
+ - =ups_flavor= :: the [[http://www.fnal.gov/docs/products/ups/][UPS]] flavor string 
+
+Additional keys may be provided based on the existence of keys in the configuration. 
+
+ - =version_2digit= :: at most the first two digits of the "."-separated version string
+ - =version_underscore= :: version string with "." replaced with "_"
+ - =version_nodots= :: version string with "." removed
+ - =tagsdashed= :: all tags concatenated with dashes
+ - =tagsunderscore= :: all tags concatenated with underscores
+
+** Hierarchical configuration
+
+Worch partitions the configuration logically into packages and groups of packages.  This partitioning is done by interpreting certain keys as holding a list of sections names of a certain type.  The mapping of key to type is held in the special =keytype= section.  The =keytype= section used by Worch is:
+
+#+BEGIN_EXAMPLE
+[keytype]
+packages = package
+groups = group
+#+END_EXAMPLE
+
+This means that if the keys =packages= or =groups= are encountered, their values are interpreted as a list of section names of the "type" "=package=" or "=group=".  The interpretation begins at with one section, "=start=" by default and follows down any =keytype= keys.
+
+#+BEGIN_EXAMPLE
+[start]
+groups = group1, group2
+key = value_from_start
+
+[group group1]
+packages = package1, package2
+key = value_from_group1
+
+[package package1]
+key = value_from_package1
+
+[package package2]
+some_other_key = {key}
+#+END_EXAMPLE
+
+The hierarchy built in this way causes all simple, scalar values to be copied down to the leafs, which are packages in this case.  This means that each package gets a copy, possibly customized, of all scalar key/value pairs.  The interpolation occurs late so resolution is with this final set.  Using the example above:
+
+ - package1 :: has =key= set to =value_from_package1=
+ - package2 :: has =key= and =some_other_key= both set to =value_from_group1=
+
+* Built-in Package Meta-building Features
+
+Worch provides built-in support for a few common types of native package build systems.  The type of support is specified with the =features= key which is a space-separated list of words that match implementation of waf features.  A feature is responsible for implementing part of an installation.  The scope of features are chosen to be as encompassing as possible while reducing overlap and encouraging reuse.  A package will tend to have a list of features that are glued together either by explicit dependencies or, more likely, by one sharing as input the output of another.  A feature is built from one or more steps.
+
+The rest of this section describes the build-in features.
+
+** Download and unpack
+
+Almost all packages start by a download of a source archive (tar or zip file or git repository).  Worch will handle these steps using the =tarball= feature.  The example below shows how the GNU hello package makes use of this feature.  A full, working example is in [[./examples/simple]].
+
+#+BEGIN_EXAMPLE
+[group gnuprograms]
+features = tarball autoconf
+srcpkg_ext = tar.gz
+source_unpacked = {package}-{version}
+source_package = {source_unpacked}.{srcpkg_ext}
+download_dir = downloads
+source_dir = sources
+source_url = http://ftp.gnu.org/gnu/{package}/{source_package}
+
+[package hello]
+version: 2.8
+#+END_EXAMPLE
+
+Notes:
+
+ - The =tarball= feature is added to a special =features= key which is interpreted as a *space* separated list (fixme: should allow for comma-separated - space separation exposes a waf detail)
+ - The package section is brief as it inherits from the group and only provides the information unique to the pacakge
+ - The =tarball= feature needs to know where the download and source directories are, how the source package, URL and eventual unpacked directory are named
+ - The extension is pulled out to its own variable to accommodate multiple packages that are similar but may be archived/compressed differently (eg, another GNU package that happens to be compressed with BZ2)
+
+
+** Autoconf
+
+The vast majority of packages are built with the =configure/make/make install= pattern provided by GNU autoconf.  The =autoconf= feature can invoke this pattern.  It follows on from the =tarball= feature and thus requires some of the same keys to be defined.  One does not typically need to redefine these but rather they are used in the same context.  Here is a follow-on to the =hello= example above but just showing the parts relevant to the =autoconf= feature.  Again, see the [[./examples/simple/][simple example]] for a fully working instance.
+
+#+BEGIN_EXAMPLE
+[group gnuprograms]
+tags = debug
+features = tarball autoconf
+source_unpacked = {package}-{version}
+source_package = {source_unpacked}.{srcpkg_ext}
+build_dir = builds/{package}-{version}-{tagsdashed}
+install_dir = {PREFIX}/{package}/{version}/{tagsdashed}
+
+[package hello]
+version: 2.8
+depends = prepare:bc_install
+build_target = src/hello
+install_target = bin/hello
+#+END_EXAMPLE
+
+Notes:
+
+ - Here a =tags= key is introduced.  Tags are used to indicate variants in the build.  In this example a debug version of =hello= should be built (fixme: tags are not yet supported).
+ - The build and install directories are specified while some source-related keys are reused from the =tarball= feature 
+ - A build and install target must be specified in order to satisfy waf requirements
+ - A =depends= key is used to place an artificial, contrived dependency on another package step.
+
+*** Mimicking =autoconf=
+
+Many native build systems can use the =autoconf= feature by explicitly defining some variables that it uses.  For example, building CMake does not use autoconf but it is close.  Its package section can be defined like:
+
+#+BEGIN_EXAMPLE
+[package cmake]
+features = tarball autoconf
+unpacked_target = bootstrap
+prepare_script = bootstrap
+#+END_EXAMPLE
+
+This causes the =tarball= and =autoconf= features to look for a =bootstrap= instead of a =configure= script.
+
+
 
 
