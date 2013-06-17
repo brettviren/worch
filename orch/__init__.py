@@ -40,7 +40,11 @@ def bind_functions(ctx):
 def configure(cfg):
     if not cfg.options.orch_config:
         raise RuntimeError, 'No Orchestration configuration file given (--orch-config)'
-    orch_config = glob(cfg.options.orch_config)
+    orch_config = []
+    for lst in cfg.options.orch_config.split(','):
+        lst = lst.strip()
+        orch_config += glob(lst)
+    print 'Configuration files: %s' % ', '.join(orch_config)
 
     extra = dict(cfg.env)
     suite = pkgconf.load(orch_config, start = cfg.options.orch_start, **extra)
