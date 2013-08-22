@@ -6,21 +6,21 @@ This package provides a [[https://code.google.com/p/waf/][waf]] based Python mod
 
 Some features of worch:
 
- - a concise, simple and flexible configuration text-based which can fully describe the installation of a complex suite
+ - a simple, concise and flexible text-based configuration language which can fully describe the installation of a complex software suite.
 
  - the automated installation includes downloading of source archives, their unpacking, configuring, building, installing and any additional steps the user defines
 
- - the user defines the installation conventions that dictate file/directory installation patterns
+ - the user defines the conventions that dictate file/directory installation patterns.
 
- - batteries included for driving some popular native build mechanisms.  Most novel build systems can be accommodated at the configuration file level or by providing a =wscript= file.
+ - batteries included for driving some popular native build mechanisms.   Novel build systems can be accommodated at the configuration file level or by providing a =wscript= file.
 
- - in order to assure proper build order while allowing parallel builds, dependencies can be defined either implicitly by linking installation steps via their input/output files or by explicitly declaring dependencies between any two steps by name
+ - in order to assure proper build order while allowing parallel builds, dependencies can be defined either implicitly by linking installation steps via the files they require or produce or by explicitly declaring dependencies between any two steps by name.
 
- - idempotent build steps, repeating a build should not repeat successful steps
+ - idempotent build steps, repeating a build should not repeat successful steps.
 
- - no hidden failures, errors abort the installation
+ - no hidden failures, errors abort the installation.
 
- - packages can be grouped to assure parts of the suite are entirely built before others
+ - packages can be grouped to assure parts of the suite are entirely built before others.
 
  - while heavy use of environment variables is discouraged one can define build environment variables in the configuration.  These can be applied on a per-package basis or can be defined on a package or group basis and applied to those packages which require them.
 
@@ -38,9 +38,9 @@ Some of the terms and concepts used by Worch.
 
 * Getting started with Worch
 
-The use Worch consists largely of editing a configuration file set and running =waf= with the =orch= Python module to interpret them.  If highly custom installation of some package is required a =wscript= file may need to be developed.
+The use Worch consists largely of editing a configuration file set and running =waf= with the =orch= Python module to interpret them.  If highly custom installation of some package is required which is not natively supported a custom =wscript= file can be developed.
 
-Worch comes with some example configuration files that build some simple Free Software programs.  To exercise them:
+Worch comes with example configuration files that build a few simple Free Software programs.  To exercise them:
 
 ** Install waf
 
@@ -69,6 +69,9 @@ Setting out to  : /home/bviren/work/lbne/waffle/worch/tmp
 
 $ ls ./tmp
 c4che  config.log
+
+$ ls /tmp/worch-simple-example/
+bc  cmake  hello
 #+END_EXAMPLE
 
 Notes:
@@ -135,7 +138,7 @@ Notes:
 
 * Configuration
 
-The main user interaction, besides running =waf= as above, is in writing configuration files.  
+The main user interaction, besides running =waf= as above, is in writing configuration files to describe the installation.  
 
 The Worch configuration files are in the standard syntax expected by the Python =ConfigParser= module (aka "INI" format).  They consist of a number of named sections followed by key/value pair settings.  They section title is surrounded by square brackets "=[]=" and the key/value pairs are separated by either "===" or "=:=".
 
@@ -146,7 +149,7 @@ key = value
 key: value
 #+END_EXAMPLE
 
-Worch adds to this simple syntax some interpolation that provides these features:
+Worch adds to this simple syntax some these features:
 
  - string value interpolation
  - hierarchical structure
@@ -161,7 +164,7 @@ key1 = World
 key2 = Hello {key1}
 #+END_EXAMPLE
 
-The result is that the value of =key2= will be "=Hello World=".  Keys must be used in the same hierarchical scope as they are defined.  The hierarchy is described in the next section.  In addition to interpolation being run on the keys in the configuration Worch provides a few additional key/value pairs:
+The result is that the value of =key2= will be "=Hello World=".  Keys must be used in the same hierarchical scope as they are defined.  The hierarchy is described in the next section.  In addition to interpolation being run on the items in the configuration, Worch provides a few additional key/value pairs:
 
  - uname :: output of uname stored as =kernelname=, =hostname=, =kernelversion=, =vendorstring=, =machine=
  - =platform= :: a name formed from the =kernelname= and =machine=
@@ -207,7 +210,7 @@ key = value_from_package1
 some_other_key = {key}
 #+END_EXAMPLE
 
-The hierarchy built in this way causes all simple, scalar values to be copied down to the leafs, which are packages in this case.  This means that each package gets a copy, possibly customized, of all scalar key/value pairs.  The interpolation occurs late so resolution is with this final set.  Using the example above:
+The hierarchy built in this way causes all simple, scalar values to be copied down to the leafs, which are packages in this case.  This means that each package gets a copy, possibly customized, of all scalar key/value pairs.  The interpolation occurs late so resolution is performed with this final, leaf set.  Using the example above:
 
  - package1 :: has =key= set to =value_from_package1=
  - package2 :: has =key= and =some_other_key= both set to =value_from_group1=
