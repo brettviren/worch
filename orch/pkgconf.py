@@ -4,8 +4,9 @@ Package specific interpretation layered on deconf.
 '''
 
 import os
-import deconf
 from subprocess import check_output, CalledProcessError
+
+from . import deconf
 
 def ups_flavor():
     '''
@@ -17,7 +18,7 @@ def ups_flavor():
     else:
         mach = ''
     rel = '.'.join(rel.split('.')[:2])
-    libc = check_output(['ldd','--version']).split('\n')[0].split()[-1]
+    libc = check_output(['ldd','--version']).split(b'\n')[0].split()[-1]
     return '%s%s+%s-%s' % (kern, mach, rel, libc)
 
 def host_description():
@@ -45,7 +46,7 @@ def host_description():
     except CalledProcessError:
         ma = ""
     ret['gcc_multiarch'] = ma
-    ret['libc_version'] = check_output(['ldd','--version']).split('\n')[0].split()[-1]
+    ret['libc_version'] = check_output(['ldd','--version']).split(b'\n')[0].split()[-1]
 
     return ret
 
@@ -118,7 +119,7 @@ def dump(filename, start='start', formatter=None):
         formatter = PkgFormatter(prefix=prefix, PREFIX=prefix)
     data = load(filename, start=start, formatter=formatter)
 
-    print 'Starting from "%s"' % start
+    print ('Starting from "%s"' % start)
     pp.pprint(data)
 
 if '__main__' == __name__:

@@ -69,7 +69,7 @@ def resolve_packages(all_packages, desclist):
     if not desclist:
         return list()
 
-    if isinstance(desclist, basestring):
+    if isinstance(desclist, type("")):
         desclist = [x.strip() for x in desclist.split(',')]
     ret = []
     for req in desclist:
@@ -84,7 +84,7 @@ def resolve_packages(all_packages, desclist):
                     continue
                 ret.append(pkg)
         else:
-            raise ValueError, 'Unknown descriptor: "%s:%s"' % (what, name)
+            raise ValueError('Unknown descriptor: "%s:%s"' % (what, name))
         continue
     return ret
 
