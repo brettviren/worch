@@ -68,7 +68,10 @@ def ups_flavor():
     else:
         mach = ''
     rel = '.'.join(rel.split('.')[:2])
-    libc = check_output(['ldd','--version']).split(b'\n')[0].split()[-1]
+    if 'darwin' in kern.lower():
+        libc = rel # FIXME: is there something better on mac ?
+    else:
+        libc = check_output(['ldd','--version']).split(b'\n')[0].split()[-1]
     return '%s%s+%s-%s' % (kern, mach, rel, libc)
 
 def host_description():
@@ -96,7 +99,11 @@ def host_description():
     except CalledProcessError:
         ma = ""
     ret['gcc_multiarch'] = ma
-    ret['libc_version'] = check_output(['ldd','--version']).split(b'\n')[0].split()[-1]
+    if 'darwin' in ret['kernelname'].lower():
+        libc_version = ret['kernelversion'] # FIXME: something better on Mac ?
+    else:
+        libc_version = check_output(['ldd','--version']).split(b'\n')[0].split()[-1]
+    ret['libc_version'] = libc_version
 
     return ret
 
