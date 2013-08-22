@@ -14,10 +14,10 @@ from waflib import TaskGen
 def post_the_other(self):
     deps = getattr(self, 'depends_on', []) 
     for name in self.to_list(deps):
-        print 'DEPENDS_ON:', self.name, name
+        print ('DEPENDS_ON: %s %s' % ( self.name, name ))
         other = self.bld.get_tgen_by_name(name) 
         for ot in other.tasks:
-            print 'OTHER TASK:',type(ot),ot, ' before:',ot.before
+            print ('OTHER TASK: %s %s %s %s' % (type(ot),ot, ' before:',ot.before))
             ot.before.append(self.name)
 
 
@@ -44,14 +44,14 @@ def configure(cfg):
     for lst in cfg.options.orch_config.split(','):
         lst = lst.strip()
         orch_config += glob(lst)
-    print 'Configuration files: %s' % ', '.join(orch_config)
+    print ('Configuration files: %s' % ', '.join(orch_config))
 
     extra = dict(cfg.env)
     suite = pkgconf.load(orch_config, start = cfg.options.orch_start, **extra)
 
     envmunge.decompose(cfg, suite)
 
-    print 'Configure envs:', cfg.all_envs
+    print ('Configure envs: %s' % cfg.all_envs)
 
     bind_functions(cfg)
     return
@@ -63,10 +63,10 @@ def build(bld):
     bind_functions(bld)
 
     for grpname in bld.env.orch_group_list:
-        print 'Adding group: "%s"' % grpname
+        print ('Adding group: "%s"' % grpname)
         bld.add_group(grpname)
 
-    print 'Build envs:',bld.all_envs
+    print ('Build envs: %s' % bld.all_envs)
 
     to_recurse = []
     for pkgname in bld.env.orch_package_list:
