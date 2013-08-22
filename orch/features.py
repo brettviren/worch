@@ -137,7 +137,7 @@ def feature_tarball(self):
              env = pfi.env)
 
     self.bld(name = pfi.format('{package}_download'),
-             rule = "wget --quiet -nv --no-check-certificate -i ${SRC} -O ${TGT}",
+             rule = "curl --insecure --silent -L --output ${TGT} ${SRC[0].read()}",
              source = f_urlfile, target = f_tarball,
              depends_on = pfi.get_deps('download'),
              env = pfi.env)
