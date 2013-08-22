@@ -3,9 +3,9 @@
 
 import os
 from glob import glob
-import pkgconf
-import features
-import envmunge
+from . import pkgconf
+from . import features
+from . import envmunge
 
 # NOT from the waf book.  The waf book example for depends_on doesn't work
 from waflib import TaskGen
@@ -39,7 +39,7 @@ def bind_functions(ctx):
 
 def configure(cfg):
     if not cfg.options.orch_config:
-        raise RuntimeError, 'No Orchestration configuration file given (--orch-config)'
+        raise RuntimeError('No Orchestration configuration file given (--orch-config)')
     orch_config = []
     for lst in cfg.options.orch_config.split(','):
         lst = lst.strip()

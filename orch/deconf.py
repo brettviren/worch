@@ -51,7 +51,8 @@ of the hierarchy which are likely useful to the application.
 
 def parse(filename):
     'Parse the filename, return an uninterpreted object'
-    from ConfigParser import SafeConfigParser
+    try:                from ConfigParser import SafeConfigParser
+    except ImportError: from configparser import SafeConfigParser
     cfg = SafeConfigParser()
     cfg.optionxform = str       # want case sensitive
     cfg.read(filename)
@@ -65,7 +66,7 @@ def get_first_typed_section(cfg, typ, name):
     for sec in cfg.sections():
         if sec.startswith(target):
             return sec
-    raise ValueError, 'No section: <%s> %s' % (typ,name)
+    raise ValueError('No section: <%s> %s' % (typ,name))
 
 
 def resolve(cfg, sec, **kwds):
@@ -74,7 +75,7 @@ def resolve(cfg, sec, **kwds):
     ret = {}
     secitems = dict(cfg.items(sec))
     secitems.update(kwds)
-    for k,v in secitems.iteritems():
+    for k,v in secitems.items():
         typ = keytype.get(k)
         if not typ:
             ret[k] = v
@@ -106,7 +107,7 @@ def format_flat_dict(dat, formatter = str.format, **kwds):
 
     while unformatted:
         changed = False
-        for k,v in unformatted.items():
+        for k,v in list(unformatted.items()):
             try:
                 new_v = formatter(v, **kwds)
             except KeyError:
@@ -124,7 +125,7 @@ def format_flat_dict(dat, formatter = str.format, **kwds):
     return formatted
 
 def format_any(dat, formatter = str.format, **kwds):
-    if isinstance(dat, basestring):
+    if isinstance(dat, type("")):
         try:
             return formatter(dat, **kwds)
         except KeyError:
@@ -134,7 +135,7 @@ def format_any(dat, formatter = str.format, **kwds):
     flat = dict()
     other = dict()
     for k,v in dat.items():
-        if isinstance(v, basestring):
+        if isinstance(v, type("")):
             flat[k] = v
         else:
             other[k] = v
@@ -158,7 +159,7 @@ def inflate(src, defaults = None):
     flat = dict()
     other = dict()
     for k,v in ret.items():
-        if isinstance(v, basestring):
+        if isinstance(v, type("")):
             flat[k] = v
         else:
             other[k] = v
@@ -220,18 +221,18 @@ def test():
     data4 = load('deconf.cfg')
     assert data3 == data4
 
-    print 'INTERPRETED:'
+    print ('INTERPRETED:')
     pp.pprint(data)
-    print 'INFLATED:'
+    print ('INFLATED:')
     pp.pprint(data2)
-    print 'FORMATTED:'
+    print ('FORMATTED:')
     pp.pprint(data3)
 
 def dump(filename, start='start', formatter=str.format):
     from pprint import PrettyPrinter
     pp = PrettyPrinter(indent=2)
     data = load(filename, start=start, formatter=example_formatter)
-    print 'Starting from "%s"' % start
+    print ('Starting from "%s"' % start)
     pp.pprint(data)
 
 if '__main__' == __name__:

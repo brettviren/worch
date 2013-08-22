@@ -31,8 +31,8 @@ class PackageFeatureInfo(object):
         group = self.get_var('group')
         self.ctx.set_group(group)
 
-        print 'Feature: "{feature}" for package "{package}/{version}" in group "{group}"'.\
-            format(feature = feature_name, **self.pkgdata)
+        print ('Feature: "{feature}" for package "{package}/{version}" in group "{group}"'.\
+            format(feature = feature_name, **self.pkgdata))
 
     def __call__(self, name):
         return self.get_var(name)
@@ -67,8 +67,10 @@ class PackageFeatureInfo(object):
             #print 'Variable for {package}/{version}: {varname} = {value} ({full})'.\
             #    format(varname=name, value=ret, full=full, **self._data)
             return ret
-        raise ValueError, 'Failed to get "%s" for package "%s"' % \
+        raise ValueError(
+            'Failed to get "%s" for package "%s"' % 
             (name, self.pkgdata['package'])
+            )
 
     def get_deps(self, step):
         deps = self.pkgdata.get('depends')
@@ -83,8 +85,8 @@ class PackageFeatureInfo(object):
             else:
                 mine.append(dep)
         if mine:
-            print self.format('Package {package} step "{step}" depends: "{dep}"',
-                              step=step,dep=','.join(mine))
+            print (self.format('Package {package} step "{step}" depends: "{dep}"',
+                              step=step,dep=','.join(mine)))
         return mine
 
 
