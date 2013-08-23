@@ -157,8 +157,7 @@ patch_requirements = {
     'patch_package': '{package}-{version}.{patch_ext}',
     'patch_cmd': 'patch',
     'patch_cmd_options': '-i',
-    'patch_dir': 'patches',
-    'patch_target': '{patch_package}.applied',
+    'patch_target': '{package}-{version}.{patch_ext}.applied',
 }
 
 
@@ -173,7 +172,7 @@ def feature_patch(self):
 
 
     f_urlfile = pfi.get_node('patch_urlfile')
-    d_patch = pfi.get_node('patch_dir')
+    d_patch = pfi.get_node('source_dir')
     f_patch = pfi.get_node('patch_package', d_patch)
     f_applied = pfi.get_node('patch_target', d_patch)
 
@@ -185,6 +184,7 @@ def feature_patch(self):
         self.bld(
             name = pfi.format('{package}_patch'),
             rule = 'touch ${TGT[0].abspath()}',
+            source = f_unpack,
             target = f_applied,
             update_outputs = True,
             depends_on = pfi.get_deps('patch'),
@@ -234,10 +234,9 @@ def feature_patch(self):
 autoconf_requirements = {
     'source_dir': 'sources',
     'source_unpacked': '{package}-{version}',
-    'patch_dir': 'patches',
     'patch_ext': 'patch', # or diff
     'patch_package': '{package}-{version}.{patch_ext}',
-    'patch_target': '{patch_package}.applied',
+    'patch_target': '{package}-{version}.{patch_ext}.applied',
     'prepare_script': 'configure',
     'prepare_script_options': '--prefix={install_dir}',
     'prepare_target': 'config.status',
@@ -251,11 +250,9 @@ autoconf_requirements = {
 def feature_autoconf(self):
     pfi = PackageFeatureInfo(self.package_name, 'autoconf', self.bld, autoconf_requirements)
 
-    d_patch = pfi.get_node('patch_dir')
-    f_patch = pfi.get_node('patch_package', d_patch)
-    f_patch_applied = pfi.get_node('patch_target', d_patch)
-
     d_source = pfi.get_node('source_dir')
+    f_patch_applied = pfi.get_node('patch_target', d_source)
+
     d_unpacked = pfi.get_node('source_unpacked', d_source)
     f_prepare = pfi.get_node('prepare_script',d_unpacked)
     d_build = pfi.get_node('build_dir')
@@ -264,7 +261,6 @@ def feature_autoconf(self):
 
     d_prefix = pfi.get_node('install_dir')
     f_install_result = pfi.get_node('install_target', d_prefix)
-
 
     self.bld(name = pfi.format('{package}_prepare'),
              rule = "${SRC[0].abspath()} %s" % pfi.get_var('prepare_script_options'),
