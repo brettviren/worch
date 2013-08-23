@@ -77,7 +77,7 @@ bc  cmake  hello
 Notes:
 
  - multiple configuration files are given; they are effectively concatenated.  
- - the =./tmp= directory is created as directed by the =out= variable in the =wscript= file and holds all intermediate build files
+ - the =./tmp= directory is created as directed by the =out= variable in the main =wscript= file and holds all intermediate build files
  - if the =configure= step is repeated it requires repetition of the options as well.
 
 *** Build
@@ -136,7 +136,7 @@ Notes:
  - this example installs each package into a specific =<name>/<version>/<qualifier>= directory, but other patterns are possible
 
 
-* Configuration
+* Configuration File Syntax and Interpretation
 
 The main user interaction, besides running =waf= as above, is in writing configuration files to describe the installation.  
 
@@ -215,6 +215,31 @@ The hierarchy built in this way causes all simple, scalar values to be copied do
  - package1 :: has =key= set to =value_from_package1=
  - package2 :: has =key= and =some_other_key= both set to =value_from_group1=
 
+
+** Specifying inter-package dependencies
+
+The configuration file can expresses dependencies between steps of different packages in two ways.
+
+ - implicitly through required/produced files
+ - explicitly by naming a package+step on which the current a particular package step depends
+
+*** Implicit file dependencies
+
+*** Explicit package step dependencies
+
+To express an explicit dependency a package configuration section specifies a =depends= key with a comma-separated list of =<step>:<package>_<step>= elements.   For example:
+
+#+BEGIN_EXAMPLE
+depends = prepare:gmp_install
+#+END_EXAMPLE
+
+
+* Providing a custom =wscript= file
+
+For installations that can not be accommodated by configuration file entries a custom =wscript= file may be provided.  It can be written in any manner but may also make use of functionality from the =orch= module so that it can receive configuration values and make use of existing worch /features/.
+
+
+
 * Built-in Package Meta-building Features
 
 Worch provides built-in support for a few common types of native package build systems.  The type of support is specified with the =features= key which is a space-separated list of words that match implementation of waf features.  A feature is responsible for implementing part of an installation.  The scope of features are chosen to be as encompassing as possible while reducing overlap and encouraging reuse.  A package will tend to have a list of features that are glued together either by explicit dependencies or, more likely, by one sharing as input the output of another.  A feature is built from one or more steps.
@@ -289,4 +314,9 @@ This causes the =tarball= and =autoconf= features to look for a =bootstrap= inst
 
 
 
+
+
+* Extended example
+
+ - [[./examples/art/README.org]] 
 
