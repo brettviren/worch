@@ -16,8 +16,9 @@ def post_the_other(self):
     for name in self.to_list(deps):
         print ('DEPENDS_ON: %s %s' % ( self.name, name ))
         other = self.bld.get_tgen_by_name(name) 
+        other.post()
         for ot in other.tasks:
-            print ('OTHER TASK: %s %s %s %s' % (type(ot),ot, ' before:',ot.before))
+            print ('OTHER TASK: %s before: %s' % (ot, ot.before))
             ot.before.append(self.name)
 
 
@@ -37,7 +38,13 @@ def bind_functions(ctx):
     ctx.orch_pkgdata = lambda name, var=None: \
                        features.get_pkgdata(ctx.env.orch_package_dict, name, var)
 
+# fixme: to make recursion more sensible, most of configure() and
+# build() should go in ../wscript.  Otherwise there are problems with
+# using a customized wscript which needs to use "orch" as a tool
+
 def configure(cfg):
+    print ('ORCH CONFIG CALLED')
+
     if not cfg.options.orch_config:
         raise RuntimeError('No Orchestration configuration file given (--orch-config)')
     orch_config = []
@@ -51,12 +58,14 @@ def configure(cfg):
 
     envmunge.decompose(cfg, suite)
 
-    print ('Configure envs: %s' % cfg.all_envs)
+    print ('Configure envs: "%s"' % '", "'.join(cfg.all_envs))
 
     bind_functions(cfg)
     return
 
 def build(bld):
+    print ('ORCH BUILD CALLED')
+
     from waflib.Build import POST_LAZY, POST_BOTH, POST_AT_ONCE
     bld.post_mode = POST_BOTH # don't fuck with this
 
@@ -66,12 +75,13 @@ def build(bld):
         print ('Adding group: "%s"' % grpname)
         bld.add_group(grpname)
 
-    print ('Build envs: %s' % bld.all_envs)
+    print ('Build envs: "%s"' % '", "'.join(bld.all_envs.keys()))
 
     to_recurse = []
     for pkgname in bld.env.orch_package_list:
         pkgdata = bld.env.orch_package_dict[pkgname]
-        if os.path.exists('%s/wscript' % pkgname):
+        other_dir = os.path.join(bld.launch_dir, pkgname, 'wscript')
+        if os.path.exists(other_dir):
             to_recurse.append(pkgname)
             continue
         feat = pkgdata.get('features')
