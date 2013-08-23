@@ -1,0 +1,30 @@
+diff -urN hello-2.8.orig/src/hello.c hello-2.8/src/hello.c
+--- hello-2.8.orig/src/hello.c	2012-04-18 21:32:27.000000000 +0200
++++ hello-2.8/src/hello.c	2013-08-23 09:46:42.000000000 +0200
+@@ -104,7 +104,7 @@
+ 
+   /* Print greeting message and exit. */
+   if (g == greet_traditional)
+-    printf (_("hello, world\n"));
++    printf (_("hello, WORLD\n"));
+ 
+   else if (g == greet_new)
+     /* TRANSLATORS: Use box drawing characters or other fancy stuff
+@@ -115,7 +115,7 @@
+     */
+         printf (_("\
+ +---------------+\n\
+-| Hello, world! |\n\
++| Hello, WORLD! |\n\
+ +---------------+\n\
+ "));
+ 
+@@ -123,7 +123,7 @@
+     puts (greeting_msg);
+ 
+   else if (g == greet_gnu)
+-    puts (_("Hello, world!"));
++    puts (_("Hello, WORLD!"));
+ 
+   else {
+     /* No need for this impossible message to be translated.  */
