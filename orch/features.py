@@ -231,6 +231,65 @@ def feature_patch(self):
 
     return
 
+git_requirements = {
+    'git_urlfile': '{package}.git.url',
+    'git_url': None,
+    'git_cmd': 'git clone',
+    'git_cmd_options': '',
+    'source_dir': 'sources',
+    'source_unpacked': '{package}-git',
+    'unpacked_target': 'configure',
+}
+
+
+@TaskGen.feature('git')
+def feature_git(self):
+    '''
+    Checkout a git repository.  Implements steps seturl and checkout.
+    '''
+    pfi = PackageFeatureInfo(self.package_name, 'git', self.bld, git_requirements)
+
+
+    if not pfi('git_url'):
+        self.fatal(
+            "git feature enabled for package [%s] but not 'git_url'" %
+            self.package_name,
+            )
+        return
+    
+    f_urlfile = pfi.get_node('git_urlfile')
+
+    d_source = pfi.get_node('source_dir')
+    d_unpacked = pfi.get_node('source_unpacked', d_source)
+    f_unpack = pfi.get_node('unpacked_target', d_unpacked)
+
+    def create_urlfile(task):
+        tgt = task.outputs[0]
+        tgt.write("%s %s -b %s %s %s" % (
+            pfi.get_var('git_cmd'),
+            pfi.get_var('git_cmd_options') or '',
+            pfi.get_var('version'),
+            pfi.get_var('git_url'),
+            d_unpacked.abspath(),
+            ))
+        return 0
+    
+    self.bld(name = pfi.format('{package}_seturl'),
+             rule = create_urlfile,
+             update_outputs = True,
+             target = f_urlfile,
+             depends_on = pfi.get_deps('seturl'),
+             env = pfi.env)
+
+    self.bld(name = pfi.format('{package}_checkout'),
+             rule = "${SRC[0].read()}",
+             source = f_urlfile,
+             target = f_unpack,
+             depends_on = pfi.get_deps('checkout'),
+             env = pfi.env)
+
+    return
+
 autoconf_requirements = {
     'source_dir': 'sources',
     'source_unpacked': '{package}-{version}',
