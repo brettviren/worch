@@ -363,7 +363,7 @@ svn_requirements = {
 @TaskGen.feature('svn')
 def feature_svn(self):
     '''
-    Checkout a mercurial repository.  Implements steps seturl and checkout.
+    Checkout a subversion repository.  Implements steps seturl and checkout.
     '''
     pfi = PackageFeatureInfo(self.package_name, 'svn', self.bld, svn_requirements)
 
