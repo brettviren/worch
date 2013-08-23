@@ -150,9 +150,93 @@ def feature_tarball(self):
 
     return
 
+patch_requirements = {
+    'patch_urlfile': '{package}-{version}.patch.url',
+    'patch_url': None,
+    'patch_ext': 'patch', # or diff
+    'patch_package': '{package}-{version}.{patch_ext}',
+    'patch_cmd': 'patch',
+    'patch_cmd_options': '-i',
+    'patch_target': '{package}-{version}.{patch_ext}.applied',
+}
+
+
+@TaskGen.feature('patch')
+def feature_patch(self):
+    '''
+    Apply a patch on the unpacked sources.
+    '''
+    reqs = dict(patch_requirements)
+    reqs.update(tarball_requirements)
+    pfi = PackageFeatureInfo(self.package_name, 'patch', self.bld, reqs)
+
+
+    f_urlfile = pfi.get_node('patch_urlfile')
+    d_patch = pfi.get_node('source_dir')
+    f_patch = pfi.get_node('patch_package', d_patch)
+    f_applied = pfi.get_node('patch_target', d_patch)
+
+    d_source = pfi.get_node('source_dir')
+    d_unpacked = pfi.get_node('source_unpacked', d_source)
+    f_unpack = pfi.get_node('unpacked_target', d_unpacked)
+    
+    if not pfi('patch_url'):
+        self.bld(
+            name = pfi.format('{package}_patch'),
+            rule = 'touch ${TGT[0].abspath()}',
+            source = f_unpack,
+            target = f_applied,
+            update_outputs = True,
+            depends_on = pfi.get_deps('patch'),
+            env = pfi.env,
+            )
+        return
+
+    self.bld(name = pfi.format('{package}_urlpatch'),
+             rule = "echo %s > ${TGT}" % pfi('patch_url'), 
+             update_outputs = True,
+             source = f_unpack,
+             target = f_urlfile,
+             depends_on = pfi.get_deps('patch') + [pfi.format('{package}_unpack')],
+             env = pfi.env)
+
+    self.bld(name = pfi.format('{package}_dlpatch'),
+             rule = "curl --insecure --silent -L --output ${TGT} ${SRC[0].read()}",
+             source = f_urlfile,
+             target = f_patch,
+             depends_on = pfi.get_deps('dlpatch'),
+             env = pfi.env)
+
+    def apply_patch(task):
+        src = task.inputs[0].abspath()
+        tgt = task.outputs[0].abspath()
+        cmd = "%s %s %s" % (
+            pfi.get_var('patch_cmd'),
+            pfi.get_var('patch_cmd_options'),
+            src,
+            )
+        o = task.exec_command(cmd, cwd=pfi.get_node('source_dir').abspath())
+        if o != 0:
+            return o
+        cmd = "touch %s" % tgt
+        o = task.exec_command(cmd)
+        return o
+    
+    self.bld(name = pfi.format('{package}_patch'), 
+             rule = apply_patch,
+             source = f_patch,
+             target = f_applied,
+             depends_on = pfi.get_deps('patch'),
+             env = pfi.env)
+
+    return
+
 autoconf_requirements = {
     'source_dir': 'sources',
     'source_unpacked': '{package}-{version}',
+    'patch_ext': 'patch', # or diff
+    'patch_package': '{package}-{version}.{patch_ext}',
+    'patch_target': '{package}-{version}.{patch_ext}.applied',
     'prepare_script': 'configure',
     'prepare_script_options': '--prefix={install_dir}',
     'prepare_target': 'config.status',
@@ -167,6 +251,8 @@ def feature_autoconf(self):
     pfi = PackageFeatureInfo(self.package_name, 'autoconf', self.bld, autoconf_requirements)
 
     d_source = pfi.get_node('source_dir')
+    f_patch_applied = pfi.get_node('patch_target', d_source)
+
     d_unpacked = pfi.get_node('source_unpacked', d_source)
     f_prepare = pfi.get_node('prepare_script',d_unpacked)
     d_build = pfi.get_node('build_dir')
@@ -176,10 +262,9 @@ def feature_autoconf(self):
     d_prefix = pfi.get_node('install_dir')
     f_install_result = pfi.get_node('install_target', d_prefix)
 
-
     self.bld(name = pfi.format('{package}_prepare'),
              rule = "${SRC[0].abspath()} %s" % pfi.get_var('prepare_script_options'),
-             source = f_prepare,
+             source = [f_prepare, f_patch_applied],
              target = f_prepare_result,
              cwd = d_build.abspath(),
              depends_on = pfi.get_deps('prepare'),
