@@ -1,11 +1,17 @@
 #!/usr/bin/env python
 # encoding: utf-8
 
+## stdlib imports
 import os
 from glob import glob
+
+## 3rd party
 from . import pkgconf
 from . import features
 from . import envmunge
+
+## waf imports
+import waflib.Logs as msg
 
 # NOT from the waf book.  The waf book example for depends_on doesn't work
 from waflib import TaskGen
@@ -44,14 +50,16 @@ def configure(cfg):
     for lst in cfg.options.orch_config.split(','):
         lst = lst.strip()
         orch_config += glob(lst)
-    print ('Configuration files: %s' % ', '.join(orch_config))
+    cfg.start_msg('Orch configuration files')
+    cfg.end_msg(', '.join(orch_config))
 
     extra = dict(cfg.env)
     suite = pkgconf.load(orch_config, start = cfg.options.orch_start, **extra)
 
     envmunge.decompose(cfg, suite)
 
-    print ('Configure envs: %s' % cfg.all_envs)
+    cfg.start_msg('Orch configure envs')
+    cfg.end_msg(cfg.all_envs)
 
     bind_functions(cfg)
     return
@@ -63,10 +71,11 @@ def build(bld):
     bind_functions(bld)
 
     for grpname in bld.env.orch_group_list:
-        print ('Adding group: "%s"' % grpname)
+        msg.debug('Adding group: "%s"' % grpname)
         bld.add_group(grpname)
-
-    print ('Build envs: %s' % bld.all_envs)
+        pass
+    
+    msg.debug('Build envs: %s' % bld.all_envs)
 
     to_recurse = []
     for pkgname in bld.env.orch_package_list:
