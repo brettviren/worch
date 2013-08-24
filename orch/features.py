@@ -417,8 +417,12 @@ autoconf_requirements = {
     'prepare_script_options': '--prefix={install_dir}',
     'prepare_target': 'config.status',
     'build_dir': 'builds/{package}-{version}',
+    'build_cmd': 'make',
+    'build_cmd_options': None,
     'build_target': None,
     'install_dir': '{PREFIX}',
+    'install_cmd': 'make install',
+    'install_cmd_options': None,
     'install_target': None,
 }
 
@@ -447,7 +451,10 @@ def feature_autoconf(self):
              env = pfi.env)
 
     self.bld(name = pfi.format('{package}_build'),
-             rule = "make",
+             rule = "%s %s" % (
+                 pfi.get_var('build_cmd'),
+                 pfi.get_var('build_cmd_options') or '',
+                 ),
              source = f_prepare_result,
              target = f_build_result,
              cwd = d_build.abspath(),
@@ -455,7 +462,10 @@ def feature_autoconf(self):
              env = pfi.env)
 
     self.bld(name = pfi.format('{package}_install'),
-             rule = "make install",
+             rule = "%s %s" % (
+                 pfi.get_var('install_cmd'),
+                 pfi.get_var('install_cmd_options') or '',
+                 ),
              source = f_build_result,
              target = f_install_result,
              cwd = d_build.abspath(),
