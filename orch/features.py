@@ -1,9 +1,11 @@
 #!/usr/bin/env python
 # encoding: utf-8
 
+## stdlib imports
 from pprint import PrettyPrinter
 pp = PrettyPrinter(indent=2)
 
+## waflib imports
 from waflib import TaskGen
 
 class PackageFeatureInfo(object):
@@ -104,6 +106,7 @@ def get_unpacker(filename, dirname):
 tarball_requirements = {
     'source_urlfile': '{package}-{version}.url',
     'source_url': None,
+    'source_url_checksum': None, # md5:xxxxx, sha224:xxxx, sha256:xxxx, ...
     'srcpkg_ext': 'tar.gz',
     'source_package': '{package}-{version}.{srcpkg_ext}',
     'download_dir': 'downloads',
@@ -136,9 +139,32 @@ def feature_tarball(self):
              depends_on = pfi.get_deps('seturl'),
              env = pfi.env)
 
+    def dl_task(task):
+        src = task.inputs[0]
+        tgt = task.outputs[0]
+        cmd = "curl --insecure --silent -L --output %s %s" % (tgt.abspath(), src.read())
+        o = task.exec_command(cmd)
+        if o != 0:
+            return o
+        checksum = pfi.get_var('source_url_checksum')
+        if not checksum:
+            return o
+        hasher_name, ref = checksum.split(":")
+        import hashlib
+        # FIXME: check the hasher method exists. check for typos.
+        hasher = getattr(hashlib, hasher_name)()
+        hasher.update(tgt.read('rb'))
+        data= hasher.hexdigest()
+        if data != ref:
+            self.bld.fatal(
+                "[%s] invalid MD5 checksum:\nref: %s\nnew: %s"
+                % (pfi.format('{package}_download'), ref, data))
+        return o
+
     self.bld(name = pfi.format('{package}_download'),
-             rule = "curl --insecure --silent -L --output ${TGT} ${SRC[0].read()}",
-             source = f_urlfile, target = f_tarball,
+             rule = dl_task,
+             source = f_urlfile, 
+             target = f_tarball,
              depends_on = pfi.get_deps('download'),
              env = pfi.env)
 
