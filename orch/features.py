@@ -18,6 +18,8 @@ class PackageFeatureInfo(object):
         self.feature_name = feature_name
         self.pkgdata = ctx.all_envs[''].orch_package_dict[package_name]
         self.env = ctx.all_envs[package_name]
+        environ = self.env.munged_env
+        self.env.env = environ
 
         self.ctx = ctx
 
@@ -89,6 +91,16 @@ class PackageFeatureInfo(object):
                               step=step,dep=','.join(mine)))
         return mine
 
+@TaskGen.feature('dumpenv')
+def feature_dumpenv(self):
+    '''
+    Dump the environment
+    '''
+    pfi = PackageFeatureInfo(self.package_name, 'dumpenv', self.bld, dict())
+
+    self.bld(name = pfi.format('{package}_dumpenv'),
+             rule = "/bin/env | sort",
+             env = pfi.env)
 
 
 def get_unpacker(filename, dirname):
@@ -222,12 +234,16 @@ def feature_patch(self):
         o = task.exec_command(cmd)
         return o
     
-    self.bld(name = pfi.format('{package}_patch'), 
+    step_name = pfi.format('{package}_patch')
+    self.bld(name = step_name, 
              rule = apply_patch,
              source = f_patch,
              target = f_applied,
              depends_on = pfi.get_deps('patch'),
              env = pfi.env)
+
+    wait = self.bld.get_tgen_by_name(pfi.format('{package}_prepare'))
+    wait.depends_on.append(step_name)
 
     return
 
@@ -410,9 +426,6 @@ def feature_svn(self):
 autoconf_requirements = {
     'source_dir': 'sources',
     'source_unpacked': '{package}-{version}',
-    'patch_ext': 'patch', # or diff
-    'patch_package': '{package}-{version}.{patch_ext}',
-    'patch_target': '{package}-{version}.{patch_ext}.applied',
     'prepare_script': 'configure',
     'prepare_script_options': '--prefix={install_dir}',
     'prepare_target': 'config.status',
@@ -431,7 +444,6 @@ def feature_autoconf(self):
     pfi = PackageFeatureInfo(self.package_name, 'autoconf', self.bld, autoconf_requirements)
 
     d_source = pfi.get_node('source_dir')
-    f_patch_applied = pfi.get_node('patch_target', d_source)
 
     d_unpacked = pfi.get_node('source_unpacked', d_source)
     f_prepare = pfi.get_node('prepare_script',d_unpacked)
@@ -444,7 +456,7 @@ def feature_autoconf(self):
 
     self.bld(name = pfi.format('{package}_prepare'),
              rule = "${SRC[0].abspath()} %s" % pfi.get_var('prepare_script_options'),
-             source = [f_prepare, f_patch_applied],
+             source = f_prepare,
              target = f_prepare_result,
              cwd = d_build.abspath(),
              depends_on = pfi.get_deps('prepare'),
