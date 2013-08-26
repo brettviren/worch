@@ -192,10 +192,11 @@ def feature_patch(self):
     '''
     Apply a patch on the unpacked sources.
     '''
-    reqs = dict(patch_requirements)
-    reqs.update(tarball_requirements)
+    reqs = dict(patch_requirements, **tarball_requirements)
     pfi = PackageFeatureInfo(self.package_name, 'patch', self.bld, reqs)
 
+    if not pfi('patch_url'):
+        return
 
     f_urlfile = pfi.get_node('patch_urlfile')
     d_patch = pfi.get_node('source_dir')
@@ -206,18 +207,6 @@ def feature_patch(self):
     d_unpacked = pfi.get_node('source_unpacked', d_source)
     f_unpack = pfi.get_node('unpacked_target', d_unpacked)
     
-    if not pfi('patch_url'):
-        self.bld(
-            name = pfi.format('{package}_patch'),
-            rule = 'touch ${TGT[0].abspath()}',
-            source = f_unpack,
-            target = f_applied,
-            update_outputs = True,
-            depends_on = pfi.get_deps('patch'),
-            env = pfi.env,
-            )
-        return
-
     self.bld(name = pfi.format('{package}_urlpatch'),
              rule = "echo %s > ${TGT}" % pfi('patch_url'), 
              update_outputs = True,
@@ -255,6 +244,9 @@ def feature_patch(self):
              depends_on = pfi.get_deps('patch'),
              env = pfi.env)
 
+    # make sure {package}_prepare will wait for us to be done.
+    tsk = self.bld.get_tgen_by_name(pfi.format('{package}_prepare'))
+    tsk.depends_on.append(pfi.format('{package}_patch'))
     return
 
 git_requirements = {
@@ -457,8 +449,6 @@ def feature_autoconf(self):
     pfi = PackageFeatureInfo(self.package_name, 'autoconf', self.bld, autoconf_requirements)
 
     d_source = pfi.get_node('source_dir')
-    f_patch_applied = pfi.get_node('patch_target', d_source)
-
     d_unpacked = pfi.get_node('source_unpacked', d_source)
     f_prepare = pfi.get_node('prepare_script',d_unpacked)
     d_build = pfi.get_node('build_dir')
@@ -470,7 +460,7 @@ def feature_autoconf(self):
 
     self.bld(name = pfi.format('{package}_prepare'),
              rule = "${SRC[0].abspath()} %s" % pfi.get_var('prepare_script_options'),
-             source = [f_prepare, f_patch_applied],
+             source = f_prepare,
              target = f_prepare_result,
              cwd = d_build.abspath(),
              depends_on = pfi.get_deps('prepare'),
