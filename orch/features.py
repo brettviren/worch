@@ -162,7 +162,7 @@ def feature_tarball(self):
             web = urlopen(url)
             tgt.write(web.read(),'wb')
         except Exception:
-            self.fatal("[%s] problem downloading [%s]" % (pfi.format('{package}_download'), url))
+            self.bld.fatal("[%s] problem downloading [%s]" % (pfi.format('{package}_download'), url))
             raise
 
         checksum = pfi.get_var('source_url_checksum')
