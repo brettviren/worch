@@ -4,6 +4,9 @@
 ## stdlib imports
 from pprint import PrettyPrinter
 pp = PrettyPrinter(indent=2)
+try:    from urllib import request
+except: from urllib import urlopen
+else:   urlopen = request.urlopen
 
 ## waflib imports
 from waflib import TaskGen
@@ -154,13 +157,17 @@ def feature_tarball(self):
     def dl_task(task):
         src = task.inputs[0]
         tgt = task.outputs[0]
-        cmd = "curl --insecure --silent -L --output %s %s" % (tgt.abspath(), src.read())
-        o = task.exec_command(cmd)
-        if o != 0:
-            return o
+        url = src.read().strip()
+        try:
+            web = urlopen(url)
+            tgt.write(web.read(),'wb')
+        except Exception:
+            self.fatal("[%s] problem downloading [%s]" % (pfi.format('{package}_download'), url))
+            raise
+
         checksum = pfi.get_var('source_url_checksum')
         if not checksum:
-            return o
+            return
         hasher_name, ref = checksum.split(":")
         import hashlib
         # FIXME: check the hasher method exists. check for typos.
@@ -171,7 +178,7 @@ def feature_tarball(self):
             self.bld.fatal(
                 "[%s] invalid MD5 checksum:\nref: %s\nnew: %s"
                 % (pfi.format('{package}_download'), ref, data))
-        return o
+        return
 
     self.bld(name = pfi.format('{package}_download'),
              rule = dl_task,
