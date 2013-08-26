@@ -2,12 +2,35 @@
 
 import os
 from glob import glob
-from orch import deconf, envmunge
+import sys
+sys.path.insert(0, '/'.join(os.path.realpath(__file__).split('/')[:-2] + ['orch']))
+import deconf, envmunge
 
 from pprint import PrettyPrinter
 pp = PrettyPrinter(indent=2)
 
 example_dir = '/'.join(os.path.realpath(__file__).split('/')[:-2] + ['examples'])
+
+
+class FakeEnv(object):
+    def __init__(self, **kwds):
+        self.__dict__.update(**kwds)
+    def __setattr__(self, name, value):
+        self.__dict__[name] = value
+    def derive(self):
+        return FakeEnv(**self.__dict__)
+    def __str__(self):
+        return str(self.__dict__)
+    def __repr__(self):
+        return str(self.__dict__)
+
+class FakeCfg(object):
+    def __init__(self):
+        self.env = FakeEnv()
+    def setenv(self, name, value):
+        self.__dict__[name] = value
+    def __str__(self):
+        return (self.__dict__)
 
 def test_envmunge():
     print example_dir
@@ -17,20 +40,29 @@ def test_envmunge():
                         formatter = deconf.example_formatter)
     pp.pprint(suite)
 
-    groups, packages = envmunge.decompose_grp_pkg(suite)
-    assert set(groups.keys()) == set(['gnuprograms','buildtools'])
+    cfg = FakeCfg()
+    envmunge.decompose(cfg, suite)
+    pp.pprint(cfg.env.__dict__)
+
+def test_envmunger():
+    print example_dir
+    cfgs = glob('%s/test_envmunge.cfg'%example_dir)
+    print 'Using config files: %s' % str(cfgs)
+    suite = deconf.load(cfgs,
+                        formatter = deconf.example_formatter)
+    pp.pprint(suite)
+
+    cfg = FakeCfg()
+    envmunge.decompose(cfg, suite)
+    newenv = cfg.env.envmunger(os.environ)
+    for var,newv in sorted(newenv.items()):
+        oldv = os.environ.get(var,'')
+        if newv == oldv:
+            continue
+        print '%s: "%s" --> "%s"' % (var, oldv, newv)
     
-    for grp_name, grp in groups.items():
-        needenv = grp.get('environment')
-        if needenv:
-            env = dict(os.environ)
-            oldPATH = env.get('PATH')
-            envmunge.add_environment(needenv, env, groups, packages)
-            newPATH = env.get('PATH')
-            assert len(oldPATH) < len(newPATH)
-            print 'Environment set from "%s":' % needenv
-            print 'PATH: %s --> %s' % (oldPATH, newPATH)
+
 
 if '__main__' == __name__:
-    test_envmunge()
+    test_envmunger()
 
