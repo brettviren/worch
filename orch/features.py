@@ -10,6 +10,7 @@ else:   urlopen = request.urlopen
 
 ## waflib imports
 from waflib import TaskGen
+import waflib.Errors
 
 class PackageFeatureInfo(object):
     '''
@@ -162,8 +163,9 @@ def feature_tarball(self):
             web = urlopen(url)
             tgt.write(web.read(),'wb')
         except Exception:
+            import traceback
+            traceback.print_exc()
             self.bld.fatal("[%s] problem downloading [%s]" % (pfi.format('{package}_download'), url))
-            raise
 
         checksum = pfi.get_var('source_url_checksum')
         if not checksum:
@@ -234,8 +236,20 @@ def feature_patch(self):
              depends_on = pfi.get_deps('patch') + [pfi.format('{package}_unpack')],
              env = pfi.env)
 
+    def dl_task(task):
+        src = task.inputs[0]
+        tgt = task.outputs[0]
+        url = src.read().strip()
+        try:
+            web = urlopen(url)
+            tgt.write(web.read(),'wb')
+        except Exception:
+            import traceback
+            traceback.print_exc()
+            self.bld.fatal("[%s] problem downloading [%s]" % (pfi.format('{package}_dlpatch'), url))
+
     self.bld(name = pfi.format('{package}_dlpatch'),
-             rule = "curl --insecure --silent -L --output ${TGT} ${SRC[0].read()}",
+             rule = dl_task,
              source = f_urlfile,
              target = f_patch,
              depends_on = pfi.get_deps('dlpatch'),
