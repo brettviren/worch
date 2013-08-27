@@ -4,9 +4,13 @@
 ## stdlib imports
 from pprint import PrettyPrinter
 pp = PrettyPrinter(indent=2)
+try:    from urllib import request
+except: from urllib import urlopen
+else:   urlopen = request.urlopen
 
 ## waflib imports
 from waflib import TaskGen
+import waflib.Errors
 
 class PackageFeatureInfo(object):
     '''
@@ -154,13 +158,18 @@ def feature_tarball(self):
     def dl_task(task):
         src = task.inputs[0]
         tgt = task.outputs[0]
-        cmd = "curl --insecure --silent -L --output %s %s" % (tgt.abspath(), src.read())
-        o = task.exec_command(cmd)
-        if o != 0:
-            return o
+        url = src.read().strip()
+        try:
+            web = urlopen(url)
+            tgt.write(web.read(),'wb')
+        except Exception:
+            import traceback
+            traceback.print_exc()
+            self.bld.fatal("[%s] problem downloading [%s]" % (pfi.format('{package}_download'), url))
+
         checksum = pfi.get_var('source_url_checksum')
         if not checksum:
-            return o
+            return
         hasher_name, ref = checksum.split(":")
         import hashlib
         # FIXME: check the hasher method exists. check for typos.
@@ -171,7 +180,7 @@ def feature_tarball(self):
             self.bld.fatal(
                 "[%s] invalid MD5 checksum:\nref: %s\nnew: %s"
                 % (pfi.format('{package}_download'), ref, data))
-        return o
+        return
 
     self.bld(name = pfi.format('{package}_download'),
              rule = dl_task,
@@ -227,8 +236,20 @@ def feature_patch(self):
              depends_on = pfi.get_deps('patch') + [pfi.format('{package}_unpack')],
              env = pfi.env)
 
+    def dl_task(task):
+        src = task.inputs[0]
+        tgt = task.outputs[0]
+        url = src.read().strip()
+        try:
+            web = urlopen(url)
+            tgt.write(web.read(),'wb')
+        except Exception:
+            import traceback
+            traceback.print_exc()
+            self.bld.fatal("[%s] problem downloading [%s]" % (pfi.format('{package}_dlpatch'), url))
+
     self.bld(name = pfi.format('{package}_dlpatch'),
-             rule = "curl --insecure --silent -L --output ${TGT} ${SRC[0].read()}",
+             rule = dl_task,
              source = f_urlfile,
              target = f_patch,
              depends_on = pfi.get_deps('dlpatch'),
