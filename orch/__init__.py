@@ -49,7 +49,7 @@ def bind_functions(ctx):
 # using a customized wscript which needs to use "orch" as a tool
 
 def configure(cfg):
-    print ('ORCH CONFIG CALLED')
+    #print ('ORCH CONFIG CALLED')
 
     if not cfg.options.orch_config:
         raise RuntimeError('No Orchestration configuration file given (--orch-config)')
@@ -72,7 +72,7 @@ def configure(cfg):
     return
 
 def build(bld):
-    print ('ORCH BUILD CALLED')
+    #print ('ORCH BUILD CALLED')
 
     from waflib.Build import POST_LAZY, POST_BOTH, POST_AT_ONCE
     bld.post_mode = POST_BOTH # don't fuck with this
