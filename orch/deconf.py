@@ -106,8 +106,10 @@ def add_includes(cfg, sec):
     if not cfg.has_option(sec,'includes'):
         return
 
-    inc_list = to_list(cfg.get(sec,'includes'))
+    inc_val = cfg.get(sec,'includes')
+    inc_list = to_list(inc_val)
     if not inc_list:
+        raise ValueError, 'Not includes: "%s"' % inc_val
         return
 
     to_check = ['.']
@@ -115,13 +117,15 @@ def add_includes(cfg, sec):
         already_read = cfg.files
         if isinstance(already_read, type('')):
             already_read = [already_read]
-        other_dirs = map(os.path.dirname, already_read)
+        other_dirs = map(os.path.realpath, map(os.path.dirname, already_read))
         to_check += other_dirs
     to_check += os.environ.get('DECONF_INCLUDE_PATH','').split(':')
 
     for fname in inc_list:
         fpath = find_file(fname, other_dirs)
         if not fpath:
+            raise ValueError, 'Failed to locate file: %s (%s)' % \
+                (fname, ':'.join(other_dirs))
             continue
         cfg.read(fpath)
         if hasattr(cfg, 'files'):
