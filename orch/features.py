@@ -39,8 +39,9 @@ class PackageFeatureInfo(object):
         group = self.get_var('group')
         self.ctx.set_group(group)
 
-        print ('Feature: "{feature}" for package "{package}/{version}" in group "{group}"'.\
-            format(feature = feature_name, **self.pkgdata))
+        #print ('Feature: "{feature}" for package "{package}/{version}" in group "{group}"'.\
+        #    format(feature = feature_name, **self.pkgdata))
+        #print ('Environment: %s' % '\n'.join(['%s: %s' % kv for kv in self.env.env.items()]))
 
     def __call__(self, name):
         return self.get_var(name)
@@ -149,6 +150,7 @@ def feature_tarball(self):
     d_unpacked = pfi.get_node('source_unpacked', d_source)
     f_unpack = pfi.get_node('unpacked_target', d_unpacked)
 
+    #print ('source_url: "%s" -> urlfile: "%s"' % (pfi('source_url'), f_urlfile))
     self.bld(name = pfi.format('{package}_seturl'),
              rule = "echo %s > ${TGT}" % pfi('source_url'), 
              update_outputs = True, target = f_urlfile,

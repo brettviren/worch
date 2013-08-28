@@ -12,7 +12,7 @@ pp = PrettyPrinter(indent=2)
 example_dir = '/'.join(os.path.realpath(__file__).split('/')[:-2] + ['examples'])
 
 
-class FakeEnv(object):
+class FakeEnv:
     def __init__(self, **kwds):
         self.__dict__.update(**kwds)
     def __setattr__(self, name, value):
@@ -24,7 +24,7 @@ class FakeEnv(object):
     def __repr__(self):
         return str(self.__dict__)
 
-class FakeCfg(object):
+class FakeCfg:
     def __init__(self):
         self.env = FakeEnv()
     def setenv(self, name, value):
@@ -62,7 +62,20 @@ def test_envmunger():
         print '%s: "%s" --> "%s"' % (var, oldv, newv)
     
 
+def test_export():
+    'Test the export_ mechanism'
+    suite = deconf.load(os.path.join(example_dir, 'test_envmunge.cfg'),
+                        formatter = deconf.example_formatter)
+    cfg = FakeCfg()
+    envmunge.decompose(cfg, suite)
+    for pkg,env in cfg.__dict__.items():
+        if pkg == 'env': continue
+        me = env.__dict__['munged_env']
+        for var in ['PATH','ENVMUNGE','GROUP','PACKAGE']:
+            print 'PKGENV:', pkg, var, me.get(var,"(not set)")
+
+
 
 if '__main__' == __name__:
-    test_envmunger()
-
+#    test_envmunger()
+    test_export()

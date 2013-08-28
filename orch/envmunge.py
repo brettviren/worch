@@ -57,6 +57,7 @@ def make_envmungers_from_package(pkg, prefix='export_'):
     ret = defaultdict(list)
     for key, value in pkg.items():
         if not key.startswith(prefix):
+            #print ('Skipping key: "%s", not start with "%s"' % (key, prefix))
             continue
         var = key.split('_',1)[1]
         mun = make_var_munger(value)
@@ -191,9 +192,10 @@ def decompose(cfg, suite):
     base_env.orch_package_dict = pd
 
     for pkg_name, pkg in pd.items():
-        cfg.setenv(pkg_name, base_env.derive())
+        new_env = base_env.derive()
         mungers = make_envmungers(pkg, pd)
-        cfg.env.munged_env = apply_envmungers(os.environ, mungers)
+        new_env.munged_env = apply_envmungers(os.environ, mungers)
+        cfg.setenv(pkg_name, new_env)
 
     return
 
