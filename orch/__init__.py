@@ -12,6 +12,7 @@ from . import envmunge
 
 ## waf imports
 import waflib.Logs as msg
+import waflib.Utils
 
 # NOT from the waf book.  The waf book example for depends_on doesn't work
 from waflib import TaskGen
