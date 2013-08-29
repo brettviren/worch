@@ -57,16 +57,14 @@ def configure(cfg):
     for lst in cfg.options.orch_config.split(','):
         lst = lst.strip()
         orch_config += glob(lst)
-    cfg.start_msg('Orch configuration files')
-    cfg.end_msg(', '.join(orch_config))
+    cfg.msg('Orch configuration files', ', '.join(orch_config))
 
     extra = dict(cfg.env)
     suite = pkgconf.load(orch_config, start = cfg.options.orch_start, **extra)
 
     envmunge.decompose(cfg, suite)
 
-    cfg.start_msg('Orch configure envs')
-    cfg.end_msg(cfg.all_envs)
+    cfg.msg('Orch configure envs', cfg.all_envs)
 
     bind_functions(cfg)
     return
@@ -80,11 +78,11 @@ def build(bld):
     bind_functions(bld)
 
     for grpname in bld.env.orch_group_list:
-        msg.debug('Adding group: "%s"' % grpname)
+        msg.debug('orch: Adding group: "%s"' % grpname)
         bld.add_group(grpname)
         pass
     
-    msg.debug('Build envs: %s' % bld.all_envs)
+    msg.debug('orch: Build envs: %s' % bld.all_envs)
 
     to_recurse = []
     for pkgname in bld.env.orch_package_list:
@@ -94,7 +92,14 @@ def build(bld):
             to_recurse.append(pkgname)
             continue
         feat = pkgdata.get('features')
-        bld(name = '%s_%s' % (pkgname, feat.replace(' ','_')), features = feat, package_name = pkgname)
+        bld(
+            name = '%s_%s' % (pkgname, feat.replace(' ','_')),
+            features = feat,
+            package_name = pkgname,
+            )
     if to_recurse:
         bld.recurse(to_recurse)
+    #tsk = bld.get_tgen_by_name('bc_download')
+    #msg.debug('orch: task=%s' % tsk)
+    msg.debug ('orch: BUILD CALLED [done]')
 
