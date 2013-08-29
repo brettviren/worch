@@ -22,7 +22,7 @@ def _worch_exec_command(task, cmd, **kw):
      - printout the content of that file when the command fails
     '''
     msg.debug('orch: %s...' % task.name)
-    cwd = getattr(task, 'cwd', task.generator.bld.path.abspath())
+    cwd = getattr(task, 'cwd', task.generator.bld.out_dir)
     flog = open(osp.join(cwd, "worch_%s.log.txt" % task.name), 'w')
     cmd_dict = dict(kw)
     cmd_dict.update({
@@ -382,6 +382,7 @@ def feature_git(self):
              source = f_urlfile,
              target = f_unpack,
              depends_on = pfi.get_deps('checkout'),
+             cwd = d_source.abspath(),
              env = pfi.env)
 
     return
@@ -447,6 +448,7 @@ def feature_hg(self):
              source = f_urlfile,
              target = f_unpack,
              depends_on = pfi.get_deps('checkout'),
+             cwd = d_source.abspath(),
              env = pfi.env)
 
     return
@@ -511,6 +513,7 @@ def feature_svn(self):
              source = f_urlfile,
              target = f_unpack,
              depends_on = pfi.get_deps('checkout'),
+             cwd = d_source.abspath(),
              env = pfi.env)
 
     return
