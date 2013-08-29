@@ -27,6 +27,7 @@ def _worch_exec_command(task, cmd, **kw):
     cmd_dict = dict(kw)
     cmd_dict.update({
         'cwd': cwd,
+        'env': kw.get('env', task.env.env),
         'stdout': flog,
         'stderr': flog,
         })
