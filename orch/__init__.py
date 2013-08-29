@@ -57,14 +57,14 @@ def configure(cfg):
     for lst in cfg.options.orch_config.split(','):
         lst = lst.strip()
         orch_config += glob(lst)
-    cfg.msg('Orch configuration files', ', '.join(orch_config))
+    cfg.msg('Orch configuration files', '"%s"' % '", "'.join(orch_config))
 
     extra = dict(cfg.env)
     suite = pkgconf.load(orch_config, start = cfg.options.orch_start, **extra)
 
     envmunge.decompose(cfg, suite)
 
-    cfg.msg('Orch configure envs', ', '.join(cfg.all_envs.keys()))
+    cfg.msg('Orch configure envs', '"%s"' % '", "'.join(cfg.all_envs.keys()))
 
     bind_functions(cfg)
     return
