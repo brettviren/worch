@@ -79,6 +79,7 @@ Notes:
  - multiple configuration files are given; they are effectively concatenated.  
  - the =./tmp= directory is created as directed by the =out= variable in the main =wscript= file and holds all intermediate build files
  - if the =configure= step is repeated it requires repetition of the options as well.
+ - =--zones=orch= can be passed (to =configure= and =build=) to get more verbose output from =waf=.
 
 *** Build
 
