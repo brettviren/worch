@@ -22,26 +22,21 @@ class PackageFeatureInfo(object):
     def __init__(self, package_name, feature_name, ctx, defaults):
         self.package_name = package_name
         self.feature_name = feature_name
-        self.pkgdata = ctx.all_envs[''].orch_package_dict[package_name]
         self.env = ctx.all_envs[package_name]
         environ = self.env.munged_env
         self.env.env = environ
 
         self.ctx = ctx
 
-        # fixme: this is confusing
-        self.defs = defaults
-        f = dict(self.defs)
-        f.update(dict(self.ctx.env))
-        f.update(self.pkgdata)
+        # build up parameters starting with defaults from the "requirements"
+        f = dict(defaults)      
+        f.update(dict(self.ctx.env)) # waf env 
+        # and final override by the configuration file data
+        f.update(ctx.all_envs[''].orch_package_dict[package_name])
         self._data = f
 
         group = self.get_var('group')
         self.ctx.set_group(group)
-
-        #print ('Feature: "{feature}" for package "{package}/{version}" in group "{group}"'.\
-        #    format(feature = feature_name, **self.pkgdata))
-        #print ('Environment: %s' % '\n'.join(['%s: %s' % kv for kv in self.env.env.items()]))
 
     def __call__(self, name):
         return self.get_var(name)
@@ -52,7 +47,7 @@ class PackageFeatureInfo(object):
         return string.format(**d)
 
     def get_var(self, name):
-        val = self.pkgdata.get(name, self.defs.get(name))
+        val = self._data.get(name)
         if not val: return
         return self.check_return(name, self.format(val))
 
@@ -77,12 +72,12 @@ class PackageFeatureInfo(object):
             #    format(varname=name, value=ret, full=full, **self._data)
             return ret
         raise ValueError(
-            'Failed to get "%s" for package "%s"' % 
-            (name, self.pkgdata['package'])
+            'Failed to get "%s" for package "%s" (keys: %s)' % 
+            (name, self._data['package'], ', '.join(sorted(self._data.keys())))
             )
 
     def get_deps(self, step):
-        deps = self.pkgdata.get('depends')
+        deps = self._data.get('depends')
         if not deps: return list()
         mine = []
         for dep in [x.strip() for x in deps.split(',')]:
