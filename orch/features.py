@@ -11,6 +11,7 @@ else:   urlopen = request.urlopen
 ## waflib imports
 from waflib import TaskGen
 import waflib.Errors
+import waflib.Logs as msg
 
 class PackageFeatureInfo(object):
     '''
@@ -39,7 +40,8 @@ class PackageFeatureInfo(object):
         group = self.get_var('group')
         self.ctx.set_group(group)
 
-        print ('Feature: "{feature}" for package "{package}/{version}" in group "{group}"'.\
+        msg.debug(
+            'orch: Feature: "{feature}" for package "{package}/{version}" in group "{group}"'.
             format(feature = feature_name, **self.pkgdata))
 
     def __call__(self, name):
@@ -72,8 +74,8 @@ class PackageFeatureInfo(object):
             #     full = ret.abspath()
             # except AttributeError:
             #     full = ''
-            #print 'Variable for {package}/{version}: {varname} = {value} ({full})'.\
-            #    format(varname=name, value=ret, full=full, **self._data)
+            #msg.debug('orch: Variable for {package}/{version}: {varname} = {value} ({full})'.\
+            #    format(varname=name, value=ret, full=full, **self._data))
             return ret
         raise ValueError(
             'Failed to get "%s" for package "%s"' % 
@@ -93,8 +95,10 @@ class PackageFeatureInfo(object):
             else:
                 mine.append(dep)
         if mine:
-            print (self.format('Package {package} step "{step}" depends: "{dep}"',
-                              step=step,dep=','.join(mine)))
+            msg.debug(
+                self.format('orch: Package {package} step "{step}" depends: "{dep}"',
+                            step=step,dep=','.join(mine))
+                )
         return mine
 
 @TaskGen.feature('dumpenv')

@@ -20,11 +20,11 @@ from waflib import TaskGen
 def post_the_other(self):
     deps = getattr(self, 'depends_on', []) 
     for name in self.to_list(deps):
-        print ('DEPENDS_ON: %s %s' % ( self.name, name ))
+        msg.debug('orch: DEPENDS_ON: %s %s' % ( self.name, name ))
         other = self.bld.get_tgen_by_name(name) 
         other.post()
         for ot in other.tasks:
-            print ('OTHER TASK: %s before: %s' % (ot, ot.before))
+            msg.debug('orch: OTHER TASK: %s before: %s' % (ot, ot.before))
             ot.before.append(self.name)
 
 
@@ -49,7 +49,7 @@ def bind_functions(ctx):
 # using a customized wscript which needs to use "orch" as a tool
 
 def configure(cfg):
-    print ('ORCH CONFIG CALLED')
+    msg.debug('orch: CONFIG CALLED')
 
     if not cfg.options.orch_config:
         raise RuntimeError('No Orchestration configuration file given (--orch-config)')
@@ -72,7 +72,7 @@ def configure(cfg):
     return
 
 def build(bld):
-    print ('ORCH BUILD CALLED')
+    msg.debug ('orch: BUILD CALLED')
 
     from waflib.Build import POST_LAZY, POST_BOTH, POST_AT_ONCE
     bld.post_mode = POST_BOTH # don't fuck with this
