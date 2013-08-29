@@ -64,7 +64,7 @@ def configure(cfg):
 
     envmunge.decompose(cfg, suite)
 
-    cfg.msg('Orch configure envs', cfg.all_envs)
+    cfg.msg('Orch configure envs', ', '.join(cfg.all_envs.keys()))
 
     bind_functions(cfg)
     return
@@ -82,7 +82,7 @@ def build(bld):
         bld.add_group(grpname)
         pass
     
-    msg.debug('orch: Build envs: %s' % bld.all_envs)
+    msg.debug('orch: Build envs: %s' % ', '.join(bld.all_envs.keys()))
 
     to_recurse = []
     for pkgname in bld.env.orch_package_list:
