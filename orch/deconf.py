@@ -109,7 +109,7 @@ def add_includes(cfg, sec):
     inc_val = cfg.get(sec,'includes')
     inc_list = to_list(inc_val)
     if not inc_list:
-        raise ValueError, 'Not includes: "%s"' % inc_val
+        raise ValueError('Not includes: "%s"' % inc_val)
         return
 
     to_check = ['.']
@@ -124,9 +124,10 @@ def add_includes(cfg, sec):
     for fname in inc_list:
         fpath = find_file(fname, other_dirs)
         if not fpath:
-            raise ValueError, 'Failed to locate file: %s (%s)' % \
+            raise ValueError(
+                'Failed to locate file: %s (%s)' % 
                 (fname, ':'.join(other_dirs))
-            continue
+                )
         cfg.read(fpath)
         if hasattr(cfg, 'files'):
             cfg.files.append(fpath)
