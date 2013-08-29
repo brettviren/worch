@@ -1,0 +1,60 @@
+#!/usr/bin/env python
+# encoding: utf-8
+
+import os
+from orch import features
+
+# we expect the tarball feature to be configured so that the
+# source_unpacked is in the build directory as we must do an
+# in-source build for tbb.
+requirements = dict(
+    build_dir = 'builds/{source_unpacked}',
+    build_target = 'crappy-build-system',
+    install_target = 'lib/libtbb.so',
+)
+
+tbb_feature_name = 'tbbbuild'
+@features.TaskGen.feature(tbb_feature_name)
+def feature_tbbbuild(self):
+    pfi = features.PackageFeatureInfo(
+        self.package_name, tbb_feature_name, self.bld, requirements)
+
+    d_build = pfi.get_node('build_dir')
+    f_unpacked_result = pfi.get_node('unpacked_target', d_build)
+    f_build_result = pfi.get_node('build_target', d_build)
+
+    d_prefix = pfi.get_node('install_dir')
+    f_install_result = pfi.get_node('install_target', d_prefix)
+
+    flag = f_build_result.abspath() # pfi.get_var('build_target')
+    self.bld(name = pfi.format('{package}_build'),
+             rule = "(cd src && make cpp0x=1 tbb_release) && touch %s" % flag,
+             source = f_unpacked_result,
+             target = f_build_result,
+             cwd = d_build.abspath(),
+             depends_on = pfi.get_deps('build'),
+             env = pfi.env)
+
+    install_lib_dir = os.path.dirname(f_install_result.abspath())
+    rule = 'mkdir -p %s && cp build/*_release/libtbb* %s/' % (install_lib_dir,install_lib_dir)
+    self.bld(name = pfi.format('{package}_install'),
+             rule = rule,
+             source = f_build_result,
+             target = f_install_result,
+             cwd = d_build.abspath(),
+             depends_on = pfi.get_deps('install'),
+             env = pfi.env)
+
+def build(bld):
+    pkgname = 'tbb'
+
+    print ('Hi, I am %s' % pkgname.upper())
+    print ('\n'.join(['%s:%s' % kv for kv in bld.__dict__.items()]))
+
+    pkgdata = bld.env.orch_package_dict[pkgname]
+    feats =  tbb_feature_name + ' ' + pkgdata.get('features')
+    bld(name = '%s_%s' % (pkgname, feats.replace(' ','_')), 
+        features = feats, package_name = pkgname)
+
+
+    
