@@ -73,7 +73,7 @@ class PackageFeatureInfo(object):
 
         msg.debug(
             'orch: Feature: "{feature}" for package "{package}/{version}" in group "{group}"'.
-            format(feature = feature_name, **self.pkgdata))
+            format(feature = feature_name, **self._data))
 
     def __call__(self, name):
         return self.get_var(name)
