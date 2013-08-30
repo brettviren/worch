@@ -101,6 +101,7 @@ def resolve_packages(all_packages, desclist):
     if isinstance(desclist, type("")):
         desclist = [x.strip() for x in desclist.split(',')]
     ret = []
+
     for req in desclist:
         what,name = req.split(':')
         if what == 'package':
@@ -158,7 +159,8 @@ def make_envmungers(pkg, all_packages):
             autoenv.append('group:%s' % what)
 
     if pkg.get('environment'):
-        autoenv.extend(pkg.get('environment'))
+        en = pkg.get('environment')
+        autoenv.extend([x.strip() for x in en.split(',')])
         
     for other_pkg in resolve_packages(all_packages, autoenv):
         new = make_envmungers_from_package(other_pkg)
