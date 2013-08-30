@@ -45,6 +45,7 @@ def bind_functions(ctx):
     ctx.orch_pkgdata = lambda name, var=None: \
                        features.get_pkgdata(ctx.env.orch_package_dict, name, var)
 
+
 # fixme: to make recursion more sensible, most of configure() and
 # build() should go in ../wscript.  Otherwise there are problems with
 # using a customized wscript which needs to use "orch" as a tool
@@ -103,4 +104,3 @@ def build(bld):
     #tsk = bld.get_tgen_by_name('bc_download')
     #msg.debug('orch: task=%s' % tsk)
     msg.debug ('orch: BUILD CALLED [done]')
-
