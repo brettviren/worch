@@ -48,9 +48,6 @@ def feature_tbbbuild(self):
 def build(bld):
     pkgname = 'tbb'
 
-    print ('Hi, I am %s' % pkgname.upper())
-    print ('\n'.join(['%s:%s' % kv for kv in bld.__dict__.items()]))
-
     pkgdata = bld.env.orch_package_dict[pkgname]
     feats =  tbb_feature_name + ' ' + pkgdata.get('features')
     bld(name = '%s_%s' % (pkgname, feats.replace(' ','_')), 
