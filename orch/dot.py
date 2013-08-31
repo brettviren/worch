@@ -79,6 +79,10 @@ def make(bld):
     '''
     Return a graph of the task dependencies
     '''
+
+    # Explicit posting of the top level task generators, which are
+    # features, is needed so they can run an produce their (sub) task
+    # generators
     for tg in bld.get_all_task_gen():
         tg.post()
 
