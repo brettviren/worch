@@ -1,4 +1,5 @@
 import os
+import waflib
 
 class Dotter:
     def __init__(self, fname):
@@ -32,10 +33,14 @@ class Dotter:
         self.fp.write('\t"%s" -> "%s";\n' % (tail, head))
 
 
-def write(bld, fname):
+def write(bld, dot_fname):
     '''
-    Write a dot digraph file for the given build context <bld> into file name <fname>.
+    Write a dot digraph file for the given build context <bld> into file name <dot_fname>.
     '''
+
+    # Explicit posting of the top level task generators, which are
+    # features, is needed so they can run an produce their (sub) task
+    # generators
     for tg in bld.get_all_task_gen():
         tg.post()
 
@@ -48,8 +53,8 @@ def write(bld, fname):
     task_names = set()
     file_names = set()
     packages = set()
-    graph_name = os.path.splitext(os.path.basename(fname))[0]
-    with Dotter(fname) as graph:
+    graph_name = os.path.splitext(os.path.basename(dot_fname))[0]
+    with Dotter(dot_fname) as graph:
         graph.start_graph(graph_name)
 
         for tg in bld.get_all_task_gen():
@@ -64,24 +69,37 @@ def write(bld, fname):
             if tg not in task_names:
                 task_names.add(tg.name)
                 graph.add_node(tg.name)
+
             if hasattr(tg,'depends_on') and tg.depends_on:
                 deps = tg.depends_on
                 if isinstance(deps, type('')):
                     deps = [tg.depends_on]
                 for dep in deps:
                     graph.add_edge(dep, tg.name)
+
             if hasattr(tg, 'source') and tg.source:
-                fname = tg.source.nice_path()
-                if fname not in file_names:
-                    file_names.add(fname)
-                    graph.add_node(fname, shape='box')
-                graph.add_edge(fname, tg.name)
+                #print 'SOURCE', type(tg.source),tg.source
+                source = tg.source
+                if not isinstance(source, list):
+                    source = [source]
+                for fname in source:
+                    fname = fname.nice_path()
+                    if fname not in file_names:
+                        file_names.add(fname)
+                        graph.add_node(fname, shape='box')
+                    graph.add_edge(fname, tg.name)
+
             if hasattr(tg, 'target') and tg.target:
-                fname = tg.target.nice_path()
-                if fname not in file_names:
-                    file_names.add(fname)
-                    graph.add_node(fname, shape='box')
-                graph.add_edge(tg.name, fname)
+                #print 'TARGET', type(tg.target),tg.target
+                target = tg.target
+                if not isinstance(target, list):
+                    target = [target]
+                for fname in target:
+                    fname = fname.nice_path()
+                    if fname not in file_names:
+                        file_names.add(fname)
+                        graph.add_node(fname, shape='box')
+                    graph.add_edge(tg.name, fname)
             continue
 
         # loop over groups
