@@ -18,7 +18,7 @@ def opt_to_str(options):
 class Graph(object):
     def __init__(self, name, **options):
         self.name = name
-        self.options = options or dict()
+        self.options = options
         self.subgraphs = OrderedDict()
         self.nodes = set()
         self.edges = set()
@@ -32,6 +32,10 @@ class Graph(object):
         return g
 
     def add_subgraph(self, name, **options):
+        already = self.subgraphs.get(name)
+        if already:
+            already.options = options
+            return
         self.subgraphs[name] = g = Graph(name, **options)
         return g
 
@@ -50,7 +54,7 @@ class Graph(object):
         graphtype = "digraph "
         if depth:
             graphtype = "subgraph cluster"
-        ret.append('%s%sg%s {' % (indent, graphtype, self.name))
+        ret.append('%s%s%s {' % (indent, graphtype, self.name))
 
         for k,v in self.options.items():
             ret.append('%s%s = "%s";' % (indent, k, v))
@@ -71,10 +75,6 @@ class Graph(object):
     def __str__(self):
         return self.todot()
 
-def write(fname, graph):
-    with open(fname, 'w') as fp:
-        fp.write(graph)
-
 def make(bld):
     '''
     Return a graph of the task dependencies
@@ -92,16 +92,19 @@ def make(bld):
     #         (tg.name, tg.source, tg.target,
     #          getattr(tg, 'depends_on', 'none'))
 
-    graph = Graph('worch')
+    graph = Graph('worch', rankdir='LR')
 
     for tg in bld.get_all_task_gen():
 
         # this is a feature
         if hasattr(tg, 'package_name'):
-            #packages.add(tg.package_name)
+            # ignore this
             continue
             
         package_name = tg.name.split('_',1)[0]
+        package_files_name = package_name + 'files'
+        graph.add_subgraph(package_name, label = package_name)
+        graph.add_subgraph(package_files_name, label = package_name + ' files')
 
         graph.add_node(tg.name, package_name, shape='ellipse')
 
@@ -114,16 +117,21 @@ def make(bld):
 
         if hasattr(tg, 'source') and tg.source:
             fname = tg.source.nice_path()
-            spkg_name = fname.split('_',1)[0]
-            graph.add_node(fname, spkg_name, shape='box')
+            graph.add_node(fname, shape='box')
             graph.add_edge(fname, tg.name)
 
         if hasattr(tg, 'target') and tg.target:
             fname = tg.target.nice_path()
-            tpkg_name = fname.split('_',1)[0]
-            graph.add_node(fname, tpkg_name, shape='box')
+            graph.add_node(fname, package_files_name, shape='box')
             graph.add_edge(tg.name, fname)
         continue
 
         # loop over groups
-    return
+    return graph
+
+
+def write(bld, fname):
+    graph = make(bld)
+    with open(fname, 'w') as fp:
+        fp.write(str(graph))
+
