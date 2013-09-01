@@ -35,7 +35,7 @@ class Graph(object):
         already = self.subgraphs.get(name)
         if already:
             already.options = options
-            return
+            return already
         self.subgraphs[name] = g = Graph(name, **options)
         return g
 
@@ -67,7 +67,8 @@ class Graph(object):
             ret.append('%s"%s" [%s];' % (indent, node.name, opt_to_str(node.options)))
 
         for edge in self.edges: # fixme: this ignore edge options
-            ret.append('%s"%s" -> "%s";' % (indent, edge.tail, edge.head))
+            ret.append('%s"%s" -> "%s" [%s];' % (indent, edge.tail, edge.head, 
+                                                 opt_to_str(edge.options)))
 
         ret.append('%s}' % indent)
         return '\n'.join(ret)
@@ -92,7 +93,29 @@ def make(bld):
     #         (tg.name, tg.source, tg.target,
     #          getattr(tg, 'depends_on', 'none'))
 
-    graph = Graph('worch', rankdir='LR')
+    maingraph = Graph('worch', rankdir='LR')
+
+    tsk2graph = dict()
+    pkg2features = dict()
+    for igroup, group in enumerate(bld.groups):
+        number = 1 + igroup
+        group_name = 'Group%d' % number
+        group_graph = maingraph.add_subgraph(group_name, label=group_name)
+        #print 'Group',group_name,':',id(group_graph)
+        for thing in group:
+            if hasattr(thing, 'package_name'):
+                #print 'Skipping:', thing.name, thing.package_name, thing.features
+                pkg, feats = thing.name.split('_',1)
+                pkg2features[pkg] = feats
+                continue
+
+            name = thing.name
+            already = tsk2graph.get(name)
+            if already:
+                assert already == group_graph, (name, already, group_graph)
+            else:
+                tsk2graph[name] = group_graph
+            #print name,'->',group_name
 
     for tg in bld.get_all_task_gen():
 
@@ -103,31 +126,34 @@ def make(bld):
             
         package_name = tg.name.split('_',1)[0]
         package_files_name = package_name + 'files'
-        graph.add_subgraph(package_name, label = package_name)
-        graph.add_subgraph(package_files_name, label = package_name + ' files')
 
-        graph.add_node(tg.name, package_name, shape='ellipse')
+        group_graph = tsk2graph[tg.name]
+        pkg_graph = group_graph.add_subgraph(package_name, label = package_name)
+        file_graph = group_graph.add_subgraph(package_files_name, label = package_name + ' files')
+
+        pkg_graph.add_node(tg.name, shape='ellipse')
 
         if hasattr(tg,'depends_on') and tg.depends_on:
             deps = tg.depends_on
             if isinstance(deps, type('')):
                 deps = [tg.depends_on]
             for dep in deps:
-                graph.add_edge(dep, tg.name)
+                maingraph.add_edge(dep, tg.name, style='bold')
 
         if hasattr(tg, 'source') and tg.source:
             fname = tg.source.nice_path()
-            graph.add_node(fname, shape='box')
-            graph.add_edge(fname, tg.name)
+            # Double places packages?
+            file_graph.add_node(fname, shape='box')
+            maingraph.add_edge(fname, tg.name)
 
         if hasattr(tg, 'target') and tg.target:
             fname = tg.target.nice_path()
-            graph.add_node(fname, package_files_name, shape='box')
-            graph.add_edge(tg.name, fname)
+            file_graph.add_node(fname, package_files_name, shape='box')
+            maingraph.add_edge(tg.name, fname)
         continue
 
         # loop over groups
-    return graph
+    return maingraph
 
 
 def write(bld, fname):
