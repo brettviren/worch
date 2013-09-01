@@ -62,6 +62,7 @@ def configure(cfg):
     cfg.msg('Orch configuration files', '"%s"' % '", "'.join(orch_config))
 
     extra = dict(cfg.env)
+    extra['top'] = cfg.path.abspath()
     suite = pkgconf.load(orch_config, start = cfg.options.orch_start, **extra)
 
     envmunge.decompose(cfg, suite)
