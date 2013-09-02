@@ -2,7 +2,7 @@
 # encoding: utf-8
 
 ## stdlib imports
-import os.path as osp
+
 from pprint import PrettyPrinter
 pp = PrettyPrinter(indent=2)
 try:    from urllib import request
@@ -11,40 +11,9 @@ else:   urlopen = request.urlopen
 
 ## waflib imports
 from waflib import TaskGen
-import waflib.Errors
 import waflib.Logs as msg
 
-def _worch_exec_command(task, cmd, **kw):
-    '''
-    helper function to:
-     - run a command
-     - log stderr and stdout into worch_<taskname>.log.txt
-     - printout the content of that file when the command fails
-    '''
-    msg.debug('orch: %s...' % task.name)
-    cwd = getattr(task, 'cwd', task.generator.bld.out_dir)
-    flog = open(osp.join(cwd, "worch_%s.log.txt" % task.name), 'w')
-    cmd_dict = dict(kw)
-    cmd_dict.update({
-        'cwd': cwd,
-        'env': kw.get('env', task.env.env),
-        'stdout': flog,
-        'stderr': flog,
-        })
-    try:
-        o = task.exec_command(cmd, **cmd_dict)
-    except KeyboardInterrupt:
-        raise
-    finally:
-        flog.close()
-    if msg.verbose and o == 0 and 'orch' in msg.zones:
-        with open(flog.name) as f:
-            msg.pprint('NORMAL','orch: %s (%s)\n%s' % (task.name, flog.name, ''.join(f.readlines())))
-            pass
-        pass
-    if o != 0:
-        msg.error('orch: %s (%s)\n%s' % (task.name, flog.name, ''.join(open(flog.name).readlines())))
-    return o
+from . import util
     
 class PackageFeatureInfo(object):
     '''
@@ -301,7 +270,7 @@ def feature_patch(self):
             pfi.get_var('patch_cmd_options'),
             src,
             )
-        o = _worch_exec_command(task, cmd)
+        o = util.exec_command(task, cmd)
         if o != 0:
             return o
         cmd = "touch %s" % tgt
@@ -376,7 +345,7 @@ def feature_git(self):
         src = task.inputs[0]
         tgt = task.outputs[0]
         cmd = "%s" % (src.read(),)
-        return _worch_exec_command(task, cmd)
+        return util.exec_command(task, cmd)
 
     self.bld(name = pfi.format('{package}_checkout'),
              rule = checkout_task,
@@ -442,7 +411,7 @@ def feature_hg(self):
         src = task.inputs[0]
         tgt = task.outputs[0]
         cmd = "%s" % (src.read(),)
-        return _worch_exec_command(task, cmd)
+        return util.exec_command(task, cmd)
 
     self.bld(name = pfi.format('{package}_checkout'),
              rule = checkout_task,
@@ -507,7 +476,7 @@ def feature_svn(self):
         src = task.inputs[0]
         tgt = task.outputs[0]
         cmd = "%s" % (src.read(),)
-        return _worch_exec_command(task, cmd)
+        return util.exec_command(task, cmd)
 
     self.bld(name = pfi.format('{package}_checkout'),
              rule = checkout_task,
@@ -559,7 +528,7 @@ def feature_autoconf(self):
         tgt = task.outputs[0]
         
         cmd = "%s %s" % (src.abspath(), pfi.get_var('prepare_script_options'))
-        return _worch_exec_command(task, cmd)
+        return util.exec_command(task, cmd)
         
         
     self.bld(name = pfi.format('{package}_prepare'),
@@ -577,7 +546,7 @@ def feature_autoconf(self):
                  pfi.get_var('build_cmd'),
                  pfi.get_var('build_cmd_options') or '',
             )
-        return _worch_exec_command(task, cmd)
+        return util.exec_command(task, cmd)
         
     self.bld(name = pfi.format('{package}_build'),
              rule = build_task,
@@ -594,7 +563,7 @@ def feature_autoconf(self):
                  pfi.get_var('install_cmd'),
                  pfi.get_var('install_cmd_options') or '',
             )
-        return _worch_exec_command(task, cmd)
+        return util.exec_command(task, cmd)
         
     self.bld(name = pfi.format('{package}_install'),
              rule = install_task,
@@ -649,7 +618,7 @@ def feature_cmakemake(self):
 
     def prepare_task(task):
         cmd = "%s %s" % (pfi.get_var('prepare_cmd'), pfi.get_var('prepare_cmd_options') or '')
-        return _worch_exec_command(task, cmd)
+        return util.exec_command(task, cmd)
         
     self.bld(name = pfi.format('{package}_prepare'),
              rule = prepare_task,
@@ -666,7 +635,7 @@ def feature_cmakemake(self):
                  pfi.get_var('build_cmd'),
                  pfi.get_var('build_cmd_options') or '',
             )
-        return _worch_exec_command(task, cmd)
+        return util.exec_command(task, cmd)
         
     self.bld(name = pfi.format('{package}_build'),
              rule = build_task,
@@ -681,7 +650,7 @@ def feature_cmakemake(self):
                  pfi.get_var('install_cmd'),
                  pfi.get_var('install_cmd_options') or '',
             )
-        return _worch_exec_command(task, cmd)
+        return util.exec_command(task, cmd)
         
     self.bld(name = pfi.format('{package}_install'),
              rule = install_task,
