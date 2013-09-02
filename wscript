@@ -5,12 +5,12 @@ top = '.'
 out = 'tmp'
 
 def options(opt):
-    opt.load('orch', tooldir='.')
+    opt.load('orch.waffuncs', tooldir='.')
     opt.add_option('--dot', action = 'store', default = None,
                    help = 'Produce a dot file of given name with dependency graph')
 
 def configure(cfg):
-    cfg.load('orch', tooldir='.')
+    cfg.load('orch.waffuncs', tooldir='.')
     cfg.orch_dump()
 
 def dot(ctx):
@@ -23,7 +23,7 @@ def dot(ctx):
     sys.exit(0)
 
 def build(bld):
-    bld.load('orch', tooldir='.')
+    bld.load('orch.waffuncs', tooldir='.')
     if bld.options.dot:
         # needs to be a pre-fun, not a post-fun
         bld.add_pre_fun(dot)
