@@ -5,6 +5,10 @@ Utility functions
 import os.path as osp
 import waflib.Logs as msg
 
+try:    from urllib import request
+except: from urllib import urlopen
+else:   urlopen = request.urlopen
+
 def exec_command(task, cmd, **kw):
     '''
     helper function to:
