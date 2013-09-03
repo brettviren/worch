@@ -60,6 +60,8 @@ reqdesc_list = [
             doc='where to store download files'),
     ReqDesc('source_dir', 'sources', typecode='d', 
             doc='where to unpack source archives, w.r.t. OUT'),
+    ReqDesc('patchfile_dir','patchfiles', typecode='d',
+            doc='where to store patch files'),
     ReqDesc('build_dir', 'builds/{package}-{version}-{tagsdashed}', typecode='d',
             doc='base of where to build'),
     ReqDesc('install_dir', '{PREFIX}/{package}/{version}/{tagsdashed}', typecode='d',
@@ -86,6 +88,19 @@ reqdesc_list = [
     ReqDesc('source_archive_file', '{package}-{version}.{source_archive_ext}', typecode='f', relative='{download_dir}',
             doc='source archive file name'),
 
+    # patching sources, the patch command is run from inside the source_unpacked directory
+    ReqDesc('patch_urlfile','{patch_file}', typecode='f', relative='{urlfile_dir}',
+            doc='The file holding the URL of the patch file'),
+    ReqDesc('patch_url', None,  # user must supply
+            doc='The URL of the patch file'),
+    ReqDesc('patch_file','{package}-{version}.patch', typecode='f', relative='{patchfile_dir}',
+            doc='The patch file to apply'),
+    ReqDesc('patch_cmd',None,   # patching feature should supply
+            doc='The patch command'),
+    ReqDesc('patch_cmd_opions',None,
+            doc='Patch command options'),
+    ReqDesc('patch_target','{patch_file}.applied', typecode='f', relative='{patchfile_dir}',
+            doc='A file indicating a successful application of the patch'),
 
     # source preparation (autoconf/cmake)
     ReqDesc('prepare_cmd', None, 

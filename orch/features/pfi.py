@@ -33,7 +33,7 @@ class PackageFeatureInfo(object):
         group = self.group
         self.ctx.set_group(group)
 
-        print 'PFI:', package_name, feature_name, sorted(self._data.keys())
+        #print 'PFI:', package_name, feature_name, sorted(self._data.items())
 
         msg.debug(
             'orch: Feature: "{feature}" for package "{package}/{version}" in group "{group}"'.
@@ -66,6 +66,15 @@ class PackageFeatureInfo(object):
         kwds.setdefault('env', self.env)
         kwds.setdefault('depends_on', self.get_deps(name))
         return self.ctx(name = task_name, **kwds)
+        
+
+    def insert_dependency(self, before, after):
+        '''
+        Insert step name <before> before step named <after>
+        '''
+        tsk = self.ctx.get_tgen_by_name(self.format('{package}_{after}', after=after))
+        tsk.depends_on.append(self.format('{package}_{before}', before=before))
+        return
 
 
     def format(self, string, **extra):

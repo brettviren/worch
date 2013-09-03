@@ -64,40 +64,6 @@ def configure(cfg):
     bind_functions(cfg)
     return
 
-def old_build(bld):
-    msg.debug ('orch: BUILD CALLED')
-
-    from waflib.Build import POST_LAZY, POST_BOTH, POST_AT_ONCE
-    bld.post_mode = POST_BOTH # don't fuck with this
-
-    bind_functions(bld)
-
-    for grpname in bld.env.orch_group_list:
-        msg.debug('orch: Adding group: "%s"' % grpname)
-        bld.add_group(grpname)
-        pass
-    
-    msg.debug('orch: Build envs: %s' % ', '.join(bld.all_envs.keys()))
-
-    to_recurse = []
-    for pkgname in bld.env.orch_package_list:
-        pkgdata = bld.env.orch_package_dict[pkgname]
-        other_dir = os.path.join(bld.launch_dir, pkgname, 'wscript')
-        if os.path.exists(other_dir):
-            to_recurse.append(pkgname)
-            continue
-        feat = pkgdata.get('features')
-        bld(
-            name = '%s_%s' % (pkgname, feat.replace(' ','_')),
-            features = feat,
-            package_name = pkgname,
-            )
-    if to_recurse:
-        bld.recurse(to_recurse)
-    #tsk = bld.get_tgen_by_name('bc_download')
-    #msg.debug('orch: task=%s' % tsk)
-    msg.debug ('orch: BUILD CALLED [done]')
-
 def build(bld):
     msg.debug ('orch: BUILD CALLED')
 
@@ -126,15 +92,17 @@ def build(bld):
 
         pkgcfg = bld.env.orch_package_dict[pkgname]
         featlist = pkgcfg.get('features').split()
+        msg.info('orch: features for %s: "%s"' % (pkgname, '", "'.join(featlist)))
         featcfg = featmod.feature_requirements(featlist)
         #print 'WAFFUNC:' , pkgname, sorted(featcfg.keys())
 
         for feat in featlist:
             pcfg = util.update_if(featcfg, None, **pkgcfg)
             feat_func = feature_funcs[feat]
+            msg.info('orch: feature: "%s" for package: "%s"' % (feat, pkgname))
             feat_func(bld, pcfg)
+
     if to_recurse:
         bld.recurse(to_recurse)
-    #tsk = bld.get_tgen_by_name('bc_download')
-    #msg.debug('orch: task=%s' % tsk)
+
     msg.debug ('orch: BUILD CALLED [done]')
