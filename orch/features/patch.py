@@ -2,7 +2,8 @@
 from waflib import TaskGen
 from .pfi import PackageFeatureInfo
 
-from orch.util import urlopen, exec_command
+from orch.util import urlopen
+from orch.wafutil import exec_command
 from .tarball import requirements as tarball_requirements
 
 

@@ -182,6 +182,9 @@ def format_flat_dict(dat, formatter = str.format, **kwds):
                 new_v = formatter(v, **kwds)
             except KeyError:
                 continue        # maybe next time
+            except TypeError:   # can't be formatted
+                new_v = v       # pretend we just did
+                continue
             changed = True
             formatted[k] = new_v
             kwds[k] = new_v

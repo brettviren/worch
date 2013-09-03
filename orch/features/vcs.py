@@ -2,7 +2,7 @@
 from waflib import TaskGen
 from .pfi import PackageFeatureInfo
 
-from orch.util import exec_command
+from orch.wafutil import exec_command
 
 git_requirements = {
     'git_urlfile': '{package}.git.url',

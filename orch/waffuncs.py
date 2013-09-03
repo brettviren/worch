@@ -7,12 +7,12 @@ from glob import glob
 
 ## 3rd party
 from . import pkgconf
-from . import features
 from . import envmunge
+from . import features as featmod
+from . import util
 
 ## waf imports
 import waflib.Logs as msg
-import waflib.Utils
 
 # NOT from the waf book.  The waf book example for depends_on doesn't work
 from waflib import TaskGen
@@ -36,19 +36,12 @@ def options(opt):
     opt.add_option('--orch-start', action = 'store', default = 'start',
                    help='Set the section to start the orchestration')
 
-
 def bind_functions(ctx):
     from pprint import PrettyPrinter
     pp = PrettyPrinter(indent=2)
     ctx.orch_dump = lambda : pp.pprint({'packages': ctx.env.orch_package_list,
                                         'groups': ctx.env.orch_group_list})
-    ctx.orch_pkgdata = lambda name, var=None: \
-                       features.get_pkgdata(ctx.env.orch_package_dict, name, var)
 
-
-# fixme: to make recursion more sensible, most of configure() and
-# build() should go in ../wscript.  Otherwise there are problems with
-# using a customized wscript which needs to use "orch" as a tool
 
 def configure(cfg):
     msg.debug('orch: CONFIG CALLED')
@@ -68,11 +61,10 @@ def configure(cfg):
     envmunge.decompose(cfg, suite)
 
     cfg.msg('Orch configure envs', '"%s"' % '", "'.join(cfg.all_envs.keys()))
-
     bind_functions(cfg)
     return
 
-def build(bld):
+def old_build(bld):
     msg.debug ('orch: BUILD CALLED')
 
     from waflib.Build import POST_LAZY, POST_BOTH, POST_AT_ONCE
@@ -100,6 +92,47 @@ def build(bld):
             features = feat,
             package_name = pkgname,
             )
+    if to_recurse:
+        bld.recurse(to_recurse)
+    #tsk = bld.get_tgen_by_name('bc_download')
+    #msg.debug('orch: task=%s' % tsk)
+    msg.debug ('orch: BUILD CALLED [done]')
+
+def build(bld):
+    msg.debug ('orch: BUILD CALLED')
+
+    bind_functions(bld)
+
+    import orch.features
+    feature_funcs, feature_configs = orch.features.load()
+    msg.info('Supported features: "%s"' % '", "'.join(feature_funcs.keys()))
+
+    for grpname in bld.env.orch_group_list:
+        msg.debug('orch: Adding group: "%s"' % grpname)
+        bld.add_group(grpname)
+        pass
+    
+    msg.debug('orch: Build envs: %s' % ', '.join(bld.all_envs.keys()))
+
+    to_recurse = []
+    for pkgname in bld.env.orch_package_list:
+
+        # delegate package to another wscript file?
+        other_wscript = os.path.join(bld.launch_dir, pkgname, 'wscript')
+        if os.path.exists(other_wscript):
+            msg.info('orch: delegating to %s' % other_wscript)
+            to_recurse.append(pkgname)
+            continue
+
+        pkgcfg = bld.env.orch_package_dict[pkgname]
+        featlist = pkgcfg.get('features').split()
+        featcfg = featmod.feature_requirements(featlist)
+        #print 'WAFFUNC:' , pkgname, sorted(featcfg.keys())
+
+        for feat in featlist:
+            pcfg = util.update_if(featcfg, None, **pkgcfg)
+            feat_func = feature_funcs[feat]
+            feat_func(bld, pcfg)
     if to_recurse:
         bld.recurse(to_recurse)
     #tsk = bld.get_tgen_by_name('bc_download')
