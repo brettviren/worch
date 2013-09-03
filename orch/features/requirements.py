@@ -95,7 +95,7 @@ reqdesc_list = [
             doc='The URL of the patch file'),
     ReqDesc('patch_file','{package}-{version}.patch', typecode='f', relative='{patchfile_dir}',
             doc='The patch file to apply'),
-    ReqDesc('patch_cmd',None,   # patching feature should supply
+    ReqDesc('patch_cmd', None,  # patching feature should supply
             doc='The patch command'),
     ReqDesc('patch_cmd_opions',None,
             doc='Patch command options'),

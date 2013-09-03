@@ -26,12 +26,10 @@ class PackageFeatureInfo(object):
         self._data = deconf.format_flat_dict(pkgcfg)
         self.feature_name = feature_name
         self.package_name = package_name
-        self.env = ctx.all_envs[package_name]
-        self.env.env = self.env.munged_env
-        self.ctx = ctx
-
-        group = self.group
-        self.ctx.set_group(group)
+        self._env = ctx.all_envs[package_name]
+        self._env.env = self._env.munged_env
+        self._ctx = ctx
+        self._inserted_dependencies = list() # list of (before, after) tuples
 
         #print 'PFI:', package_name, feature_name, sorted(self._data.items())
 
@@ -55,28 +53,49 @@ class PackageFeatureInfo(object):
         return val
 
     def node(self, path):
-        n = self.ctx.bldnode
+        n = self._ctx.bldnode
         if path.startswith('/'):
-            n = self.ctx.root
+            n = self._ctx.root
         return n.make_node(path)
-
 
     def task(self, name, **kwds):
         task_name = self.format('{package}_%s'%name)
-        kwds.setdefault('env', self.env)
-        kwds.setdefault('depends_on', self.get_deps(name))
-        return self.ctx(name = task_name, **kwds)
-        
-
-    def insert_dependency(self, before, after):
-        '''
-        Insert step name <before> before step named <after>
-        '''
-        tsk = self.ctx.get_tgen_by_name(self.format('{package}_{after}', after=after))
-        tsk.depends_on.append(self.format('{package}_{before}', before=before))
+        kwds.setdefault('env', self._env)
+        deps = set()
+        if kwds.has_key('depends_on'):
+            depon = kwds.pop('depends_on')
+            if isinstance(depon, type('')):
+                depon = [depon]
+            deps.update(depon)
+        deps.update(self._get_deps(name))
+        for dep in deps:
+            self.dependency(dep, task_name)
+        msg.debug('orch: register task: "%s"' % task_name)
+        self._ctx(name = task_name, **kwds)
         return
 
 
+    def register_dependencies(self):
+        '''
+        Call after all task() has been called for whole suite.
+        '''
+        for before, after in self._inserted_dependencies:
+            msg.debug('orch: dependency: %s --> %s' % (before, after))
+            tsk = self._ctx.get_tgen_by_name(after)
+            if not hasattr(tsk,'depends_on'):
+                tsk.depends_on = list()
+            tsk.depends_on.append(before)
+
+
+    def dependency(self, before, after):
+        '''
+        Insert step name <before> before step named <after>
+        '''
+        self._inserted_dependencies.append((before, after))
+        #tsk = self._ctx.get_tgen_by_name()
+        #tsk.depends_on.append()
+        return
+        
     def format(self, string, **extra):
         d = dict(self._data)
         d.update(extra)
@@ -95,9 +114,9 @@ class PackageFeatureInfo(object):
             return self.check_return('var:'+name)
         if dir_node:
             return self.check_return('node:%s/%s'%(name,var), dir_node.make_node(var))
-        path = self.ctx.bldnode
+        path = self._ctx.bldnode
         if var.startswith('/'):
-            path = self.ctx.root
+            path = self._ctx.root
         return self.check_return('node:%s/%s'%(name,var),  path.make_node(var))
 
     def check_return(self, name, ret=None):
@@ -114,7 +133,7 @@ class PackageFeatureInfo(object):
             (name, self._data['package'], ', '.join(sorted(self._data.keys())))
             )
 
-    def get_deps(self, step):
+    def _get_deps(self, step):
         deps = self._data.get('depends')
         if not deps: return list()
         mine = []
@@ -139,7 +158,8 @@ def feature(feature_name, **feature_config):
     def wrapper(feat_func):
         def wrap(bld, package_config):
             pfi = PackageFeatureInfo(feature_name, bld, **package_config)
-            return feat_func(pfi)
+            feat_func(pfi)
+            return pfi
         registered_func[feature_name] = wrap
         registered_config[feature_name] = feature_config
         return wrap

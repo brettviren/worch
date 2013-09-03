@@ -15,7 +15,7 @@ requirements = {
 }
 
 
-@feature('patch')
+@feature('patch', **requirements)
 def feature_patch(info):
     '''
     Apply a patch on the unpacked sources.
@@ -28,7 +28,7 @@ def feature_patch(info):
               update_outputs = True,
               source = info.unpacked_target,
               target = info.patch_urlfile,
-              depends_on = info.get_deps('patch') + [info.format('{package}_unpack')])
+              depends_on = info.format('{package}_unpack'))
 
     def dl_task(task):
         src = task.inputs[0]
@@ -64,5 +64,7 @@ def feature_patch(info):
              target = info.patch_target,
              cwd = info.source_dir.abspath())
 
-    info.insert_dependency('patch','prepare')
+
+    info.dependency(info.format('{package}_patch'),
+                    info.format('{package}_prepare'))
     return

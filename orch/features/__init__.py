@@ -4,6 +4,7 @@ import os.path as osp
 from glob import glob
 from orch.util import update_if
 from . import requirements as reqmod
+import waflib.Logs as msg
 
 def load():
     
@@ -21,6 +22,7 @@ def feature_requirements(featlist):
     for feat in featlist:
         featcfg = cfgs.get(feat)
         if not featcfg:
+            msg.debug('No feature config for feature "%s' % feat)
             continue
         all_featcfg = update_if(all_featcfg, None, **featcfg)
     return all_featcfg
