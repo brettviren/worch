@@ -62,7 +62,7 @@ def feature_vcs(info):
     flavor = info.vcs_flavor
     if not flavor:
         msg = info.format('VCS feature requested but no VCS flavor given for package {package}')
-        info.fatal(msg)
+        info.error(msg)
         raise ValueError, msg
 
     # make a file holding the repository URL.  This is just to prime
@@ -85,7 +85,6 @@ def feature_vcs(info):
               rule = checkout_task,
               source = info.source_urlfile,
               target = info.unpacked_target,
-              #cwd = info.source_dir.abspath(),
               )
     
     return

@@ -13,8 +13,8 @@ def exec_command(task, cmd, **kw):
      - log stderr and stdout into worch_<taskname>.log.txt
      - printout the content of that file when the command fails
     '''
-    msg.debug('orch: %s...' % task.name)
     cwd = getattr(task, 'cwd', task.generator.bld.out_dir)
+    msg.debug('orch: exec command: %s: "%s" in %s' % (task.name, cmd, cwd))
     if not osp.exists(cwd):
         os.makedirs(cwd)
     flog = open(osp.join(cwd, "worch_%s.log.txt" % task.name), 'w')

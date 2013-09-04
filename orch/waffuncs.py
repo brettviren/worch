@@ -98,7 +98,11 @@ def build(bld):
         #print 'WAFFUNC:' , pkgname, featcfg.get('patch_cmd')
         for feat in featlist:
             pcfg = util.update_if(featcfg, None, **pkgcfg)
-            feat_func = feature_funcs[feat]
+            try:
+                feat_func = feature_funcs[feat]
+            except KeyError:
+                msg.error('No method for feature: "%s", package: "%s"'%(feat,pkgname))
+                raise
             msg.debug('orch: feature: "%s" for package: "%s"' % (feat, pkgname))
             pfi = feat_func(bld, pcfg)
             pfi_list.append(pfi)

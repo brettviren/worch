@@ -7,6 +7,5 @@ def feature_dumpenv(info):
     '''
     Dump the environment
     '''
-    info.ctx(name = info.format('{package}_dumpenv'),
-             rule = "env | sort",
-             env = info.env)
+    info.task(name = info.format('{package}_dumpenv'),
+              rule = "env | sort")

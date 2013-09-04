@@ -61,8 +61,7 @@ def feature_patch(info):
     info.task('patch',
              rule = apply_patch,
              source = info.patch_file,
-             target = info.patch_target,
-             cwd = info.source_dir.abspath())
+             target = info.patch_target)
 
 
     info.dependency(info.format('{package}_patch'),
