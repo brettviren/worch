@@ -32,10 +32,20 @@ class PackageFeatureInfo(object):
         self._inserted_dependencies = list() # list of (before, after) tuples
 
         #print 'PFI:', package_name, feature_name, sorted(self._data.items())
+        # for k,v in sorted(self._data.items()):
+        #     print 'PFI: %s: %s: "%s" = "%s"' % (package_name, feature_name, k,v),
+        #     if v is None:
+        #         print ' value is None'
+        #         continue
+        #     if '{' in v:
+        #         print ' value is unformated'
+        #         continue
+        #     print ' value is okay'
 
-        msg.debug(
-            'orch: Feature: "{feature}" for package "{package}/{version}" in group "{group}"'.
-            format(feature = feature_name, **self._data))
+        msg.debug(            
+            self.format(
+                'orch: Feature: "{feature}" for package "{package}/{version}" in group "{group}"',
+                feature = feature_name))
 
     def __call__(self, name, dir = None):
         if dir and isinstance(dir, type('')):
@@ -100,6 +110,15 @@ class PackageFeatureInfo(object):
         d = dict(self._data)
         d.update(extra)
         return string.format(**d)
+
+    def debug(self, string, *a, **k):
+        msg.debug(self.format(string), *a, **k)
+    def info(self, string, *a, **k):
+        msg.info(self.format(string), *a, **k)
+    def warn(self, string, *a, **k):
+        msg.warn(self.format(string), *a, **k)
+    def fatal(self, string, *a, **k):
+        msg.fatal(self.format(string), *a, **k)
 
     def get_var(self, name):
         if name not in self._allowed:

@@ -33,7 +33,7 @@ def feature_tarball(info):
     Handle a tarball source.  Implements steps seturl, download and unpack
     '''
 
-    print ('source_url: "%s" -> urlfile: "%s"' % (info.source_url, info.source_urlfile))
+    #print ('source_url: "%s" -> urlfile: "%s"' % (info.source_url, info.source_urlfile))
     info.task('seturl',
              rule = "echo %s > ${TGT}" % info.source_url, 
              update_outputs = True,
@@ -49,7 +49,7 @@ def feature_tarball(info):
         except Exception:
             import traceback
             traceback.print_exc()
-            info.ctx.fatal("[%s] problem downloading [%s]" % (info.format('{package}_download'), url))
+            info.fatal("[{package_}_download] problem downloading [{source_url}]")
 
         checksum = info.source_archive_checksum
         if not checksum:
@@ -61,9 +61,8 @@ def feature_tarball(info):
         hasher.update(tgt.read('rb'))
         data= hasher.hexdigest()
         if data != ref:
-            info.ctx.fatal(
-                "[%s] invalid MD5 checksum:\nref: %s\nnew: %s"
-                % (info.format('{package}_download'), ref, data))
+            info.fatal("[{pacakge}_download] invalid MD5 checksum:\nref: %s\nnew: %s", ref, data)
+
         return
 
     info.task('download',

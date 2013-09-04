@@ -95,7 +95,7 @@ def build(bld):
         featlist = pkgcfg.get('features').split()
         msg.debug('orch: features for %s: "%s"' % (pkgname, '", "'.join(featlist)))
         featcfg = featmod.feature_requirements(featlist)
-        print 'WAFFUNC:' , pkgname, featcfg.get('patch_cmd')
+        #print 'WAFFUNC:' , pkgname, featcfg.get('patch_cmd')
         for feat in featlist:
             pcfg = util.update_if(featcfg, None, **pkgcfg)
             feat_func = feature_funcs[feat]
