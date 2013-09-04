@@ -118,11 +118,10 @@ class PkgFormatter(object):
 
     def __call__(self, string, **kwds):
         if not string: return string
-        tags = kwds.get('tags')
-        if tags:
-            tags = [x.strip() for x in tags.split(',')]
-            kwds.setdefault('tagsdashed',  '-'.join(tags))
-            kwds.setdefault('tagsunderscore', '_'.join(tags))
+        tags = kwds.get('tags') or ''
+        tags = [x.strip() for x in tags.split(',')]
+        kwds.setdefault('tagsdashed',  '-'.join(tags))
+        kwds.setdefault('tagsunderscore', '_'.join(tags))
 
         version = kwds.get('version')
         if version:
