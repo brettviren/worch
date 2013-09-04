@@ -3,7 +3,7 @@
 Simple implementation of a data structure providing a directed
 acyclic graph with subgraphs.
 '''
-from collections import namedtuple, OrderedDict
+from collections import namedtuple
 
 def odictify(kwds = None):
     if kwds:
@@ -23,24 +23,40 @@ class Graph(object):
     def __init__(self, name, **options):
         self.name = name
         self.options = options
-        self.subgraphs = OrderedDict()
+        self._subgraphs = list()
         self.nodes = set()
         self.edges = set()
+
+    def get_subgraph(self, name):
+        for sg in self._subgraphs:
+            if sg.name == name:
+                return sg
+        return
+
+    def set_subgraph(self, sg):
+        for ind, oldsg in enumerate(self._subgraphs):
+            if oldsg.name == name:
+                self._subgraphs[ind] = sg
+                return oldsg
+        self._subgraphs.append(sg)
+        return
 
     def graph(self, name = None):
         if name is None or name == self.name:
             return self
-        g = self.subgraphs.get(name)
+        g = self.get_subgraph(name)
         if not g: 
-            self.subgraphs[name] = g = Graph(name)
+            g = Graph(name)
+            self.set_subgraph(g)
         return g
 
     def add_subgraph(self, name, **options):
-        already = self.subgraphs.get(name)
+        already = self.get_subgraph(name)
         if already:
             already.options = options
             return already
-        self.subgraphs[name] = g = Graph(name, **options)
+        g = Graph(name, **options)
+        self._subgraphs.append(g)
         return g
 
     def add_node(self, name, graph_name = None, **options):
@@ -63,7 +79,7 @@ class Graph(object):
         for k,v in self.options.items():
             ret.append('%s%s = "%s";' % (indent, k, v))
 
-        for sg in self.subgraphs.values():
+        for sg in self._subgraphs:
             ret.append(sg.todot(depth+1))
 
         indent = tab * (depth + 1)

@@ -86,7 +86,6 @@ class PackageFeatureInfo(object):
         deps.update(self._get_deps(name))
         for dep in deps:
             self.dependency(dep, task_name)
-        msg.debug('orch: register task: "%s"' % task_name)
 
         if not kwds.has_key('cwd'):
             dirname = self.step_cwd.get(name)
@@ -95,6 +94,7 @@ class PackageFeatureInfo(object):
                 path = dirnode.abspath()
                 msg.debug('orch: setting cwd for %s to %s' % (task_name, path))
                 kwds['cwd'] = path
+        msg.debug('orch: register task: "%s", "%s"' % (task_name, kwds.get('source')))
         self._ctx(name = task_name, **kwds)
         return
 
