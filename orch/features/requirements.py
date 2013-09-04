@@ -130,12 +130,21 @@ reqdesc_list = [
 
 
 def make_pool():
-    return {x.name:x for x in reqdesc_list}
+    #return {x.name:x for x in reqdesc_list}
+    # no dict comprehension in Python 2.6
+    ret = dict()
+    for x in reqdesc_list:
+        ret[x.name] = x
+    return ret
 
 pool = make_pool()
     
 def valuedict():
-    return {x.name:x.value for x in reqdesc_list}
+    #return {x.name:x.value for x in reqdesc_list}
+    ret = dict()
+    for x in reqdesc_list:
+        ret[x.name] = x.value
+    return ret
 
 
 def select(reqs):
