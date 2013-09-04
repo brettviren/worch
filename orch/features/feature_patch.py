@@ -10,7 +10,7 @@ requirements = {
     'patch_url': None,
     'patch_file': None,
     'patch_cmd': 'patch -i',    # append abspath to patch file
-    'patch_cmd_options': '',
+    'patch_cmd_options': '',    # appends to patch_cmd
     'patch_target': None,
 }
 
