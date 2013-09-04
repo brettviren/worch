@@ -11,6 +11,12 @@ class PackageFeatureInfo(object):
     Also sets the contexts group and env to the ones for the package.
     '''
 
+    step_cwd = dict(patch = 'source_dir',
+                    prepare = 'build_dir',
+                    build = 'build_dir',
+                    install = 'build_dir',
+                    )
+
     def __init__(self, feature_name, ctx, **pkgcfg):
         package_name = pkgcfg['package']
 
@@ -81,6 +87,14 @@ class PackageFeatureInfo(object):
         for dep in deps:
             self.dependency(dep, task_name)
         msg.debug('orch: register task: "%s"' % task_name)
+
+        if not kwds.has_key('cwd'):
+            dirname = self.step_cwd.get(name)
+            if dirname:
+                dirnode = getattr(self, dirname)
+                path = dirnode.abspath()
+                msg.debug('orch: setting cwd for %s to %s' % (task_name, path))
+                kwds['cwd'] = path
         self._ctx(name = task_name, **kwds)
         return
 
@@ -117,8 +131,8 @@ class PackageFeatureInfo(object):
         msg.info(self.format(string), *a, **k)
     def warn(self, string, *a, **k):
         msg.warn(self.format(string), *a, **k)
-    def fatal(self, string, *a, **k):
-        msg.fatal(self.format(string), *a, **k)
+    def error(self, string, *a, **k):
+        msg.error(self.format(string), *a, **k)
 
     def get_var(self, name):
         if name not in self._allowed:
