@@ -17,8 +17,8 @@ requirements = {
     'install_dir': None,
 }
 
-@feature('autoconf', **requirements)
-def feature_autoconf(info):
+@feature('cmake', **requirements)
+def feature_cmake(info):
     return generic(info)
 
 

@@ -107,11 +107,10 @@ def build(bld):
             pfi = feat_func(bld, pcfg)
             pfi_list.append(pfi)
 
-    for pfi in pfi_list:
-        pfi.register_dependencies()
-
-
     if to_recurse:
         bld.recurse(to_recurse)
+
+    for pfi in pfi_list:
+        pfi.register_dependencies()
 
     msg.debug ('orch: BUILD CALLED [done]')

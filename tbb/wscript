@@ -1,8 +1,15 @@
 #!/usr/bin/env python
 # encoding: utf-8
+'''
+tbb is cantankerous package to build.
+'''
+
 
 import os
-from orch import features
+from orch.features import pfi
+from orch import features as featmod
+from orch import util
+import waflib.Logs as msg
 
 # we expect the tarball feature to be configured so that the
 # source_unpacked is in the build directory as we must do an
@@ -13,45 +20,41 @@ requirements = dict(
     install_target = 'lib/libtbb.so',
 )
 
-tbb_feature_name = 'tbbbuild'
-@features.TaskGen.feature(tbb_feature_name)
-def feature_tbbbuild(self):
-    pfi = features.PackageFeatureInfo(
-        self.package_name, tbb_feature_name, self.bld, requirements)
+@pfi.feature('tbbbuild', **requirements)
+def feature_tbbbuild(info):
 
-    d_build = pfi.get_node('build_dir')
-    f_unpacked_result = pfi.get_node('unpacked_target', d_build)
-    f_build_result = pfi.get_node('build_target', d_build)
-
-    d_prefix = pfi.get_node('install_dir')
-    f_install_result = pfi.get_node('install_target', d_prefix)
-
-    flag = f_build_result.abspath() # pfi.get_var('build_target')
-    self.bld(name = pfi.format('{package}_build'),
+    flag = info.build_target.abspath()
+    info.task('build',
              rule = "(cd src && make cpp0x=1 tbb_release) && touch %s" % flag,
-             source = f_unpacked_result,
-             target = f_build_result,
-             cwd = d_build.abspath(),
-             depends_on = pfi.get_deps('build'),
-             env = pfi.env)
+             source = info.unpacked_target,
+             target = info.build_target,)
 
-    install_lib_dir = os.path.dirname(f_install_result.abspath())
+
+    install_lib_dir = os.path.dirname(info.install_target.abspath())
     rule = 'mkdir -p %s && cp build/*_release/libtbb* %s/' % (install_lib_dir,install_lib_dir)
-    self.bld(name = pfi.format('{package}_install'),
+    info.task('install',
              rule = rule,
-             source = f_build_result,
-             target = f_install_result,
-             cwd = d_build.abspath(),
-             depends_on = pfi.get_deps('install'),
-             env = pfi.env)
+             source = info.build_target,
+             target = info.install_target)
 
 def build(bld):
     pkgname = 'tbb'
+    delayed_deps = list()
+    pkgcfg = bld.env.orch_package_dict[pkgname]
+    featlist = pkgcfg.get('features').split()
+    featcfg = featmod.feature_requirements(featlist)
 
-    pkgdata = bld.env.orch_package_dict[pkgname]
-    feats =  tbb_feature_name + ' ' + pkgdata.get('features')
-    bld(name = '%s_%s' % (pkgname, feats.replace(' ','_')), 
-        features = feats, package_name = pkgname)
+    feature_funcs, feature_configs = featmod.load()
 
-
-    
+    for feat in featlist:
+        pcfg = util.update_if(featcfg, None, **pkgcfg)
+        try:
+            feat_func = feature_funcs[feat]
+        except KeyError:
+            msg.error('No method for feature: "%s", package: "%s"'%(feat,pkgname))
+            raise
+        msg.debug('orch: feature: "%s" for package: "%s"' % (feat, pkgname))
+        dep = feat_func(bld, pcfg)
+        delayed_deps.append(dep)
+    for dep in delayed_deps:
+        dep.register_dependencies()
