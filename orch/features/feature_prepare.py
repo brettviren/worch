@@ -19,8 +19,7 @@ def generic(info):
     info.task('prepare',
              rule = prepare_task,
              source = info.unpacked_target,
-             target = info.prepare_target,
-             cwd = info.build_dir.abspath())
+             target = info.prepare_target)
 
 @feature('prepare', **requirements)
 def feature_prepare(info):

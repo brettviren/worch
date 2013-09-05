@@ -131,18 +131,13 @@ class PkgFormatter(object):
         vars = dict(self.vars)
         vars.update(kwds)
         ret = string.format(**vars)
-
-        # print 'formatting "%s" with:' %string
-        # from pprint import PrettyPrinter
-        # pp = PrettyPrinter(indent=2)
-        # pp.pprint(vars)
-        # print 'got: "%s"' % ret
         return ret
 
 
 def load(filename, start='start', formatter = None, **kwds):
-    if not formatter:
-        formatter = PkgFormatter()
+    # delay formatting until PFI
+    # if not formatter:
+    #     formatter = PkgFormatter()
     suite = deconf.load(filename, start=start, formatter=formatter, **kwds)
     
     # post-process
@@ -152,18 +147,9 @@ def load(filename, start='start', formatter = None, **kwds):
             pkgname = package['package']
             install_dir = package['install_dir']
             install_dirs['%s_install_dir'%pkgname] = install_dir
-
-    for group in suite['groups']:
-        to_replace = []
         for package in group['packages']:
-            new = deconf.format_flat_dict(package,**install_dirs)
-            to_replace.append(new)
-        group['packages'] = to_replace
+            package.update(**install_dirs)
     return suite
-
-
-
-
 
 
 # testing

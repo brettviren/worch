@@ -24,7 +24,7 @@ def ReqDesc(name, value, relative = None, typecode = 's', doc = None):
 
     - value :: the value (subject to interpolation)
 
-    - relative :: if a file/dir relative gives the name of a directory it should be considered relative to, subject to interpolation
+    - relative :: the name of another ReqDesc (of type directory) to serve as a parent node
 
     - typecode :: what the quantity is [s]tring, [f]ile or [d]irectory
 
@@ -53,7 +53,6 @@ reqdesc_list = [
     
 
     # locations
-    
     ReqDesc('urlfile_dir', 'urlfiles', typecode='d', 
             doc='where to store URL files'),
     ReqDesc('download_dir', 'downloads', typecode='d', 
@@ -71,13 +70,15 @@ reqdesc_list = [
     ReqDesc('source_url', None,
             doc='the URL pointing at the source archive'),
     ReqDesc('source_urlfile', '{package}-{version}.url', typecode='f', relative='{urlfile_dir}',
-            doc='name of file holding the URL of the source package'),
+            doc='file holding the URL of the source package'),
     # default here assumes tarball feature
+    ReqDesc('source_archive_file','{package}-{version}.{source_archive_ext}', typecode='f', relative='{download_dir}',
+            doc='The file name of the source archive'),
     ReqDesc('source_download_target','{source_archive_file}', typecode='f', relative='{download_dir}',
             doc='The file produced by a successful download'),
     ReqDesc('source_unpacked', '{package}-{version}', typecode='d', relative='{source_dir}',
             doc='unpacked source directory'),
-    ReqDesc('unpacked_target','README', typecode='f', relative='{source_unpacked}',
+    ReqDesc('unpacked_target','README', typecode='f', relative='{source_dir}/{source_unpacked}',
             doc='A file which indicates successful unpacking'),
 
     # source archive files, package sources in the form of a single archive file (tar/zip)
@@ -85,11 +86,9 @@ reqdesc_list = [
             doc='expected checksum of source archive file prefixed with hash type (eg "md5:")'),
     ReqDesc('source_archive_ext', 'tar.gz',
             doc='source archive file extension'),
-    ReqDesc('source_archive_file', '{package}-{version}.{source_archive_ext}', typecode='f', relative='{download_dir}',
-            doc='source archive file name'),
 
     # patching sources, the patch command is run from inside the source_unpacked directory
-    ReqDesc('patch_urlfile','{patch_file}', typecode='f', relative='{urlfile_dir}',
+    ReqDesc('patch_urlfile','{package}-{version}.patch.url', typecode='f', relative='{urlfile_dir}',
             doc='The file holding the URL of the patch file'),
     ReqDesc('patch_url', None,  # user must supply
             doc='The URL of the patch file'),

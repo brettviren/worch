@@ -3,6 +3,8 @@ import waflib.Logs as msg
 import os.path as osp
 from . import requirements as reqmod
 from orch import deconf
+from orch import pkgconf
+
 
 class PackageFeatureInfo(object):
     '''
@@ -18,45 +20,49 @@ class PackageFeatureInfo(object):
                     )
 
     def __init__(self, feature_name, ctx, **pkgcfg):
-        package_name = pkgcfg['package']
 
-        for req in reqmod.reqdesc_list:
-            if not req.relative:
-                continue
-            val = pkgcfg.get(req.name)
-            if val is None:     # happens if req doesn't apply to feature
-                continue
-            val = osp.join(req.relative, val)
-            pkgcfg[req.name] = val
-            
-        self._data = deconf.format_flat_dict(pkgcfg)
+        pkgcfg = deconf.format_flat_dict(pkgcfg, formatter=pkgconf.PkgFormatter())
+
+        self._data = pkgcfg
+
         self.feature_name = feature_name
-        self.package_name = package_name
-        self._env = ctx.all_envs[package_name]
+        self.package_name = pkgcfg['package']
+        self._env = ctx.all_envs[self.package_name]
         self._env.env = self._env.munged_env
         self._ctx = ctx
         self._inserted_dependencies = list() # list of (before, after) tuples
-
-        #print 'PFI:', package_name, feature_name, sorted(self._data.items())
-        # for k,v in sorted(self._data.items()):
-        #     print 'PFI: %s: %s: "%s" = "%s"' % (package_name, feature_name, k,v),
-        #     if v is None:
-        #         print ' value is None'
-        #         continue
-        #     if '{' in v:
-        #         print ' value is unformated'
-        #         continue
-        #     print ' value is okay'
-
+        
+        #self.dump()
         msg.debug(            
             self.format(
                 'orch: Feature: "{feature}" for package "{package}/{version}" in group "{group}"',
                 feature = feature_name))
 
+    def dump(self):
+        print 'PFI:', self.package_name, self.feature_name, len(self._data), sorted(self._data.items())
+        for k,v in sorted(self._data.items()):
+            if v is None:
+                print 'PFI: %s: %s: "%s" is None' % (self.package_name, self.feature_name, k)
+                continue
+            n = getattr(self, k)
+            p = ''
+            r = reqmod.pool.get(k)
+            if r and r.typecode in ['d','f']:
+                p = n.abspath()
+            print 'PFI: %s: %s: "%s" = "%s" = "%s" %s' % (self.package_name, self.feature_name, k,v,n,p),
+            if v is None:
+                print ' value is None'
+                continue
+            if '{' in v:
+                print ' value is unformed'
+                continue
+            print ' value is okay'
+
+
     def __call__(self, name, dir = None):
         if dir and isinstance(dir, type('')):
-            dir = self.get_node(dir)
-        return self.get_node(name, dir)
+            dir = self.node(dir)
+        return self.node(name, dir)
 
     def __getattr__(self, name):
         val = self._data[name]
@@ -64,15 +70,20 @@ class PackageFeatureInfo(object):
             raise ValueError, '"%s" is None for feature: "%s", package: "%s"' % \
                 (name, self.feature_name, self.package_name)
         req = reqmod.pool.get(name)
-        if req and req.typecode.lower() in ['f','d']:
-            return self.node(val)
+        if req and req.typecode.lower() in ['d','f']:
+            parent = None
+            if req.relative:
+                parent = self.node(self.format(req.relative))
+            return self.node(val, parent)
         return val
 
-    def node(self, path):
-        n = self._ctx.bldnode
-        if path.startswith('/'):
-            n = self._ctx.root
-        return n.make_node(path)
+    def node(self, path, parent_node=None):
+        if not parent_node:
+            if path.startswith('/'):
+                parent_node = self._ctx.root
+            else:
+                parent_node = self._ctx.bldnode
+        return parent_node.make_node(path)
 
     def task(self, name, **kwds):
         task_name = self.format('{package}_%s'%name)
@@ -134,37 +145,6 @@ class PackageFeatureInfo(object):
     def error(self, string, *a, **k):
         msg.error(self.format(string), *a, **k)
 
-    def get_var(self, name):
-        if name not in self._allowed:
-            raise KeyError, 'not allowed name: "%s"' % name
-        val = self._data.get(name)
-        if not val: return
-        return self.check_return(name, self.format(val))
-
-    def get_node(self, name, dir_node = None):
-        var = self.get_var(name)
-        if not var: 
-            return self.check_return('var:'+name)
-        if dir_node:
-            return self.check_return('node:%s/%s'%(name,var), dir_node.make_node(var))
-        path = self._ctx.bldnode
-        if var.startswith('/'):
-            path = self._ctx.root
-        return self.check_return('node:%s/%s'%(name,var),  path.make_node(var))
-
-    def check_return(self, name, ret=None):
-        if ret: 
-            # try:
-            #     full = ret.abspath()
-            # except AttributeError:
-            #     full = ''
-            #msg.debug('orch: Variable for {package}/{version}: {varname} = {value} ({full})'.\
-            #    format(varname=name, value=ret, full=full, **self._data))
-            return ret
-        raise ValueError(
-            'Failed to get "%s" for package "%s" (keys: %s)' % 
-            (name, self._data['package'], ', '.join(sorted(self._data.keys())))
-            )
 
     def _get_deps(self, step):
         deps = self._data.get('depends')

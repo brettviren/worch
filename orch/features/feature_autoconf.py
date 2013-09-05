@@ -9,7 +9,7 @@ from .feature_prepare import generic
 requirements = {
     'unpacked_target': 'configure',
     'source_unpacked': None,
-    'prepare_cmd': '../../{source_unpacked}/configure',
+    'prepare_cmd': '../../{source_dir}/{source_unpacked}/configure',
     'prepare_cmd_options': '--prefix={install_dir}',
     'prepare_target': 'config.status',
     'build_dir': None,
