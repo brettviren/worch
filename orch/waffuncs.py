@@ -73,39 +73,40 @@ def build(bld):
     feature_funcs, feature_configs = orch.features.load()
     msg.info('Supported features: "%s"' % '", "'.join(feature_funcs.keys()))
 
-    for grpname in bld.env.orch_group_list:
-        msg.debug('orch: Adding group: "%s"' % grpname)
-        bld.add_group(grpname)
-        pass
-    
     msg.debug('orch: Build envs: %s' % ', '.join(bld.all_envs.keys()))
 
     pfi_list = list()
     to_recurse = []
-    for pkgname in bld.env.orch_package_list:
 
-        # delegate package to another wscript file?
-        other_wscript = os.path.join(bld.launch_dir, pkgname, 'wscript')
-        if os.path.exists(other_wscript):
-            msg.info('orch: delegating to %s' % other_wscript)
-            to_recurse.append(pkgname)
-            continue
+    for grpname in bld.env.orch_group_list:
+        msg.debug('orch: Adding group: "%s"' % grpname)
+        bld.add_group(grpname)
+        group = bld.env.orch_group_dict[grpname]
+        for package in group['packages']:
+            pkgname = package['package']
 
-        pkgcfg = bld.env.orch_package_dict[pkgname]
-        featlist = pkgcfg.get('features').split()
-        msg.debug('orch: features for %s: "%s"' % (pkgname, '", "'.join(featlist)))
-        featcfg = featmod.feature_requirements(featlist)
-        #print 'WAFFUNC:' , pkgname, featcfg.get('patch_cmd')
-        for feat in featlist:
-            pcfg = util.update_if(featcfg, None, **pkgcfg)
-            try:
-                feat_func = feature_funcs[feat]
-            except KeyError:
-                msg.error('No method for feature: "%s", package: "%s"'%(feat,pkgname))
-                raise
-            msg.debug('orch: feature: "%s" for package: "%s"' % (feat, pkgname))
-            pfi = feat_func(bld, pcfg)
-            pfi_list.append(pfi)
+            # delegate package to another wscript file?
+            other_wscript = os.path.join(bld.launch_dir, pkgname, 'wscript')
+            if os.path.exists(other_wscript):
+                msg.info('orch: delegating to %s' % other_wscript)
+                to_recurse.append(pkgname)
+                continue
+
+            pkgcfg = bld.env.orch_package_dict[pkgname]
+            featlist = pkgcfg.get('features').split()
+            msg.debug('orch: features for %s: "%s"' % (pkgname, '", "'.join(featlist)))
+            featcfg = featmod.feature_requirements(featlist)
+            #print 'WAFFUNC:' , pkgname, featcfg.get('patch_cmd')
+            for feat in featlist:
+                pcfg = util.update_if(featcfg, None, **pkgcfg)
+                try:
+                    feat_func = feature_funcs[feat]
+                except KeyError:
+                    msg.error('No method for feature: "%s", package: "%s"'%(feat,pkgname))
+                    raise
+                msg.debug('orch: feature: "%s" for package: "%s"' % (feat, pkgname))
+                pfi = feat_func(bld, pcfg)
+                pfi_list.append(pfi)
 
     if to_recurse:
         bld.recurse(to_recurse)
