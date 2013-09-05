@@ -18,15 +18,19 @@ def exec_command(task, cmd, **kw):
     if not osp.exists(cwd):
         os.makedirs(cwd)
     flog = open(osp.join(cwd, "worch_%s.log.txt" % task.name), 'w')
-    flog.write('WORCH CMD: %s\n'% cmd)
-    flog.write('WORCH CWD: %s\n'% cwd)
     cmd_dict = dict(kw)
+    env = kw.get('env', task.env.env)
     cmd_dict.update({
         'cwd': cwd,
-        'env': kw.get('env', task.env.env),
+        'env': env, 
         'stdout': flog,
         'stderr': flog,
         })
+    flog.write('WORCH CMD: %s\n'% cmd)
+    flog.write('WORCH CWD: %s\n'% cwd)
+    flog.write('WORCH ENV:\n\t%s' % \
+                   '\n\t'.join(['%s = %s' % kv for kv in sorted(env.items()])))
+
     try:
         ret = task.exec_command(cmd, **cmd_dict)
     except KeyboardInterrupt:
@@ -35,9 +39,11 @@ def exec_command(task, cmd, **kw):
         flog.close()
     if msg.verbose and ret == 0 and 'orch' in msg.zones:
         with open(flog.name) as f:
-            msg.pprint('NORMAL','orch: %s (%s)\n%s' % (task.name, flog.name, ''.join(f.readlines())))
+            msg.pprint('NORMAL','orch: %s (%s)\n%s' % \
+                           (task.name, flog.name, ''.join(f.readlines())))
             pass
         pass
     if ret != 0:
-        msg.error('orch: %s (%s)\n%s' % (task.name, flog.name, ''.join(open(flog.name).readlines())))
+        msg.error('orch: %s (%s)\n%s' % \
+                      (task.name, flog.name, ''.join(open(flog.name).readlines())))
     return ret
