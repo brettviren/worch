@@ -29,7 +29,7 @@ def exec_command(task, cmd, **kw):
     flog.write('WORCH CMD: %s\n'% cmd)
     flog.write('WORCH CWD: %s\n'% cwd)
     flog.write('WORCH ENV:\n\t%s' % \
-                   '\n\t'.join(['%s = %s' % kv for kv in sorted(env.items()])))
+                   '\n\t'.join(['%s = %s' % kv for kv in sorted(env.items())]))
 
     try:
         ret = task.exec_command(cmd, **cmd_dict)
