@@ -44,6 +44,13 @@ def host_description():
         flavor = ups_flavor()
     ret['ups_flavor'] = flavor
 
+    bits = '32'
+    libbits = 'lib'
+    if uname[-1] in ['x86_64']: # fixme: mac os x?
+        bits = '64'
+        libbits = 'lib64'
+    ret['bits'] = bits
+    ret['libbits'] = libbits
     ret['gcc_dumpversion'] = check_output(['gcc','-dumpversion']).strip()
     ret['gcc_dumpmachine'] = check_output(['gcc','-dumpmachine']).strip()
     try:
@@ -105,7 +112,7 @@ def load(filename, start='start', formatter = None, **kwds):
 
             # fold in any missing defaults from the feature requirements
             featlist = package.get('features').split()
-            print 'Adding features to "%s" : %s' % (pkgname, featlist)
+            #print 'Adding features to "%s" : %s' % (pkgname, featlist)
             featcfg = featmod.feature_requirements(featlist)
             package = update_if(featcfg, None, **package)            
 
