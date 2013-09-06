@@ -95,17 +95,14 @@ def build(bld):
             pkgcfg = bld.env.orch_package_dict[pkgname]
             featlist = pkgcfg.get('features').split()
             msg.debug('orch: features for %s: "%s"' % (pkgname, '", "'.join(featlist)))
-            featcfg = featmod.feature_requirements(featlist)
-            #print 'WAFFUNC:' , pkgname, featcfg.get('patch_cmd')
             for feat in featlist:
-                pcfg = util.update_if(featcfg, None, **pkgcfg)
                 try:
                     feat_func = feature_funcs[feat]
                 except KeyError:
                     msg.error('No method for feature: "%s", package: "%s"'%(feat,pkgname))
                     raise
                 msg.debug('orch: feature: "%s" for package: "%s"' % (feat, pkgname))
-                pfi = feat_func(bld, pcfg)
+                pfi = feat_func(bld, pkgcfg)
                 pfi_list.append(pfi)
 
     if to_recurse:

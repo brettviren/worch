@@ -21,10 +21,7 @@ class PackageFeatureInfo(object):
 
     def __init__(self, feature_name, ctx, **pkgcfg):
 
-        pkgcfg = deconf.format_flat_dict(pkgcfg, formatter=pkgconf.PkgFormatter())
-
         self._data = pkgcfg
-
         self.feature_name = feature_name
         self.package_name = pkgcfg['package']
         self._env = ctx.all_envs[self.package_name]

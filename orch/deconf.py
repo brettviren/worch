@@ -198,6 +198,8 @@ def format_flat_dict(dat, formatter = str.format, **kwds):
     return formatted
 
 def format_any(dat, formatter = str.format, **kwds):
+    if dat is None:
+        return dat
     if isinstance(dat, type("")):
         try:
             return formatter(dat, **kwds)
