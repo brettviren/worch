@@ -35,7 +35,7 @@ def feature_tarball(info):
 
     #print ('source_url: "%s" -> urlfile: "%s"' % (info.source_url, info.source_urlfile))
     info.task('seturl',
-             rule = "echo %s > ${TGT}" % info.source_url, 
+             rule = "echo '%s' > ${TGT}" % info.source_url, 
              update_outputs = True,
              target = info.source_urlfile)
 
