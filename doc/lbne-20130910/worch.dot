@@ -1,0 +1,7 @@
+digraph Dependency {
+	installation -> "package source";
+	UPS -> installation;
+	ALT -> installation;
+	"user setup" -> UPS;
+	"user setup" -> ALT;
+	}

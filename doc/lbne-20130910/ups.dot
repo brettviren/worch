@@ -1,0 +1,6 @@
+digraph UPSgraph {
+	installation -> "package source";
+	installation -> UPS;
+	UPS -> installation;
+	"user setup" -> UPS;
+	}

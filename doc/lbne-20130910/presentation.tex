@@ -57,11 +57,11 @@
   \small
   Where we are:
   \begin{itemize}
-  \item Multi-country, distributed collaboration, contributors with diverse experience.
-  \item So far a largely Fermilab-centric mind-view towards software and computing.
+  \item Distributed, multi-country collaboration, diverse expertise.
+  \item So far, a largely Fermilab-centric mind-view towards software and computing.
   \item Existing LBNE software requires a huge number of supporting packages, including leading-edge C++ compiler.
   \item No automated, cross platform, build system exists
-  \item Fermilab installation managed largely by one person\footnote{Thanks Lynn!} with responsibilities to other experiments.
+  \item Fermilab installation managed largely by one person\footnote{Thanks Lynn Garren!} with responsibilities to other experiments.
   \item We lack an overabundance of software expertise in the collaboration.
   \end{itemize}
   What we need:
@@ -73,17 +73,66 @@
 \end{frame}
 
 \begin{frame}
-  \frametitle{Current Suite}
-  An incomplete list of the packages making up LBNE software
+  \frametitle{Note on role of UPS: current and desired dependencies}
+  \begin{columns}
+    \begin{column}{0.6\paperwidth}
+      \includegraphics[width=\textwidth]{ups-deps}
+    \end{column}
+    \begin{column}{0.4\paperwidth}
+      FNAL build system: UPS is required for both installation and
+      usage.
+    \end{column}
+  \end{columns}
+  \vspace{-5mm}
+  \hrule
+  \vspace{-5mm}
+  \begin{columns}
+    \begin{column}{0.5\paperwidth}
+      Want: Installation system not dependent on UPS, allow
+      alternative environment management systems. \\
+      \vspace{1cm}
+      {\footnotesize (arrows indicate direction of dependence)}
+    \end{column}
+    \begin{column}{0.4\paperwidth}
+      \includegraphics[width=\textwidth]{worch-deps}
+    \end{column}
+  \end{columns}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Current LBNE Suite}
+  An incomplete (?) list of the packages making up LBNE software:
   \begin{description}
-  \item[build tools] cmake, gmp, ppl, mpfr, mpc, isl, cloog, gcc
-  \item[externals] libxml2, sqlite, python, libsigcpp, libxml2, python, sqlite, tbb, xerces-c, lhapdf, mysql, postgresql, log4cpp, boost, fftw, cppunit, gccxml
-  \item[HEP] root, geant4, cry, genie, pythia, globes
-  \item[framework] cpp0x, cetlib, fhicl-cpp, messagefacility, art
-  \item[LBNE] larsoft, g4lbne
+  \item[build tools] \texttt{cmake, gmp, ppl, mpfr, mpc, isl, cloog, gcc}
+  \item[externals] \texttt{libxml2, sqlite, python, libsigcpp, libxml2, python, sqlite, tbb, xerces-c, lhapdf, mysql, postgresql, log4cpp, boost, fftw, cppunit, gccxml}
+  \item[HEP] \texttt{root, geant4, cry, genie, pythia, globes} \\
+    {\tiny (so far up through here)}
+  \item[framework] \texttt{cpp0x, cetlib, fhicl-cpp, messagefacility, art, artdaq}(?)
+  \item[LBNE] \texttt{larsoft, g4lbne}
   \end{description}
   Comprises, $\sim$20GB of build+install area \\
   (comparison: $2\mbox{-}3\times$ that for the Gaudi-based Daya Bay software).
+
+  \vspace{5mm}
+  
+  Anything missing?
+\end{frame}
+
+\begin{frame}
+  \frametitle{Strategy}
+  Develop a (meta) build system which:
+  \footnotesize
+  \begin{itemize}
+  \item Has a simple user interface driving an expert system.
+  \item Captures all that is needed to install on all supported platforms in one location.
+  \item Provides flexibility to install different suites or variations (debug vs. opt) and following different installation policies.
+  \item Driven by LBNE needs but designed for general purpose use and comes with ``batteries included'' where practical.
+  \item Maintains ``source code provenance'', use pristine, upstream source packages as input, but allow for application of any needed patches.
+  \item Supports simple ``schema evolution'' of a the definition of the software suite,  easy incorporation of future suite upgrades, version controlled installation meta data.
+  \item No hidden build failures, fail early, fail often.
+  \item Makes use of multi-CPU installation machines.
+  \item Based on community supported, Free Software tools.
+  \end{itemize}
 \end{frame}
 
 \section{Overview of Installation System}
@@ -91,7 +140,7 @@
 
 \begin{frame}
   \frametitle{Desires for the build system}
-  I want to be able to say to you:
+  What I really want is to be able to say to you:
 
   ``To use the LBNE build system all you must do is:''
   \vspace{5mm}
@@ -101,42 +150,49 @@
   \item ???
   \item Profit.
   \end{enumerate}
+
+  \vspace{5mm}
+
+  Due to the large size of the LBNE software suite, the ``???''
+  entails a few hours of you going and doing something else while the
+  gears churn.
   
 \end{frame}
 
 \begin{frame}
-  \frametitle{What is ``\textbf{it}''?}
+  \frametitle{\textit{What is ``\textbf{it}''?}}
   ``It'' is called: ``\worch''.
 
-  What?  What the heck is that?
+  \vspace{4mm}
+  \textit{What?  What the heck is that?}
   \begin{center}
     \textcolor{blue}{\worch = \textbf{w}af + \textbf{orch}estration}
   \end{center}
 
-  You are loosing me!
+  \textit{You are loosing me!}
 
   \begin{itemize}
-  \item The horrible name was the working title which has stuck.
+  \item This horrid name was the working title which just stuck.
   \item It ``orchestrates'' building a suite of software by
     interpreting a configuration file into \waf tasks and calling \waf
     for the heavy lifting.
   \end{itemize}
-  From the \worch github page\footnote{https://github.com/brettviren/worch}:
+  From the \worch github page\footnote{\url{https://github.com/brettviren/worch}}:
   \begin{center}
     ``\textcolor{blue}{\textit{Let the orchestration \waf through the suite.}}''
   \end{center}
-  Okay, that's cheesy.  So, what the heck is \waf?....
+  \textit{Okay, that's cheesy.  So, what the heck is \waf?....}
 \end{frame}
 
 \begin{frame}[fragile]
   \frametitle{What is \waf?}
 
-  \waf\footnote{http://code.google.com/p/waf/}:
+  \waf\footnote{\url{http://code.google.com/p/waf/}}:
   \begin{itemize}
   \item is not an acronym, nor a name with any particular meaning
   \item is a Python-based (v2.3-v3.1) framework for building build systems
-  \item can be used as a make/autoconf/cmake replacement or as a layer
-    on top to orchestrate using these ``native'' package build systems
+  \item can be used as a \texttt{make/autoconf/cmake} replacement or as a layer
+    on top to orchestrate a variety of ``native'', per-package build systems
   \item provides a task scheduling and dependency engine
   \item packaged as a single, self-contained, downloaded Python executable
   \end{itemize}
@@ -146,6 +202,7 @@ $ chmod +x waf-1.7.12
 $ alias waf=$(pwd)/waf-1.7.12
 $ waf --version
 waf 1.7.12 (c4b82f4337ebdf5236e844791a9faa346770d6db)
+$ waf --help
 \end{verbatim}
 
 \end{frame}
@@ -153,26 +210,31 @@ waf 1.7.12 (c4b82f4337ebdf5236e844791a9faa346770d6db)
 \begin{frame}
   \frametitle{Aside: Synergy with ATLAS}
   
-  With perfect timing, Maxim pointed me to \waf and Sebastien Binet of
+  With perfect timing, \textbf{Maxim Potekhin} pointed me to \waf and \textbf{Sebastien Binet} of
   ATLAS at the exact moment that I was becoming frustrated with my
   hand--written attempt at a scheduling/dependency engine.
   
-  SB is using \waf as the basis for a next-generation build system for the ATLAS experiment.  His work includes: 
+  \textbf{SB} is using \waf as the basis for a next-generation build system for the ATLAS experiment.  His work includes: 
   \begin{itemize}
   \item a command line user interface: \hwaf
   \item replacing CMT with \waf
   \item migrating Gaudi + LCGCMT (in process) ``\texttt{tdaq}'' subsystem (done)
-  \item its use for bootstrapping/creating analysis packages
+  \item its use for bootstrapping/creating analysis packages,
   \item contributions to \worch itself.
   \end{itemize}
 
   \vspace{5mm}
   Note of caution for LBNE and Fermilab: ATLAS looked at CMake to
-  replace CMT but gave up on it after two months of effort.
+  replace CMT but gave up on it after two months of effort.  
 
+  I still support replacing SRT with CMake in LArSoft, but for
+  large-scale meta-build systems we should take heed.
+
+  We should investigate \hwaf/\waf to see if would be a worthy basis
+  for LBNE ``native'' package builds.
 \end{frame}
 
-\section{Example}
+\section{Examples}
 
 \begin{frame}[fragile]
   \frametitle{Example: getting \worch}
@@ -183,21 +245,103 @@ $ cd worch/
 \end{verbatim}
 
   \begin{itemize}
-  \item   Github is the preferred repository but can maintain a symmetric
-    mirror in Fermilab Redmine.
+  \item   Repository includes a main \waf ``\texttt{wscript}'' file, the ``\texttt{orch}'' python module, various example configuration files and documentation (including this presentation).
 
-  \item   Will investigate packaging \worch+\waf into a single file.
-
-  \item   Examples, including building for LArSoft (in progress) are provided
-    under \texttt{worch/examples/}.  
+  \item   Will investigate packaging \worch + \waf into a single file like \waf itself is.
 
   \end{itemize}
+
+  Github is the primary repository due to collaboration with ATLAS and
+  some personal intentions to use \worch in other
+  experiments/contexts.
+    \begin{itemize}
+    \item A symmetric mirror in Fermilab Redmine is possible.
+    \end{itemize}
 
 
 \end{frame}
 
 \begin{frame}[fragile]
-  \frametitle{Example: running \waf}
+  \frametitle{Example: installation of the ``simple'' example suite}
+{\tiny
+\begin{verbatim}
+$ waf --out=tmp-simple --prefix=install-simple --orch-config=examples/simple/*.cfg  configure
+Setting top to              : /data3/bv/w/worch 
+Setting out to              : /data3/bv/w/worch/tmp-simple 
+Orch configuration files    : "examples/simple/buildtools.cfg", "examples/simple/gnuprograms.cfg", "examples/simple/simple.cfg" 
+Orch configure envs         : "", "cmake", "hello", "bc" 
+'configure' finished successfully (0.057s)
+
+$ waf
+Waf: Entering directory `/data3/bv/w/worch/tmp-simple'
+Supported features: "dumpenv", "prepare", "makemake", "patch", "tarball", "vcs", "cmake", "autoconf"
+[ 1/18] cmake_seturl:  -> tmp-simple/urlfiles/cmake-2.8.8.url
+[ 2/18] cmake_download: tmp-simple/urlfiles/cmake-2.8.8.url -> tmp-simple/downloads/cmake-2.8.8.tar.gz
+[ 3/18] cmake_unpack: tmp-simple/downloads/cmake-2.8.8.tar.gz -> tmp-simple/sources/cmake-2.8.8/bootstrap
+[ 4/18] cmake_prepare: tmp-simple/sources/cmake-2.8.8/bootstrap -> tmp-simple/builds/cmake-2.8.8-debug/cmake_install.cmake
+[ 5/18] cmake_build: tmp-simple/builds/cmake-2.8.8-debug/cmake_install.cmake -> tmp-simple/builds/cmake-2.8.8-debug/bin/cmake
+[ 6/18] cmake_install: tmp-simple/builds/cmake-2.8.8-debug/bin/cmake -> install-simple/cmake/2.8.8/debug/bin/cmake
+[ 8/18] hello_seturl:  -> tmp-simple/urlfiles/hello-2.8.url
+[ 8/18] bc_seturl:  -> tmp-simple/urlfiles/bc-1.06.url
+[ 9/18] hello_download: tmp-simple/urlfiles/hello-2.8.url -> tmp-simple/downloads/hello-2.8.tar.gz
+[10/18] bc_download: tmp-simple/urlfiles/bc-1.06.url -> tmp-simple/downloads/bc-1.06.tar.gz
+[11/18] bc_unpack: tmp-simple/downloads/bc-1.06.tar.gz -> tmp-simple/sources/bc-1.06/configure
+[12/18] hello_unpack: tmp-simple/downloads/hello-2.8.tar.gz -> tmp-simple/sources/hello-2.8/configure
+[13/18] bc_prepare: tmp-simple/sources/bc-1.06/configure -> tmp-simple/builds/bc-1.06-debug/config.status
+[14/18] bc_build: tmp-simple/builds/bc-1.06-debug/config.status -> tmp-simple/builds/bc-1.06-debug/bc/bc
+[15/18] bc_install: tmp-simple/builds/bc-1.06-debug/bc/bc -> install-simple/bc/1.06/debug/bin/bc
+[16/18] hello_prepare: tmp-simple/sources/hello-2.8/configure -> tmp-simple/builds/hello-2.8-debug/config.status
+[17/18] hello_build: tmp-simple/builds/hello-2.8-debug/config.status -> tmp-simple/builds/hello-2.8-debug/src/hello
+[18/18] hello_install: tmp-simple/builds/hello-2.8-debug/src/hello -> install-simple/hello/2.8/debug/bin/hello
+Waf: Leaving directory `/data3/bv/w/worch/tmp-simple'
+'build' finished successfully (4m5.157s)
+\end{verbatim}
+}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Visualization}
+  \begin{columns}
+    \begin{column}{0.3\paperwidth}
+      {\footnotesize
+      The "simple" example suite.
+
+        Of note:
+      \begin{itemize}
+      \item 3 packages
+      \item 2 atomic build groups
+      \item File-based deps
+      \item Inter-step deps\\
+        {\tiny artificial dep shown:\\
+          \verb|bc_install| \
+          $\rightarrow$ \verb|hello_prepare|}
+      \end{itemize}
+      {\tiny (Arrows indicate reverse-dependency, \\
+        or processing flow).}
+
+      To generate:
+
+\begin{verbatim}
+$ waf [...] configure
+$ waf --dot=simple.dot
+$ dot -Tpdf \
+  -osimple.pdf simple.dot
+\end{verbatim}
+}
+{\tiny \texttt{dot} is from \url{http://graphviz.org}}
+
+
+    \end{column}
+    \begin{column}{0.6\paperwidth}
+      \vspace{-1cm}
+      \includegraphics[height=\textheight]{simple}
+    \end{column}
+  \end{columns}
+
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Example: running \waf to build LBNE's suite }
 
   \footnotesize
 
@@ -227,32 +371,61 @@ $ waf -j10
 [89/89] root_install: tmp/builds/root-5.34.09-debug/bin/root.exe -> ../install/root/5.34.09/debug/bin/root.exe
 'build' finished successfully (1h25m17.527s)
 \end{verbatim}
-
-This build included \texttt{cmake, libxml2, sqlite, python, cmake, gmp, mpfr, mpc, isl, ppl, cloog, gcc, libsigcpp, tbb, xrootd and ROOT}.
-
+  \begin{center}
+      {\tiny (this build only went up through ROOT)}
+  \end{center}
 \end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Visualize the LBNE suite build}
+  \begin{columns}
+    \begin{column}{0.7\paperwidth}
+
+      Three groups: \textit{buildtools, compiler} and \textit{externals} includes up through ``standard'' HEP packages:
+      \vspace{5mm}
+
+      \texttt{cmake, libxml2, sqlite, python, cmake, gmp, mpfr, mpc, isl, ppl, cloog, gcc, libsigcpp, tbb, xrootd, ROOT, Geant4, xercesc, log4cpp, mysql}.
+
+      \vspace{5mm}
+      In progress \textit{framework} and \textit{lbnesoft} groups with \texttt{cry, genie, globes, art, art\_externals, g4lbne, larsoft}.
+
+      \begin{center}
+        {\tiny (That things are too small to see is the point)}
+      \end{center}
+    \end{column}
+    \begin{column}{0.225\paperwidth}
+      \vspace{-10mm}
+      \includegraphics[width=\textwidth]{pre-art}
+    \end{column}
+  \end{columns}
+\end{frame}
+
 
 \section{Configuration}
 
 \begin{frame}
   \frametitle{Configuration} 
 
-  If \worch ``orchestrates'' the install then the configuration file
-  is the conductor's notes.  You mostly interact with \worch through
+  If \worch ``orchestrates'' the install then its configuration file
+  is the conductor's notes.  One mainly interacts with \worch through
   the configuration files in order to:
   \begin{itemize}
-  \item Determine installation layout policy 
+  \item Determine installation layout policy, Eg:
     \begin{itemize}
-    \item eg, match UPS ``product area'' conventions
-    \item share/interleave different build options, platform labels
+    \item match UPS ``product area'' conventions
+    \item share/interleave different build options (\texttt{opt/debug}), platform labels
     \item build on fast local disk/ramfs, install to AFS/NFS
     \end{itemize}
   \item Specify list of packages to install
   \item Group them into atomically installed sets
-  \item Define ``features'' required to install each package
-  \item Set parameters governing their build and installation
-  \item Declare inter-step build and dependencies
-  \item Set build- and run-time environment
+  \item Define ``features'' implementing installation ``steps''
+    \begin{description}
+    \item [features] \textit{tarball, vcs, patch, autoconf, cmake, makemake}
+    \item [steps] \texttt{seturl, download, unpack, patch, prepare, build, install}
+    \end{description}
+  \item Set parameters governing details of their build and installation
+  \item Declare explicit inter-step dependencies
+  \item Set package build and use environment variables
   \end{itemize}
 \end{frame}
 
@@ -260,30 +433,32 @@ This build included \texttt{cmake, libxml2, sqlite, python, cmake, gmp, mpfr, mp
   \frametitle{Basic configuration file syntax}
 
   Standard Python (\texttt{ConfigParser}) configuration file syntax \\
-  (a.k.a. INI format).
+  (a.k.a. ``INI'' format).
 
-  \begin{lstlisting}[language=bash,emph={section,another}]
+  \begin{lstlisting}[language=bash,emph={section,section2}]
 # this is a comment
 [section]
 key = value
 
-[another]
+[section2]
 key = newvalue
 key2 = value2
+key3: equals-or-colons
   \end{lstlisting}
 
   Consists of a number of named \textbf{sections} containing a number
   of configuration \textbf{items} consisting of
-  \textbf{key}/\textbf{value} pairs all of which are interpreted as strings.
+  \textbf{key}/\textbf{value} pairs separated \\
+  by ``\texttt{=}'' or ``\texttt{:}''.   Sections, keys and values are interpreted as strings.
 
 \end{frame}
 
 \begin{frame}[fragile]
-  \frametitle{A hierarchy of configuration parameters} 
+  \frametitle{Extension: hierarchy of configuration parameters} 
 
   \begin{columns}
     \begin{column}{0.45\textwidth}
-  \begin{lstlisting}[language=bash,emph={group,package,keytype},emphstyle=\color{red},emph={[2]group1,package1},emphstyle={[2]\color{blue}},emph={[3]groups,packages},emphstyle={[3]\color{magenta}}]
+  \begin{lstlisting}[language=bash,emph={start,group,package,keytype},emphstyle=\color{red},emph={[2]group1,package1},emphstyle={[2]\color{blue}},emph={[3]groups,packages},emphstyle={[3]\color{magenta}}]
 [start]
 groups = group1, group2
 key1 = val1
@@ -309,7 +484,7 @@ packages = package
       \small
       Hierarchy connected by section names
       \begin{itemize}
-      \item Result in \textcolor{blue}{\texttt{package1}} having keys: 
+      \item Results in \textcolor{blue}{\texttt{package1}} having keys: 
         \begin{itemize}
         \item \texttt{key1 = pkg1val1}
         \item \texttt{key2 = grpval2}
@@ -319,7 +494,7 @@ packages = package
         \texttt{key1 = pkg2val1}
       \item Special \textcolor{red}{\texttt{keytype}} section defines special variables to be
         interpreted as references to typed/named sections.
-      \item Any keytypes can be parsed but \worch uses just \textcolor{magenta}{\texttt{groups}}
+      \item Additional keytypes can be defined and parsed but \worch uses just \textcolor{magenta}{\texttt{groups}}
         and \textcolor{magenta}{\texttt{packages}}.
       \end{itemize}
     \end{column}
@@ -349,34 +524,73 @@ packages = gmp, ppl, mpfr, mpc, isl, cloog, gcc
 version = {gcc_version}
 #...
   \end{lstlisting}
-  Variables are resolved late so ``flow down'' through the section hierarchy an take on meanings specific to the ``leaf'' context (\textcolor{red}{\texttt{package}} in this case).
+  Variables are resolved late so ``flow down'' the hierarchy to take on meanings specific to each ``leaf'' keytype (\textcolor{red}{\texttt{package}} in this case).
 
-  \textcolor{blue}{Some variables} and some defaults are provided by \worch.
+  \textcolor{blue}{Some variables} and some other's default values are provided by \worch.
 \end{frame}
 
-\section{When Things Go Wrong}
 
 \begin{frame}[fragile]
-  \frametitle{Logging to debug failures}
-  Major build steps are logged under:
+  \frametitle{Simple example - main file}
+    \begin{lstlisting}[language=bash,emph={start,keytype}]
+# worch/examples/simple/simple.cfg
+[start]
+groups = buildtools, gnuprograms
+includes = buildtools.cfg, gnuprograms.cfg
+group = gnuprograms
+tags = debug
+features = tarball autoconf makemake
+download_dir = downloads
+source_dir = sources
+build_dir = builds/{package}-{version}-{tagsdashed}
+install_dir = {PREFIX}/{package}/{version}/{tagsdashed}
 
-  \verb|tmp/build/<build_dir>/worch_<package>_<step>.log.txt|
+[keytype]
+groups = group
+packages = package
+    \end{lstlisting}
+\end{frame}
 
-  \waf can spit out internal information with \texttt{waf -vvv}.
+\begin{frame}[fragile]
+  \frametitle{Simple example - buildtools group file}
+    \begin{lstlisting}[language=bash,emph={start,keytype}]
+# worch/examples/simple/buildtools.cfg
+[group buildtools]
+packages = cmake
+build_target = bin/{package}
+install_target = bin/{package}
 
-  Most of the problems are due to:
+[package cmake]
+version = 2.8.8
+source_url = http://www.cmake.org/files/v{version_2digit}/{source_package}
+unpacked_target = bootstrap
+prepare_cmd = ../../{source_dir}/{source_unpacked}/bootstrap
+prepare_cmd_options = --prefix={install_dir}
+prepare_target = cmake_install.cmake
+export_PATH = prepend:{install_dir}/bin
+    \end{lstlisting}
+\end{frame}
 
-  \begin{itemize}
-  \item typos in the configuration file
-  \item source distribution servers being down
-    \begin{itemize}
-    \item[$\rightarrow$] want to move to maintaining LBNE copies of tarballs
-    \end{itemize}
-  \item adding in new packages
-  \end{itemize}
+\begin{frame}[fragile]
+  \frametitle{Simple example - gnuprograms group file}
+    \begin{lstlisting}[language=bash,emph={start,keytype}]
+# worch/examples/simple/gnuprograms.cfg
+[group gnuprograms]
+packages = hello, bc
+source_url = http://ftp.gnu.org/gnu/{package}/{source_package}
+environment = group:buildtools
+unpacked_target = configure
+prepare_target = config.status
+build_target = bin/{package}
+install_target = bin/{package}
 
-  Definitely, novel platforms will require effort to incorporate quirks!
+[package hello]
+version = 2.8
+depends = prepare:bc_install
 
+[package bc]
+version = 1.06 
+    \end{lstlisting}
 \end{frame}
 
 \section{Design}
@@ -407,7 +621,7 @@ version = {gcc_version}
 \end{frame}
 
 \begin{frame}[fragile]
-  \frametitle{Trivial \worch feature} 
+  \frametitle{Example: trivial \worch feature} 
 
   A feature is a method which constructs \waf tasks (task generators)
   based on its set of required configuration items.  Eg, from:
@@ -425,7 +639,7 @@ def feature_dumpenv(info):
 
   All modules like \verb|orch.features.feature_*| are auto-loaded by \worch.
 
-  They declare tasks and inter-task (non-file) dependencies via the given \texttt{info}.
+  They declare tasks and inter-task (non-file) dependencies via the given \texttt{info} object.
 
   Some \verb|task()| options:
   \begin{description}
@@ -437,13 +651,21 @@ def feature_dumpenv(info):
 \end{frame}
 
 \begin{frame}[fragile]
-  \frametitle{A feature with requirements}
+  \frametitle{Example: a feature with requirements}
+  \footnotesize
 
-  A feature that requires configuration parameters must use ones from
-  \texttt{orch.features.requirements} and indicate any default values.
+  \begin{itemize}
+  \item Features provide list of required configuration items, with defaults
 
-  \verb|worch/orch/features/feature_autoconf.py|:
-  \begin{lstlisting}[language=Python,basicstyle=\footnotesize\tiny,]
+  \item ``Standard'' requirements are reused where appropriate.
+
+  \item Requirements are available as data members or as format
+    variables through the \texttt{info} object.
+
+  \end{itemize}
+
+  From: \verb|worch/orch/features/feature_autoconf.py|:
+  \begin{lstlisting}[language=Python,basicstyle=\footnotesize\tiny,emph={requirements}]
 requirements = {
     'unpacked_target': 'configure',
     'source_unpacked': None,
@@ -455,7 +677,7 @@ requirements = {
 @feature('autoconf', **requirements)
 def feature_autoconf(info):
     def prepare_task(task):
-        cmd = "%s %s" % (info.prepare_cmd, info.prepare_cmd_options)
+        cmd = info.format("{prepare_cmd} {prepare_cmd_options}")
         return exec_command(task, cmd)
         
     info.task('prepare',
@@ -494,6 +716,29 @@ def feature_autoconf(info):
   \item[install] install the package (eg, ``make install'')
   \end{description}
 
+\end{frame}
+
+\section{Status and Future}
+
+\begin{frame}
+  \frametitle{Status and Future}
+  Status:
+  \begin{itemize}
+  \item Basic functionality implemented and tested
+  \item Configuration exists for simple examples and extensive
+    LBNE-targeted groups: \textit{buildtools, compiler} and
+    \textit{externals} (includes ``standard'' HEP packages)
+  \item Sci. Linux 6 initial target (and somewhat Debian ``jessie'')
+  \end{itemize}
+  Future:
+  \begin{itemize}
+  \item Finish incorporating art, LArSoft, genie, globes and g4lbne
+  \item Test on SL5, Ubuntu and Mac OS X
+  \item Add support for producing UPS ``products area'' and binary packages
+  \item Hook into LBNE repositories for continual integration (buildbot)
+  \item In parallel with above, solicit volunteers for testing and use.
+  \item Continue to collaborate with ATLAS, look for ``synergies''.
+  \end{itemize}
 \end{frame}
 
 \end{document}

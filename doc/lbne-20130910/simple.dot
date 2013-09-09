@@ -1,0 +1,97 @@
+digraph worch {
+rankdir = "LR";
+    subgraph clusterGroup1 {
+    label = "Group1";
+        subgraph clustercmake {
+        label = "cmake";
+            "cmake_prepare" [shape="ellipse"];
+            "cmake_unpack" [shape="ellipse"];
+            "cmake_install" [shape="ellipse"];
+            "cmake_seturl" [shape="ellipse"];
+            "cmake_download" [shape="ellipse"];
+            "cmake_build" [shape="ellipse"];
+            }
+        subgraph clustercmakefiles {
+        label = "cmake files";
+            "tmp-simple/builds/cmake-2.8.8-debug/cmake_install.cmake" [shape="box"];
+            "tmp-simple/sources/cmake-2.8.8/bootstrap" [shape="box"];
+            "tmp-simple/urlfiles/cmake-2.8.8.url" [shape="box"];
+            "tmp-simple/downloads/cmake-2.8.8.tar.gz" [shape="box"];
+            "tmp-simple/builds/cmake-2.8.8-debug/bin/cmake" [shape="box"];
+            "install-simple/cmake/2.8.8/debug/bin/cmake" [shape="box"];
+            }
+        }
+    subgraph clusterGroup2 {
+    label = "Group2";
+        subgraph clusterhello {
+        label = "hello";
+            "hello_install" [shape="ellipse"];
+            "hello_prepare" [shape="ellipse"];
+            "hello_build" [shape="ellipse"];
+            "hello_unpack" [shape="ellipse"];
+            "hello_seturl" [shape="ellipse"];
+            "hello_download" [shape="ellipse"];
+            }
+        subgraph clusterhellofiles {
+        label = "hello files";
+            "tmp-simple/builds/hello-2.8-debug/src/hello" [shape="box"];
+            "tmp-simple/sources/hello-2.8/configure" [shape="box"];
+            "tmp-simple/downloads/hello-2.8.tar.gz" [shape="box"];
+            "tmp-simple/builds/hello-2.8-debug/config.status" [shape="box"];
+            "install-simple/hello/2.8/debug/bin/hello" [shape="box"];
+            "tmp-simple/urlfiles/hello-2.8.url" [shape="box"];
+            }
+        subgraph clusterbc {
+        label = "bc";
+            "bc_build" [shape="ellipse"];
+            "bc_install" [shape="ellipse"];
+            "bc_seturl" [shape="ellipse"];
+            "bc_prepare" [shape="ellipse"];
+            "bc_unpack" [shape="ellipse"];
+            "bc_download" [shape="ellipse"];
+            }
+        subgraph clusterbcfiles {
+        label = "bc files";
+            "tmp-simple/urlfiles/bc-1.06.url" [shape="box"];
+            "install-simple/bc/1.06/debug/bin/bc" [shape="box"];
+            "tmp-simple/builds/bc-1.06-debug/config.status" [shape="box"];
+            "tmp-simple/sources/bc-1.06/configure" [shape="box"];
+            "tmp-simple/downloads/bc-1.06.tar.gz" [shape="box"];
+            "tmp-simple/builds/bc-1.06-debug/bc/bc" [shape="box"];
+            }
+        }
+    "tmp-simple/downloads/cmake-2.8.8.tar.gz" -> "cmake_unpack" [];
+    "tmp-simple/sources/cmake-2.8.8/bootstrap" -> "cmake_prepare" [];
+    "tmp-simple/builds/bc-1.06-debug/bc/bc" -> "bc_install" [];
+    "tmp-simple/builds/bc-1.06-debug/config.status" -> "bc_build" [];
+    "cmake_install" -> "install-simple/cmake/2.8.8/debug/bin/cmake" [];
+    "cmake_build" -> "tmp-simple/builds/cmake-2.8.8-debug/bin/cmake" [];
+    "tmp-simple/builds/cmake-2.8.8-debug/cmake_install.cmake" -> "cmake_build" [];
+    "tmp-simple/urlfiles/bc-1.06.url" -> "bc_download" [];
+    "cmake_seturl" -> "tmp-simple/urlfiles/cmake-2.8.8.url" [];
+    "bc_prepare" -> "tmp-simple/builds/bc-1.06-debug/config.status" [];
+    "tmp-simple/sources/hello-2.8/configure" -> "hello_prepare" [];
+    "tmp-simple/builds/cmake-2.8.8-debug/bin/cmake" -> "cmake_install" [];
+    "bc_unpack" -> "tmp-simple/sources/bc-1.06/configure" [];
+    "cmake_unpack" -> "tmp-simple/sources/cmake-2.8.8/bootstrap" [];
+    "cmake_download" -> "tmp-simple/downloads/cmake-2.8.8.tar.gz" [];
+    "bc_build" -> "tmp-simple/builds/bc-1.06-debug/bc/bc" [];
+    "hello_unpack" -> "tmp-simple/sources/hello-2.8/configure" [];
+    "hello_download" -> "tmp-simple/downloads/hello-2.8.tar.gz" [];
+    "bc_seturl" -> "tmp-simple/urlfiles/bc-1.06.url" [];
+    "tmp-simple/downloads/hello-2.8.tar.gz" -> "hello_unpack" [];
+    "bc_install" -> "hello_prepare" [style="bold"];
+    "tmp-simple/builds/hello-2.8-debug/config.status" -> "hello_build" [];
+    "bc_download" -> "tmp-simple/downloads/bc-1.06.tar.gz" [];
+    "hello_install" -> "install-simple/hello/2.8/debug/bin/hello" [];
+    "tmp-simple/urlfiles/cmake-2.8.8.url" -> "cmake_download" [];
+    "cmake_prepare" -> "tmp-simple/builds/cmake-2.8.8-debug/cmake_install.cmake" [];
+    "tmp-simple/sources/bc-1.06/configure" -> "bc_prepare" [];
+    "tmp-simple/urlfiles/hello-2.8.url" -> "hello_download" [];
+    "hello_seturl" -> "tmp-simple/urlfiles/hello-2.8.url" [];
+    "bc_install" -> "install-simple/bc/1.06/debug/bin/bc" [];
+    "tmp-simple/downloads/bc-1.06.tar.gz" -> "bc_unpack" [];
+    "hello_prepare" -> "tmp-simple/builds/hello-2.8-debug/config.status" [];
+    "tmp-simple/builds/hello-2.8-debug/src/hello" -> "hello_install" [];
+    "hello_build" -> "tmp-simple/builds/hello-2.8-debug/src/hello" [];
+    }

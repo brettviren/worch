@@ -4,3 +4,13 @@ log
 .lock-*
 *.pyc
 *.log
+*.aux
+*.dvi
+*.fdb_latexmk
+*.nav
+*.out
+*.snm
+*.toc
+*.vrb
+tmp*
+blah*
