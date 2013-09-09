@@ -96,7 +96,7 @@ reqdesc_list = [
             doc='The patch file to apply'),
     ReqDesc('patch_cmd', None,  # patching feature should supply
             doc='The patch command, the patch file will be appended'),
-    ReqDesc('patch_cmd_opions',None,
+    ReqDesc('patch_cmd_options',None,
             doc='Patch command options, appended to patch command + patch file'),
     ReqDesc('patch_target','{package}-{version}.applied', typecode='f', relative='{patchfile_dir}',
             doc='A file indicating a successful application of the patch'),
