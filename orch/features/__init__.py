@@ -13,7 +13,7 @@ def load():
         ffile = osp.basename(fpath)
         modname = osp.splitext(ffile)[0]
         exec("from . import %s"%modname)
-    import pfi
+    from . import pfi
     return (pfi.registered_func, pfi.registered_config)
 
 def feature_requirements(featlist):

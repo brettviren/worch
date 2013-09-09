@@ -156,7 +156,10 @@ def select(reqs):
     all_keys = set(pool.keys())
 
     if not req_keys.issubset(all_keys):
-        raise ValueError, 'Unknown requirements: %s' % ', '.join(req_keys.difference(all_keys))
+        raise ValueError(
+            'Unknown requirements: %s' %
+            ', '.join(req_keys.difference(all_keys))
+            )
 
     ret = dict()
     for pkey,preq in pool.items():

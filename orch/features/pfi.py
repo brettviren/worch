@@ -36,24 +36,23 @@ class PackageFeatureInfo(object):
                 feature = feature_name))
 
     def dump(self):
-        print 'PFI:', self.package_name, self.feature_name, len(self._data), sorted(self._data.items())
+        msg.debug('orch: PFI:', self.package_name, self.feature_name, len(self._data), sorted(self._data.items()))
         for k,v in sorted(self._data.items()):
             if v is None:
-                print 'PFI: %s: %s: "%s" is None' % (self.package_name, self.feature_name, k)
+                msg.debug('orch: PFI: %s: %s: "%s" is None' % (self.package_name, self.feature_name, k))
                 continue
             n = getattr(self, k)
             p = ''
             r = reqmod.pool.get(k)
             if r and r.typecode in ['d','f']:
                 p = n.abspath()
-            print 'PFI: %s: %s: "%s" = "%s" = "%s" %s' % (self.package_name, self.feature_name, k,v,n,p),
+                pass
+            val = ' value is okay'
             if v is None:
-                print ' value is None'
-                continue
-            if '{' in v:
-                print ' value is unformed'
-                continue
-            print ' value is okay'
+                val = ' value is None'
+            elif '{' in v:
+                val = ' value is unformed'
+            msg.debug('orch: PFI: %s: %s: "%s" = "%s" = "%s" %s%s' % (self.package_name, self.feature_name, k,v,n,p, val))
 
 
     def __call__(self, name, dir = None):
@@ -64,8 +63,10 @@ class PackageFeatureInfo(object):
     def __getattr__(self, name):
         val = self._data[name]
         if val is None:
-            raise ValueError, '"%s" is None for feature: "%s", package: "%s"' % \
+            raise ValueError(
+                '"%s" is None for feature: "%s", package: "%s"' % 
                 (name, self.feature_name, self.package_name)
+                )
         req = reqmod.pool.get(name)
         if req and req.typecode.lower() in ['d','f']:
             parent = None
@@ -86,7 +87,7 @@ class PackageFeatureInfo(object):
         task_name = self.format('{package}_%s'%name)
         kwds.setdefault('env', self._env)
         deps = set()
-        if kwds.has_key('depends_on'):
+        if 'depends_on' in kwds:
             depon = kwds.pop('depends_on')
             if isinstance(depon, type('')):
                 depon = [depon]
@@ -95,7 +96,7 @@ class PackageFeatureInfo(object):
         for dep in deps:
             self.dependency(dep, task_name)
 
-        if not kwds.has_key('cwd'):
+        if not 'cwd' in kwds:
             dirname = self.step_cwd.get(name)
             if dirname:
                 dirnode = getattr(self, dirname)

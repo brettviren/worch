@@ -7,7 +7,7 @@ import os
 
     
 from . import deconf
-from util import check_output, CalledProcessError, update_if
+from .util import check_output, CalledProcessError, update_if
 from . import features as featmod
 
 def ups_flavor():

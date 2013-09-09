@@ -3,7 +3,7 @@
 The VCS feature downloads and unpacks a source archive stored in a
 version control system.  It is a drop-in replacement for the "tarball"
 feature but does not make use of any intermediate downloaded files.
-It's final step is "unpack".
+Its final step is "unpack".
 '''
 
 from .pfi import feature
@@ -63,7 +63,7 @@ def feature_vcs(info):
     if not flavor:
         msg = info.format('VCS feature requested but no VCS flavor given for package {package}')
         info.error(msg)
-        raise ValueError, msg
+        raise ValueError(msg)
 
     # make a file holding the repository URL.  This is just to prime
     # the dependency chain.
