@@ -116,6 +116,10 @@
   \vspace{5mm}
   
   Anything missing?
+  \begin{itemize}
+  \item I have nothing here for Near Detector!
+  \end{itemize}
+  
 \end{frame}
 
 \begin{frame}
@@ -137,6 +141,12 @@
 
 \section{Overview of Installation System}
 
+\begin{frame}
+\tableofcontents[
+currentsection,currentsubsection,
+hideothersubsections,sectionstyle=show/shaded,
+] 
+\end{frame}
 
 \begin{frame}
   \frametitle{Desires for the build system}
@@ -223,18 +233,29 @@ $ waf --help
   \item contributions to \worch itself.
   \end{itemize}
 
-  \vspace{5mm}
-  Note of caution for LBNE and Fermilab: ATLAS looked at CMake to
-  replace CMT but gave up on it after two months of effort.  
-
-  I still support replacing SRT with CMake in LArSoft, but for
-  large-scale meta-build systems we should take heed.
-
-  We should investigate \hwaf/\waf to see if would be a worthy basis
-  for LBNE ``native'' package builds.
+  \vspace{2mm}
+  \footnotesize
+  Note of caution for LBNE and Fermilab: 
+  \begin{itemize}
+  \item ATLAS investigated CMake to replace CMT, found it unsuitable
+    after two months of effort.
+  \item 
+    I still support replacing SRT with CMake in LArSoft, but for
+    large-scale meta-build systems we should take heed.
+  \item 
+    We should investigate \hwaf/\waf to see if would be a worthy basis
+    for LBNE ``native'' package builds.
+  \end{itemize}
 \end{frame}
 
 \section{Examples}
+
+\begin{frame}
+\tableofcontents[
+currentsection,currentsubsection,
+hideothersubsections,sectionstyle=show/shaded,
+] 
+\end{frame}
 
 \begin{frame}[fragile]
   \frametitle{Example: getting \worch}
@@ -402,6 +423,13 @@ $ waf -j10
 
 
 \section{Configuration}
+
+\begin{frame}
+\tableofcontents[
+currentsection,currentsubsection,
+hideothersubsections,sectionstyle=show/shaded,
+] 
+\end{frame}
 
 \begin{frame}
   \frametitle{Configuration} 
@@ -595,6 +623,13 @@ version = 1.06
 
 \section{Design}
 
+\begin{frame}
+\tableofcontents[
+currentsection,currentsubsection,
+hideothersubsections,sectionstyle=show/shaded,
+] 
+\end{frame}
+
 \begin{frame}[fragile]
   \frametitle{Design Overview}
   \worch consists of these layers:
@@ -719,6 +754,13 @@ def feature_autoconf(info):
 \end{frame}
 
 \section{Status and Future}
+
+\begin{frame}
+\tableofcontents[
+currentsection,currentsubsection,
+hideothersubsections,sectionstyle=show/shaded,
+] 
+\end{frame}
 
 \begin{frame}
   \frametitle{Status and Future}
