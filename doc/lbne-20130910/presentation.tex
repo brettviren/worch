@@ -27,7 +27,7 @@
   
   \includegraphics[height=1.5cm]{bnl-logo}
 }
-\title[LBNE Software Installation]{LBNE Software Installation System}
+\title[LBNE Software Installation System]{LBNE Software Build and Configuration System}
 \date[]{LBNE Collaboration Meeting 2013/09}
 
 
@@ -57,10 +57,10 @@
   \small
   Where we are:
   \begin{itemize}
+  \item No automated, cross platform, build system exists
   \item Distributed, multi-country collaboration, diverse expertise.
   \item So far, a largely Fermilab-centric mind-view towards software and computing.
-  \item Existing LBNE software requires a huge number of supporting packages, including leading-edge C++ compiler.
-  \item No automated, cross platform, build system exists
+  \item Existing LBNE software requires a \textbf{large} number of supporting packages, including leading-edge C++ compiler.
   \item Fermilab installation managed largely by one person\footnote{Thanks Lynn Garren!} with responsibilities to other experiments.
   \item We lack an overabundance of software expertise in the collaboration.
   \end{itemize}
@@ -763,23 +763,55 @@ hideothersubsections,sectionstyle=show/shaded,
 \end{frame}
 
 \begin{frame}
-  \frametitle{Status and Future}
-  Status:
+  \frametitle{Status}
   \begin{itemize}
   \item Basic functionality implemented and tested
   \item Configuration exists for simple examples and extensive
     LBNE-targeted groups: \textit{buildtools, compiler} and
     \textit{externals} (includes ``standard'' HEP packages)
-  \item Sci. Linux 6 initial target (and somewhat Debian ``jessie'')
+  \item Initial target: Sci. Linux 6 (and somewhat Debian ``jessie'')
+  \item Will continue to collaborate with ATLAS, exploit ``synergies''.
   \end{itemize}
-  Future:
+\end{frame}
+
+\begin{frame}
+  \frametitle{Near Future}
   \begin{itemize}
   \item Finish incorporating art, LArSoft, genie, globes and g4lbne
-  \item Test on SL5, Ubuntu and Mac OS X
-  \item Add support for producing UPS ``products area'' and binary packages
-  \item Hook into LBNE repositories for continual integration (buildbot)
-  \item In parallel with above, solicit volunteers for testing and use.
-  \item Continue to collaborate with ATLAS, look for ``synergies''.
+  \item Get it into user's hands and fix any issues that uncovers.
+  \item Target other popular platforms: SL5, Ubuntu and Mac OS X
+    \begin{itemize}
+    \item Set of supported platforms?
+    \item Guided by recent survey.
+    \item Every supported platform needs at least one responsible ``champion''.
+    \end{itemize}
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Next-next Steps}
+  \begin{itemize}
+  \item Provide for user environment configuration
+    \begin{itemize}
+    \item produce UPS compatible configuration files and 
+    \item develop independent environment management system
+    \end{itemize}
+  \item understand and satisfy Near Detector needs.
+  \item Hooks into various LBNE software repositories
+    \begin{itemize}
+    \item continual integration, commits trigger rebuild,
+      report failures
+    \item likely use ``buildbot'', exploit existing experience at FNAL 
+      \begin{itemize}
+      \item [$\rightarrow$] want to run a buildbot on every supported platform.  Expect a cadre of ``platform champion'' to provide hardware and setup/maintenance effort.
+      \end{itemize}
+    \item learn of ``bad commits'' breaking the build ASAP.
+    \item allow confidence when we upgrade (eg, new Geant4)
+    \item run suite of validation jobs.
+      \begin{itemize}
+      \item[$\rightarrow$] detector/physics groups must develop these validation processes.
+      \end{itemize}
+    \end{itemize}
   \end{itemize}
 \end{frame}
 
