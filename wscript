@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 # encoding: utf-8
 
+import waflib.Logs as msg
+
 top = '.'
 out = 'tmp'
 
@@ -19,7 +21,7 @@ def dot(ctx):
     bld = ctx.exec_dict['bld']
     #print 'TG:\n', '\n'.join([tg.name for tg in bld.get_all_task_gen()])
     odot.write(bld, ctx.options.dot)
-    print 'Wrote %s' % ctx.options.dot
+    msg.info('orch: Wrote %s' % ctx.options.dot)
     sys.exit(0)
 
 def build(bld):
