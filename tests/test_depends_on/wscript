@@ -12,7 +12,9 @@ def build(bld):
     bld(name="TASK_A_ONE", rule="echo a > ${TGT}", target="a1.txt")
     bld(name="TASK_A_TWO", rule="cp ${SRC} ${TGT}", source="a1.txt", target="a2.txt")
     bld(name="TASK_A_THREE", rule="cp ${SRC} ${TGT}", source="a2.txt", target="a3.txt")
-
+    bld(name="TASK_E", rule="cp ${SRC} ${TGT}", source="a3.txt", target="a4.txt")
+    bld(name="INSTALL_E", rule="mkdir -p ${PREFIX} && cp ${SRC} ${PREFIX}/", 
+        source = "a4.txt")
 
 
 # from the waf book
