@@ -2,6 +2,7 @@
 from .pfi import feature
 
 from orch.util import urlopen
+from orch.wafutil import exec_command
 
 def get_unpacker(filename, dirname):
     if filename.endswith('.zip'): 
@@ -71,9 +72,13 @@ def feature_tarball(info):
               target = info.source_archive_file)
 
 
+    def unpack_task(task):
+        cmd = get_unpacker(info.source_archive_file.abspath(), 
+                           info.source_dir.abspath())
+        return exec_command(task, cmd)
+
     info.task('unpack',
-              rule = get_unpacker(info.source_archive_file.abspath(), 
-                                  info.source_dir.abspath()),
+              rule = unpack_task,
               source = info.source_archive_file, 
               target = info.unpacked_target)
 
