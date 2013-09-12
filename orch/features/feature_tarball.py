@@ -63,7 +63,7 @@ def feature_tarball(info):
         hasher.update(tgt.read('rb'))
         data= hasher.hexdigest()
         if data != ref:
-            info.error("[{package}_download] invalid checksum:\nref: %s\nnew: %s", ref, data)
+            info.error("[{package}_download] invalid checksum:\nref: %s\nnew: %s" % (ref, data))
             return 1
         return
 
