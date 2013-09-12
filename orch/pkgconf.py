@@ -122,6 +122,11 @@ def load(filename, start='start', formatter = None, **kwds):
         new_package_list = list()
         for package in group['packages']:
 
+            # fixme: this is broken! because install_dir tends to be
+            # parameterized by {package} (and others) which are
+            # resolved in the context of the package using these
+            # variables.
+
             # generate a per-package install_dir variable for reference by others
             pkgname = package['package']
             install_dir = package['install_dir']
