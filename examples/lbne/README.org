@@ -1,0 +1,60 @@
+#+title: Building the LBNE software suite
+
+This directory contains configuration files for building the LBNE software suite.  The configuration is factored to allow different sub-suites to be built depending on which main configuration file is given to waf.
+
+* Considerations
+
+Some items of consideration when building LBNE suite or sub-suites.
+
+** Compiler
+
+The vast bulk of LBNE software is driven by LArSoft through it's dependence on art.   Art requires a specific and recent version of the GCC in order to make use of (b)leeding edge C++ language.  In order to share C++ packages between different sub-suites they all must use the GCC package built by worch even if they do not rely on art.  This imposes an extra built-time cost on some sub-suites but saves time not having to rebuild the same C++ packages for both the system compiler and the worch-built compiler at sites that want both art-dependent and art-independent sub-suites.
+
+* Sub-suites
+
+To build a sub-suite the corresponding =suite-*.cfg= file is given to waf via the =--orch-config= command line argument.  To build the entire LBNE suite one uses the =suite-lbne.cfg= file.  
+
+** Development notes
+
+A "suite file" (=suite-*.cfg= is a "main" file with a =[start]= section.  Exactly one suite file must be specified to waf and can not include other suite files.  All other configuration files may be shared and must be written independently.
+
+* Running an installation
+
+Like all things waf it is a two-step process.  First configure:
+
+#+BEGIN_EXAMPLE
+$ waf --prefix=/path/to/install --orch-config=examples/lbne/suite-NAME.cfg configure
+$ waf
+#+END_EXAMPLE
+
+The =--out= option can specify where the temporary build files are placed.  As subsequent sub-suites are built one can repeat the =configure= command and if the =prefix= and =out= options are kept the same then previously built packages will be reused.
+
+* File organization
+
+
+
+* Suites
+
+** Build tools
+
+The =suite-buildtools.cfg= builds any needed build tools (pre-GCC).
+
+** Compiler
+
+The =suite-compiler.cfg= builds the buildtools and compiler (GCC) groups.
+
+** G4LBNE
+
+ - redmine :: https://cdcvs.fnal.gov/redmine/projects/lbne-beamsim
+ - mailing list :: =lbne-bm-sim@fnal.gov=
+
+** Fast MC
+
+Where:
+
+ - redmine :: https://cdcvs.fnal.gov/redmine/projects/fast_mc
+ - mailing list :: =lbne-fastmc@fnal.gov=
+
+Status: 
+
+ - not yet included
