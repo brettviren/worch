@@ -50,7 +50,8 @@ def feature_tarball(info):
         except Exception:
             import traceback
             traceback.print_exc()
-            info.fatal("[{package_}_download] problem downloading [{source_url}]")
+            info.error("[{package}_download] problem downloading [{source_url}]")
+            return 1
 
         checksum = info.source_archive_checksum
         if not checksum:
@@ -62,8 +63,8 @@ def feature_tarball(info):
         hasher.update(tgt.read('rb'))
         data= hasher.hexdigest()
         if data != ref:
-            info.fatal("[{pacakge}_download] invalid MD5 checksum:\nref: %s\nnew: %s", ref, data)
-
+            info.error("[{package}_download] invalid MD5 checksum:\nref: %s\nnew: %s", ref, data)
+            return 1
         return
 
     info.task('download',
