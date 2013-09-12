@@ -109,51 +109,55 @@ class PkgFormatter(object):
         ret = string.format(**vars)
         return ret
 
+def fold_in_feature_requirements(suite, formatter = None, **kwds):
+    # fold in feature defaults
+    for group in suite['groups']:
+        new_packages = list()
+        for package in group['packages']:
+            featlist = package.get('features').split()
+            featcfg = featmod.feature_requirements(featlist)
+            package = update_if(featcfg, None, **package)            
+            new_packages.append(package)
+        group['packages'] = new_packages
+
+    if not formatter:
+        formatter = PkgFormatter()
+    suite = deconf.format_any(suite, formatter=formatter, **kwds)
+    return suite
+
+def fold_in_package_vars(suite, formatter, **kwds):
+    package_vars = dict()
+    for group in suite['groups']:
+        for package in group['packages']:
+            pkgname = package['package']
+            for k,v in package.items():
+                package_vars['%s_%s'%(pkgname,k)] = v
+            dest_install_dir = package.get('dest_install_dir') or package.get('install_dir')
+            package['dest_install_dir'] = dest_install_dir
+            package_vars['%s_dest_install_dir'%pkgname] = dest_install_dir
+
+    for group in suite['groups']:
+        new_packages = list()
+        for package in group['packages']:
+            package = update_if(package_vars, None, **package)
+            new_packages.append(package)
+        group['packages'] = new_packages
+
+    if not formatter:
+        formatter = PkgFormatter()
+    suite = deconf.format_any(suite, formatter=formatter, **kwds)
+    return suite
 
 def load(filename, start='start', formatter = None, **kwds):
 
     # load in initial configuration but delay formatting
     suite = deconf.load(filename, start=start, formatter=formatter, **kwds)
+    suite = fold_in_feature_requirements(suite, formatter, **kwds)
+    suite = fold_in_package_vars(suite, formatter, **kwds)
     
-    # post-process
-    install_dirs = {}
-    for group in suite['groups']:
-
-        new_package_list = list()
-        for package in group['packages']:
-
-            # fixme: this is broken! because install_dir tends to be
-            # parameterized by {package} (and others) which are
-            # resolved in the context of the package using these
-            # variables.
-
-            # generate a per-package install_dir variable for reference by others
-            pkgname = package['package']
-            install_dir = package['install_dir']
-            install_dirs['%s_install_dir'%pkgname] = install_dir
-
-            # generate a per-package dest_install_dir variable for reference by others
-            dest_install_dir = package.get('dest_install_dir', install_dir)
-            install_dirs['%s_dest_install_dir'%pkgname] = dest_install_dir
-
-            # fold in any missing defaults from the feature requirements
-            featlist = package.get('features').split()
-            #print 'Adding features to "%s" : %s' % (pkgname, featlist)
-            featcfg = featmod.feature_requirements(featlist)
-            package = update_if(featcfg, None, **package)            
-
-            new_package_list.append(package)
-
-        for package in new_package_list:
-            package.update(**install_dirs)
-
-        group['packages'] = new_package_list
-
-
-    if not formatter:
-        formatter = PkgFormatter()
-    suite = deconf.format_any(suite, formatter=formatter, **kwds)
-
+    # from pprint import PrettyPrinter
+    # pp = PrettyPrinter(indent=2)
+    # pp.pprint(suite)
     return suite
 
 
