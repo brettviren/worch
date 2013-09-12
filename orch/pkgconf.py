@@ -4,7 +4,6 @@ Package specific interpretation layered on deconf.
 '''
 
 import os
-
     
 from . import deconf
 from util import check_output, CalledProcessError, update_if
@@ -25,6 +24,23 @@ def ups_flavor():
     else:
         libc = check_output(['ldd','--version']).split(b'\n')[0].split()[-1]
     return '%s%s+%s-%s' % (kern, mach, rel, libc)
+
+def ncpus():
+    try:
+        import psutil
+        return psutil.NUM_CPUS
+    except ImportError:
+        pass
+
+    try:
+        import multiprocessing
+        return multiprocessing.cpu_count()
+    except ImportError:
+        pass
+    except NotImplementedError:
+        pass
+
+    return 1
 
 def host_description():
     '''
@@ -66,7 +82,8 @@ def host_description():
     else:
         libc_version = check_output(['ldd','--version']).split(b'\n')[0].split()[-1]
     ret['libc_version'] = libc_version
-
+    ret['NCPUS'] = ncpus()
+        
     return ret
 
 
