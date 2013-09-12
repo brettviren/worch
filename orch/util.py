@@ -18,7 +18,7 @@ def update_if(d, p, **kwds):
         p = lambda k,v: v is not None 
     d = dict(d)                 # copy
     for k,v in kwds.items():
-        if not d.has_key(k):
+        if not k in d:
             d[k] = v
             continue
         if p(k, v):
