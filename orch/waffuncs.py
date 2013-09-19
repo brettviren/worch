@@ -49,7 +49,7 @@ def configure(cfg):
     if not cfg.options.orch_config:
         raise RuntimeError('No Orchestration configuration file given (--orch-config)')
     orch_config = []
-    for lst in cfg.options.orch_config.split(','):
+    for lst in util.string2list(cfg.options.orch_config):
         lst = lst.strip()
         orch_config += glob(lst)
     okay = True
@@ -103,7 +103,7 @@ def build(bld):
                 continue
 
             pkgcfg = bld.env.orch_package_dict[pkgname]
-            featlist = pkgcfg.get('features').split()
+            featlist = util.string2list(pkgcfg.get('features'))
             msg.debug('orch: features for %s: "%s"' % (pkgname, '", "'.join(featlist)))
             for feat in featlist:
                 try:
