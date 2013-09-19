@@ -81,9 +81,9 @@ def build(bld):
 
     import orch.features
     feature_funcs, feature_configs = orch.features.load()
-    msg.info('Supported features: "%s"' % '", "'.join(feature_funcs.keys()))
+    msg.info('Supported features: "%s"' % '", "'.join(sorted(feature_funcs.keys())))
 
-    msg.debug('orch: Build envs: %s' % ', '.join(bld.all_envs.keys()))
+    msg.debug('orch: Build envs: %s' % ', '.join(sorted(bld.all_envs.keys())))
 
     pfi_list = list()
     to_recurse = []

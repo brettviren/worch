@@ -25,6 +25,10 @@ Some features of worch:
  - while heavy use of environment variables is discouraged one can define build environment variables in the configuration.  These can be applied on a per-package basis or can be defined on a package or group basis and applied to those packages which require them.
 
 
+* Limitations
+
+While waf supports all the way back to Python 2.3, worch requires at least Python 2.6 (eg, Sci. Linux 6).
+
 * Concepts
 
 Some of the terms and concepts used by Worch.  
