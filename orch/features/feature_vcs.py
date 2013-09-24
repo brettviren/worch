@@ -63,7 +63,7 @@ def do_svn(info):
     if getattr(info, 'vcs_tag'):
         err = info.format('SVN has no concept of tags, can not honor: "{vcs_tag}"')
         info.error(err)
-        raise ValueError, err
+        raise ValueError(err)
     pat = "svn checkout {source_url} {source_unpacked}"
     return info.format(pat)
 
