@@ -13,6 +13,7 @@ from . import util
 
 ## waf imports
 import waflib.Logs as msg
+import waflib.Context as context
 
 # NOT from the waf book.  The waf book example for depends_on doesn't work
 from waflib import TaskGen
@@ -64,7 +65,8 @@ def configure(cfg):
     cfg.msg('Orch configuration files', '"%s"' % '", "'.join(orch_config))
 
     extra = dict(cfg.env)
-    extra['top'] = cfg.path.abspath()
+    extra['top'] = context.top_dir
+    extra['out'] = context.out_dir # usually {top}/tmp
     extra['DESTDIR'] = getattr(cfg.options, 'destdir', '')
     suite = pkgconf.load(orch_config, start = cfg.options.orch_start, **extra)
 
