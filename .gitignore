@@ -14,3 +14,5 @@ log
 *.vrb
 tmp*
 blah*
+install*
+foo.*
