@@ -33,16 +33,16 @@ While waf supports all the way back to Python 2.3, worch requires at least Pytho
 
 Some of the terms and concepts used by Worch.  
 
- - suite :: the collection of all software to install with Worch
- - packages :: software from a common source to be installed.  It has a name and a version
- - groups :: a collection of related packages that must be fully installed independent from others in the suite
- - steps :: the installation of a package is broken down into a linear chain of steps.  The default steps are "download", "unpack", "prepare", "build" and "install".  Fully qualified steps names include the name of the package on which they operate like: =<package>_<step>=
- - features :: one or more steps collected together in a named and reusable manner
- - dependencies :: one step may require a file to exist which another step declares that it will produce or an explicit dependency can be declared based on the step names
+ - suite :: the collection of all the software installed together with Worch
+ - package :: software from a single source to be installed as an atomic unit.  A package has a name and a version
+ - group :: a collection of related packages that must be fully installed independent from others in the suite
+ - step :: the installation of a package is broken down into a linear, series of steps.  The steps include "download", "unpack", "patch", "prepare", "build" and "install".  Fully qualified steps names include the name of the package on which they operate, for example: =<package>_<step>=
+ - feature :: one or more steps collected together in a named and reusable manner
+ - dependencies :: before a step can run it may require another step to run either in an absolute way or by depending on the production of some file by that other step.
 
 * Getting started with Worch
 
-The use Worch consists largely of editing a configuration file set and running =waf= with the =orch= Python module to interpret them.  If highly custom installation of some package is required which is not natively supported a custom =wscript= file can be developed.
+The use of Worch consists largely of editing a configuration file set and running =waf= with the =orch= Python module to interpret them.  If highly custom installation of some package is required which is not natively supported a custom =wscript= file can be developed.
 
 Worch comes with example configuration files that build a few simple Free Software programs.  To exercise them:
 
@@ -80,12 +80,15 @@ bc  cmake  hello
 
 Notes:
 
- - multiple configuration files are given; they are effectively concatenated.  
+ - if multiple configuration files are given; they are effectively concatenated.  
+ - often just a main file needs to be specified and any other ones are implicitly loaded
  - the =./tmp= directory is created as directed by the =out= variable in the main =wscript= file and holds all intermediate build files
  - if the =configure= step is repeated it requires repetition of the options as well.
  - =--zones=orch= can be passed (to =configure= and =build=) to get more verbose output from =waf=.
 
 *** Build
+
+The =build= command is default and need not be explicitly stated.
 
 #+BEGIN_EXAMPLE
 $ waf [-j4] [-vvv] > log
@@ -245,11 +248,41 @@ For installations that can not be accommodated by configuration file entries a c
 
 
 
-* Built-in Package Meta-building Features
+* Steps
 
-Worch provides built-in support for a few common types of native package build systems.  The type of support is specified with the =features= key which is a space-separated list of words that match implementation of waf features.  A feature is responsible for implementing part of an installation.  The scope of features are chosen to be as encompassing as possible while reducing overlap and encouraging reuse.  A package will tend to have a list of features that are glued together either by explicit dependencies or, more likely, by one sharing as input the output of another.  A feature is built from one or more steps.
+Building a package is split into a number of steps.  A step is identified by a simple name.  There is no limit to step names but a limited set are identified as covering most meta-build operations.  They are:
 
-The rest of this section describes the build-in features.
+ - seturl :: write the URL of the source archive file (or repository) into a file to start the package dependencies
+ - download :: produce the source archive file (or repository clone) based on the URL
+ - unpack :: produce a directory of pristine source code 
+ - patch :: modify the source code, in place, typically by applying a patch
+ - prepare :: prepare the source for building, for example running =cmake= or autoconf's =configure= script
+ - build :: produce binaries from the source
+ - install :: place build results to a final installation location
+
+A step may have a default, associated directory in which it is run.  The directories are specified by the following configuration variables.  These locations and their associated steps are:
+
+ - =download_dir= :: download
+ - =source_dir= :: unpack, patch
+ - =build_dir= :: prepare, build, install
+
+* Features
+
+The common steps are then grouped and implemented by "features" which can then be applied to different packages.  Features use the steps as "touch stones" so that different features can be swapped while others can be shared.  An example is the =tarball= and =vcs= features both provide through to the "unpack" step.  The "cmake" and "autoconf" features provide the "prepare" step.
+
+Here is a list of "features" that worch provides and the steps they implement:
+
+ - tarball :: download and unpack a tar/zip file (seturl, download, unpack)
+ - vcs ::  clone or checkout source from a version control system (git, hg, cvs, svn), (seturl, download, unpack)
+ - patch :: apply a patch to the source (patch)
+ - prepare :: a generic source preparation feature (prepare)
+ - autoconf :: prepare source using autoconf =configure= script (prepare)
+ - cmake :: prepare source by calling cmake script (prepare)
+ - makemake :: run =make/make install= (build, install)
+ - pypackage :: install a Python package via =setup.py= (prepare, build, install)
+ - pythiainst :: special purpose feature for installing Pythia6 (prepare, build, install, and feature-specific steps)
+
+The rest of this section gives some examples
 
 ** Download and unpack
 
