@@ -66,8 +66,8 @@ def configure(cfg):
 
     extra = dict(cfg.env)
     extra['top'] = cfg.path.abspath()
-    out = context.out_dir # usually {top}/tmp
-    assert out, 'No out dir'
+    out = cfg.bldnode.abspath() # usually {top}/tmp
+    assert out, 'No out dir defined'
     extra['out'] = out
     extra['DESTDIR'] = getattr(cfg.options, 'destdir', '')
     msg.debug('top="{top}" out="{out}" DESTDIR="{DESTDIR}"'.format(**extra))

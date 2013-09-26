@@ -33,6 +33,8 @@ cp tmp/worch test/worch
 
 echo 'Made bundle in tmp/ now testing in test/'
 pushd test/
+set -x 
 ./worch --prefix=install --out=temp --orch-config=cfg/*.cfg configure
 ./worch build
+set +x
 popd 

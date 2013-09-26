@@ -17,7 +17,6 @@ def dump_out(what):
     with open(what, 'w') as fp:
         data = get_data('worch', what)
         fp.write(data)
-    print 'Done'
 
 def prepare_waf():
     
@@ -46,6 +45,7 @@ def unzip_to(filename, todir = '.'):
 def remove(*args):
     for dead in args:
         if os.path.exists(dead):
+            print 'Removing %s' % dead
             os.remove(dead)
 
 def wafdir2wafver(wafdir):
