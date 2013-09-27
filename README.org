@@ -358,3 +358,34 @@ This causes the =tarball= and =autoconf= features to look for a =bootstrap= inst
 
  - [[./examples/art/README.org]] 
 
+
+* Bundles
+
+It is possible to bundle waf, worch and a set of configuration files into a single self-extracting python executable.  This single file caries all the information required to build the corresponding suite of software.  The =scripts/= directory contains an example of how to do this in the form of the =worch-bundle-header= script.  It can be run like:
+
+#+BEGIN_EXAMPLE
+$ cd worch/
+$ ./scripts/worch-prepare-bundle worch-test-bundle examples/simple-with-patch .
+#+END_EXAMPLE
+
+Note the last argument is the worch directory itself.  When the resulting bundle, =worch-test-bundle= in this case, contains 
+
+ - a copy of waf
+ - the main =wscript= file and =orch= module from the given =worch= directory
+ - a copy of the given configuration directory
+
+When the resulting bundle file is run (note: avoid running it from inside the =worch= development directory) it will:
+
+ 1) unpack waf, run it once to produce the =.waf-*= directory and then delete waf
+ 2) unpack =wscript=, =orch= and configuration files
+
+You can then run it as if it were =waf= itself
+
+#+BEGIN_EXAMPLE
+$ mkdir /tmp/worch-test 
+$ cp worch-test-bundle 
+$ cd /tmp/worch-test
+$ ./worch-test-bundle --prefix=install --orch-config=examples/simple-with-patch/*.cfg configure
+$ waf
+#+END_EXAMPLE
+
