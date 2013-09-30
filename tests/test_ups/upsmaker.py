@@ -32,8 +32,9 @@ class TableFile(Element):
         return '\n'.join(ret)
 
 class Group(Element):
+
     def __init__(self, instances = None, common = None):
-        self.instances = instances or list()
+        self.instances = instances or [ Instance() ]
         self.common = common or list()
     def __str__(self):
         ret  = ['Group:']
@@ -44,14 +45,16 @@ class Group(Element):
         return '\n'.join(ret)
 
 class Instance(Element):
+    tab = ' '*4
+
     def __init__(self, flavor=None, qualifiers=None, actions=None):
         self.flavor = flavor or 'ANY'
         self.qualifiers = qualifiers or list()
         self.actions = actions or list()
     def __str__(self):
-        ret  = [self.format('Flavor = {flavor}')]
+        ret  = [self.tab + self.format('Flavor = {flavor}')]
         q = ':'.join(self.qualifiers) or '""'
-        ret += ['Qualifiers = ' + q ]
+        ret += [self.tab + 'Qualifiers = ' + q ]
         ret += [str(x) for x in self.actions]
         return '\n'.join(ret)
 
@@ -72,6 +75,37 @@ class Action(Element):
         ret += [self.tab*2 + str(x) for x in self.commands]
         return '\n'.join(ret)
 
+def worch_items_to_commands(*items):
+    '''
+    Convert worch configuration items to Action commands
+
+    ('export_PATH', 'prepend:/path/to/somewhere/bin') 
+    goes to
+    'pathPrepend(PATH, /path/to/somewhere/bin)'
+    '''
+    ret = []
+    for k,v in items:
+        if not k.startswith('export_'):
+            raise ValueError('Unknown worch keyword: "%s"' % k)
+        var = k[len('export_'):]
+        if v.startswith('prepend:'):
+            val = v[len('prepend:'):]
+            cmd = 'pathPrepend(%s, %s)' % (var, val)
+
+        elif v.startswith('append:'):        
+            val = v[len('append:'):]
+            cmd = 'pathAppend(%s, %s)' % (var, val)
+
+        elif v.startswith('set:'):
+            val = v[len('set:'):]
+            cmd = 'envSet(%s, %s)' % (var, val)
+
+        else:
+            val = v
+            cmd = 'envSet(%s, %s)' % (var, val)
+        ret.append(cmd)
+    return ret
+
 def test():
     tf = TableFile(
         'hello',
@@ -85,5 +119,17 @@ def test():
                 common=[ Action(commands=[ 'setupEnv()' ])])])
     print tf
 
+def test2():
+    tf = TableFile(
+        'hello',
+        groups = [
+            Group(
+                common=[ Action(commands=[ 
+                            'setupEnv()',
+                            'pathPrepend(PATH, ${UPS_PROD_DIR}/bin)',
+                            ])])])
+    print tf
+
+
 if '__main__' == __name__:
-    test()
+    test2()

@@ -54,12 +54,12 @@ Product = $name
 Group:
   Flavor = ANY
   Qualifiers = ""
-    Action = SETUP
-        pathPrepend(PATH, \${UPS_PROD_DIR}/bin)
+
 Common:
     Action = SETUP
         setupEnv()
         proddir()
+        pathPrepend(PATH, \${UPS_PROD_DIR}/bin)
 End:
 EOF
     fi
@@ -96,6 +96,15 @@ test_use () {
     f=$(ups setup ups)
     cat $f
     echo "from: $f"
+
+    echo "Sourcing ups setup"
+    source $f
+
+    echo "Setting up 'hello'"
+    setup hello
+    which hello
+    hello
+    env|grep -i hello
 }
 
 
