@@ -1,0 +1,76 @@
+#!/bin/bash
+
+# Produce a worch bundle, a self-extracting Python program which
+# contains waf + worch + configuration files
+
+bundle=$1 ; shift
+cfgdir=$1 ; shift
+worchdir=$1 ; shift
+waffile=$1 ; shift
+
+waf_version="1.7.13"
+waf_url="https://waf.googlecode.com/files/waf-$waf_version"
+scripts_dir=$(dirname $(readlink -f $BASH_SOURCE))
+start_dir=$(pwd)
+
+# make a subdirectory to hold the work in
+workdir=${bundle}.work
+if [ -d "$workdir" ] ; then
+    rm -rf $workdir
+fi
+mkdir -p $workdir
+workpath=$(readlink -f $workdir)
+
+if [ -z "$bundle" ] ; then
+    echo "worch-bundle <bundle-file-name> <config-directory> [<worch-directory> [<waf>]]"
+    exit 1
+fi
+
+# zip configuration files
+if [ ! -d "$cfgdir" ] ; then
+    echo "Config directory \"$cfgdir\" does not exist"
+    exit 1
+fi
+# zip up config
+cfgzip_path="$workpath/cfg.zip"
+zip -q -r $cfgzip_path $cfgdir
+
+# zip worch files
+if [ -z "$worchdir" ] ; then
+    worchdir="worch"
+fi
+if [ ! -d "$worchdir" ] ; then
+    echo "Worch directory: \"$worchdir\" does not exist"
+    exit 1
+fi
+orchzip_path="$workpath/orch.zip"
+pushd $worchdir
+zip -q -r $orchzip_path orch 
+cp wscript $workpath/
+cp orch/bundle/driver.py $workpath/bundle.py
+popd
+cp $scripts_dir/worch-bundle-header $workpath/header.sh
+
+# add waf
+if [ -z "$waffile" ] ; then
+    waffile="waf"
+fi
+if [ -f "$waffile" ] ; then
+    cp $waffile $workpath/waf
+else
+    wget -O $workpath/waf $waf_url
+fi
+
+pushd $workpath
+zip -q -r bundle.zip  bundle.py waf wscript orch.zip cfg.zip
+cat header.sh bundle.zip > $bundle
+chmod +x $bundle
+
+echo "testing in $workpath/test"
+mkdir test
+cd test
+../$bundle
+popd
+mv $workpath/$bundle .
+rm -rf $workpath
+
