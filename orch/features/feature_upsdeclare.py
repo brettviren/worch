@@ -44,12 +44,13 @@ def feature_upsdeclare(info):
         if os.path.exists(chain_file):
             os.remove(chain_file)
 
-        cmd = 'ups declare {package} v{version_underscore} -f {ups_flavor} -z {products_dir} -r {prod_root_dir} -U {ups_sub_dir} -m {table_file} -c'
+        cmd = 'ups declare {package} v{version_underscore} -f {ups_flavor} -z {products_dir} -r {prod_root_dir} -U {ups_sub_dir} -m {table_file} -q {qualifiers} -c'
         cmd = info.format(cmd, 
                           products_dir =info.ups_products.abspath(),
                           prod_root_dir = ups_prod_root_dir,
                           ups_sub_dir = ups_sub_dir,
                           table_file = ups_table_file,
+                          qualifiers = "debug",
                           )
         print 'UPS: declare cmd: "%s"' % cmd
         return exec_command(task, cmd)
