@@ -15,21 +15,6 @@ requirements = dict(
 
 @feature('upstablegen', **requirements)
 def feature_upstablegen(info):
-    print '''
-UPS crap:
-ups_products = %s
-ups_product_install_dir = %s
-ups_tablegen_target = %s
-ups_declare_target = %s
-ups_qualifiers = "%s"
-ups_flavor = "%s"
-''' % (info.ups_products.abspath(),
-       info.ups_product_install_dir.abspath(),
-       info.ups_tablegen_target.abspath(),
-       info.ups_declare_target.abspath(),
-       info.ups_qualifiers,
-       info.ups_flavor)
-
 
     def ups_table_gen_task(task):
         filename = info.ups_tablegen_target.abspath()

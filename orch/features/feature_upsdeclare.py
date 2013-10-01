@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 import os
+import shutil
 from .pfi import feature
 from orch.wafutil import exec_command
 
@@ -34,6 +35,15 @@ def feature_upsdeclare(info):
     ups_table_file = os.path.basename(reltablefile)
     
     def ups_declare_task(task):
+
+        # always nuke previous
+        version_file = info.ups_declare_target.abspath()
+        if os.path.exists(version_file):
+            os.remove(version_file)
+        chain_file = os.path.join(os.path.dirname(version_file),'current.chain')
+        if os.path.exists(chain_file):
+            os.remove(chain_file)
+
         cmd = 'ups declare {package} v{version_underscore} -f {ups_flavor} -z {products_dir} -r {prod_root_dir} -U {ups_sub_dir} -m {table_file} -c'
         cmd = info.format(cmd, 
                           products_dir =info.ups_products.abspath(),
