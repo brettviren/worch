@@ -122,18 +122,28 @@ def munge_package(package):
     dest_install_dir = package.get('dest_install_dir') or package.get('install_dir')
     package['dest_install_dir'] = dest_install_dir
 
+def fold_in_worch_values(suite, formatter, **kwds):
+    for group in suite['groups']:
+        for package in group['packages']:
+            munge_package(package)
+    if not formatter:
+        formatter = PkgFormatter()
+    suite = deconf.format_any(suite, formatter=formatter, **kwds)
+    return suite
+
 def fold_in_package_vars(suite, formatter, **kwds):
     package_vars = dict()
 
     for group in suite['groups']:
         for package in group['packages']:
-            munge_package(package)
+#            munge_package(package)
             pkgname = package['package']
 
             # make uber dictionary with every package's variables
             # prefixed by the package name
             for k,v in package.items():
-                package_vars['%s_%s'%(pkgname,k)] = v
+                p_name = '%s_%s'%(pkgname,k)
+                package_vars[p_name] = v
 
     for group in suite['groups']:
         new_packages = list()
@@ -151,13 +161,17 @@ def load(filename, start='start', formatter = None, **kwds):
 
     # load in initial configuration but delay formatting
     suite = deconf.load(filename, start=start, formatter=formatter, **kwds)
+    suite = fold_in_worch_values(suite, formatter, **kwds)
     suite = fold_in_feature_requirements(suite, formatter, **kwds)
     suite = fold_in_package_vars(suite, formatter, **kwds)
     
-    # from pprint import PrettyPrinter
-    # pp = PrettyPrinter(indent=2)
-    # pp.pprint(suite)
     return suite
+
+def dump_suite(suite):
+    from pprint import PrettyPrinter
+    pp = PrettyPrinter(indent=2)
+    pp.pprint(suite)
+
 
 
 # testing
