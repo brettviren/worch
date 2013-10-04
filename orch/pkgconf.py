@@ -80,7 +80,7 @@ class PkgFormatter(object):
         try:
             ret = string.format(**vars)
         except ValueError:
-            print string
+            print ("%s" % string)
             raise
         return ret
 
