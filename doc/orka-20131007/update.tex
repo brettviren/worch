@@ -217,9 +217,9 @@ $ waf --prefix=/path/to/install \
 \end{verbatim}
 }
 
-Example bundle tested on SL6:
+Example bundle tested on SL6 and Debian (sid):
 \scalebox{0.63}{
-  \url{http://www.phy.bnl.gov/~bviren/orka/ilcroot/bundles/worch-ilcroot-builder-20130930}       }
+  \url{http://www.phy.bnl.gov/~bviren/orka/ilcroot/bundles/worch-ilcroot-builder-20131006}}
 
 Besides simplifying installation, bundles provide one possible method of release management.
 
@@ -247,11 +247,11 @@ Eg:
 
 \begin{verbatim}
 ./scripts/worch-prepare-bundle \
-         worch-ilcroot-builder-20130930 \
+         worch-ilcroot-builder-20131006 \
          examples/orka .
 \end{verbatim}
 
-Bundling is a fairly new idea in \worch and is subject to change.
+Bundling is a fairly new idea in \worch and details are subject to change.
 
 \end{frame}
 
@@ -264,8 +264,8 @@ Bundling is a fairly new idea in \worch and is subject to change.
   \item Been poaching from Daya Bay (daya0010) to get SL6
     \begin{itemize}
     \item Avoid SL5, soon to be obsolete, supporting ancient Python hampers \verb|worch| development.
-    \item All RACF nodes move to SL6 in October, then can poach off of LBNE too.
-    \item Above example is in: \verb|daya0010:/data3/bv/orka/bundle-test|
+    \item All RACF move to SL6 in October, then can poach off of LBNE too.
+    \item Above example can be found in: \verb|daya0010:/data3/bv/orka|
     \end{itemize}
   \item Build exists, need user environment setup
     \begin{itemize}
@@ -284,9 +284,12 @@ Bundling is a fairly new idea in \worch and is subject to change.
     \begin{itemize}
     \item please, no more commits to the old SVN
     \end{itemize}
-  \item New, simpler build system in place and ready for testing.
-  \item Work started, a bit more needed, on user and developer
-    environment setup.
+  \item New, simpler build system in place and ready for testing by others.
+    \begin{itemize}
+    \item Builds ILCRoot + dependencies on Sci. Linux 6 and Debian (sid)
+    \end{itemize}
+  \item User and developer environment setup in progress
+  \item Will add this info to the Redmine wiki.
   \end{itemize}
 \end{frame}
 
