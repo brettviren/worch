@@ -117,6 +117,7 @@ def munge_package(package):
     if version:
         package.setdefault('version_2digit', '.'.join(version.split('.')[:2]))
         package.setdefault('version_underscore', version.replace('.','_'))
+        package.setdefault('version_dashed', version.replace('.','-'))
         package.setdefault('version_nodots', version.replace('.',''))
 
     dest_install_dir = package.get('dest_install_dir') or package.get('install_dir')
