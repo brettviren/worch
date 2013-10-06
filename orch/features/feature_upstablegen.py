@@ -20,16 +20,16 @@ def feature_upstablegen(info):
         filename = info.ups_tablegen_target.abspath()
         if os.path.exists(filename):
             blah = 'UPS table file already exists: %s' % filename
-            print blah
+            print ("%s" % blah)
             msg.debug(blah)
             return 0
         upsdir = os.path.dirname(filename)
         if not os.path.exists(upsdir):
             os.makedirs(upsdir)
 
-        print 'UPS writing table file: %s' % filename
+        print ('UPS writing table file: %s' % filename)
         tf = table_file(**dict(info.items()))
-        print tf
+        print ("%s" % tf)
         with open(filename, 'w') as fp:
             fp.write(tf + '\n')
         return 0
