@@ -4,7 +4,7 @@ import os.path as osp
 from . import requirements as reqmod
 from orch import deconf
 from orch import pkgconf
-
+from orch.util import string2list
 
 class PackageFeatureInfo(object):
     '''
@@ -68,6 +68,42 @@ class PackageFeatureInfo(object):
                 continue
             yield (k, self.__getattr__(k))
         
+
+    def exports(self):
+        '''
+        Return all environment settings via export_* configuration items
+        return list of tuples: (variable, value, operator) for exports
+        eg: ('PATH', '/blah/blah', 'prepend')
+        '''
+        ret = list()
+        for key,val in self.items():
+            if not key.startswith('export_'):
+                continue
+            var = key[len('export_'):]
+            oper = 'set'
+            for maybe in ['prepend', 'append', 'set']:
+                if val.startswith(maybe+':'):
+                    oper = maybe
+                    val = val[len(maybe)+1:]
+            ret.append((var, val, oper))
+        return ret
+
+    def dependencies(self):
+        '''
+        Return all dependencies via "depends" configuration items 
+        return list of tuples: (mystep, package, package_step)
+        eg: ('prepare', 'gcc', 'install')
+        '''
+        ret = list()
+        try:
+            deps = getattr(self, 'depends', None)
+        except KeyError:
+            return list()
+        for dep in string2list(deps):
+            mystep, other = dep.split(':')
+            pkg,pkg_step = other.split('_',1)
+            ret.append((mystep, pkg, pkg_step))
+        return ret
 
     def __getattr__(self, name):
         val = self._data[name]

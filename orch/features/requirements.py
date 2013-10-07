@@ -139,7 +139,7 @@ reqdesc_list = [
     # ups_product_install_dir.abspath() should probably match up with
     # install_dir.abspath().  All things should be relative to ups_products.
 
-    ReqDesc('ups_products', '{PREFIX}', typecode='d',
+    ReqDesc('ups_products', '{PREFIX}/share/ups', typecode='d',
             doc='Absolute path to UPS "PRODUCTS" directory, likely should be same as PREFIX'),
 
     ReqDesc('ups_product_install_dir', '{package}/{version}/{tagsdashed}', 
@@ -158,7 +158,15 @@ reqdesc_list = [
     ReqDesc('ups_qualifiers', '', 
             doc='UPS qualifiers associated with the package installation'),
 
+    # modules.sf.net modulefile
+    ReqDesc('modules_dir','{PREFIX}/modules', typecode='d', 
+            doc='Top of directory tree holding modules'),
+    ReqDesc('modulefile_target', '{package}/{version}/modulefile', 
+            typecode='f', relative='{modules_dir}',
+            doc='The package modulefile'),
+
     ]
+
 
 
 def make_pool():

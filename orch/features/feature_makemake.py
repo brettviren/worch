@@ -47,7 +47,7 @@ def install(info):
     return
 
 @feature('makemake', **requirements)
-def feature_prepare(info):
+def feature_makemake(info):
     build(info)
     install(info)
     return
