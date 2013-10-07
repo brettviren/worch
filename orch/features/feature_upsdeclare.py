@@ -52,7 +52,7 @@ def feature_upsdeclare(info):
                           table_file = ups_table_file,
                           qualifiers = "debug",
                           )
-        print 'UPS: declare cmd: "%s"' % cmd
+        print ('UPS: declare cmd: "%s"' % cmd)
         return exec_command(task, cmd)
         
     info.task('upsdeclare',
