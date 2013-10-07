@@ -165,28 +165,24 @@
       \item So far supports UPS or Environment Modules
       \item Either way, simple ``\texttt{source ilcroot.sh}'' will be provided
       \end{itemize}
-    \item Need to work out comfortable ILCRoot developer environment
-      in context of a \worch installation.
+    \item Need to work out a comfortable ILCRoot developer environment.  \\
+      For now, carry on as usual but with SVN $\rightarrow$ \git.
     \end{itemize}
 
 \end{frame}
 
 \begin{frame}[fragile]
-  \frametitle{How to install with \worch{} -- the easy way}
+  \frametitle{Install ILCRoot with \worch{}}
 
-A couple things to download and a few commands to run:
+Clone \worch and run the provided \waf on the ORKA/ILCRoot example suite:
 
 {\footnotesize
 \begin{verbatim}
 $ git clone https://github.com/brettviren/worch.git
-$ wget https://waf.googlecode.com/files/waf-1.7.13
-$ chmod +x waf-1.7.13
-$ alias waf=`pwd`/waf-1.7.13
-
 $ cd worch
-$ waf --prefix=/path/to/install \
-      --orch-config=examples/orka/suite-ilcroot.cfg \
-        configure build
+$ ./waf --prefix=/path/to/install \
+        --orch-config=examples/orka/suite-ilcroot.cfg \
+          configure build
 ...
 'build' finished successfully (31m22.537s)
 \end{verbatim}
@@ -199,19 +195,19 @@ $ waf --prefix=/path/to/install \
 \end{frame}
 
 \begin{frame}[fragile]
-  \frametitle{How to install with \worch{} bundles -- the even easier way}
+  \frametitle{ILCRoot release versioning with \worch{} bundles}
 
-  Bundle everything in one per-release file.
+  Can install a specific release via a \worch bundle:
 
 {\scriptsize
 \begin{verbatim}
-$ wget http://somerver.gov/path/to/<bundle-name-version>
-$ chmod +x <bundle-name-version>
-$ alias waf=`pwd`/<bundle-name-version>
+$ wget http://somerver.gov/path/to/ilcroot-builder-vX.Y.Z
+$ chmod +x ilcroot-builder-vX.Y.Z
 
-$ waf --prefix=/path/to/install \
-      --orch-config=examples/orka/suite-ilcroot.cfg \
-        configure build
+$ ./ilcroot-builder-vX.Y.Z \
+        --prefix=/path/to/install \
+        --orch-config=examples/orka/suite-ilcroot.cfg \
+          configure build
 ...
 'build' finished successfully (31m22.537s)
 \end{verbatim}
