@@ -150,6 +150,10 @@ reqdesc_list = [
             typecode='f', relative='{ups_products}',
             doc='Generated table file'),
 
+    ReqDesc('ups_setup_file', 'setup', typecode='f', relative = '{ups_products}',
+            doc = 'Script to set up ups.'),
+            
+
     # ups, y u no make this pattern? /{ups_flavor}_{ups_qualifiers}
     ReqDesc('ups_declare_target', '{package}/v{version_underscore}.version',
             typecode='f', relative='{ups_products}',
