@@ -135,8 +135,10 @@ reqdesc_list = [
             doc='File that is produced upon successful installation'),
 
     # UPS special tasks (ups*) from the ups features.
-    ReqDesc('ups_products', '{PREFIX}/lib/ups', typecode='d',
-            doc='Absolute path to UPS "PRODUCTS" directory, likely should be same as PREFIX'),
+    ReqDesc('ups_prod_dir_prefix', '{PREFIX}', typecode='d',
+            doc='Absolute path to where UPS should find installed binaries'),
+    ReqDesc('ups_products', '{PREFIX}', typecode='d',
+            doc='Absolute path to UPS "PRODUCTS" directory'),
     ReqDesc('ups_version_string', 'v{version_underscore}',
             doc='The version string used to make UPS database files/directories'),
     ReqDesc('ups_qualifiers', '',

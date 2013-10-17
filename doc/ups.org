@@ -4,17 +4,21 @@
 
 * Installation of UPS
 
-Worch can build UPS itself.  The native UPS build system is rather baroque but it can be shoe-horned into the usual =tarball, prepare, makemake= feature trio.  In addition, a =upsdb= must be added to initialize cause the UPS "database" directory (as set by the worch =ups_products= variable) to be initialized and a =upspkg= feature (see next section) should be added to setup the "version" and "chain" files for UPS itself.
+Worch can build the UPS binaries themselves from source.  The native UPS build system is rather baroque but it can be shoe-horned into the usual =tarball, prepare, makemake= feature trio.  In addition, a =upsdb= must be added in order to initialize the UPS "database" directory (as set by the worch =ups_products= variable) to be initialized and a =upspkg= feature (see next section) should be added to setup the "version" and "chain" files for UPS itself.
 
 The "standard" way for a user to setup for running UPS commands is to =source= the =setup= script which will be found at the top of the UPS "database" directory.  For this to work, the worch =install_dir= for the UPS package itself, which normally points to where the binaries are installed, must instead point to a proper location under the directory to which the worch =ups_products= variable points.  See the example suite under [[../examples/simple-with-ups/]].  
 
 * Producing UPS configuration files
 
-UPS "table", "version" and "chain" files for a package built by worch will be created by adding =upspkg= to the package's feature list.
+UPS "table", "version" and "chain" files for a package built by worch will be created by adding =upspkg= to the package's feature list.  The worch variable =ups_prod_dir_prefix= must be set in order to locate the base of the binary package installation area.  
 
 * Building packages which depend on UPS
 
 In order to make the =ups= program available for later operations it should be built in an early worch group.  Packages that rely on UPS to build tend to have build systems that assume the =setup= script mentioned above has already been "sourced".  
 
-How to handle this?
+** FIXME: How to handle this implicit sourcing?
+
+* UPS database and binary installation directories.
+
+Some native build systems rely on UPS environment to pre-exist and more extremely assume that UPS variables defined to locate UPS configuration files also locate installed package binaries.  The build system for the ART framework is one such case.  If the worch software suite is to be built in such a way to support this degenerate arrangement then =ups_products= and =ups_prod_dir_prefix= must coincide as must the =install_dir= and ={ups_products}/{package}/{ups_version_string}= settings.
 

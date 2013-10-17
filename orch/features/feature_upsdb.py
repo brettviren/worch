@@ -13,6 +13,12 @@ requirements = dict(
     ups_products = None,
     )
 
+upsfiles_dbconfig_pattern = '''\
+FILE = DBCONFIG
+AUTHORIZED_NODES = *
+VERSION_SUBDIR = 1
+PROD_DIR_PREFIX = {prod_dir}
+'''
 
 
 @feature('upsdb', **requirements)
@@ -42,16 +48,13 @@ def feature_upsdb(info):
               source = info.build_target,
               target = setup_file)
 
+    prod_dir = info.ups_prod_dir_prefix.path_from(info.ups_products)
+    print 'UPS prod_dir= %s' % prod_dir
+    dbc = upsfiles_dbconfig_pattern.format(prod_dir = prod_dir)
     info.task("upsdbconfig",
-              rule = lambda task: wctt(task, upsfiles_dbconfig_contents),
+              rule = lambda task: wctt(task, dbc),
               source = setup_file,
               target = dbconfig_file)
     return
 
     
-upsfiles_dbconfig_contents = '''\
-FILE = DBCONFIG
-AUTHORIZED_NODES = *
-VERSION_SUBDIR = 1
-PROD_DIR_PREFIX = ${UPS_THIS_DB}
-'''
