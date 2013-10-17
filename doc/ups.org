@@ -1,22 +1,20 @@
 #+title: Worch and UPS
 
-[[https://github.com/brettviren/worch][Worch]] has support for building [[http://www.fnal.gov/docs/products/ups/][UPS]] as it does any other package.  In addition it generate UPS table files for packages that it builds based on the information in the worch configuration.  In addition it can use UPS to "declare" the package to a UPS "database".
+[[https://github.com/brettviren/worch][Worch]] has support for building [[http://www.fnal.gov/docs/products/ups/][UPS]] as it does any other package.  In addition it can generate UPS "table", "version" and "chain" files for packages that it builds based on the information in the worch configuration.  Worch itself does not rely on UPS to do any of this.
 
 * Installation of UPS
 
-Building UPS is not particularly different from building any package which uses an ad-hoc build mechanism instead of using one of the many common ones in use today.  One example is the =[package ups]= section is in the [[../examples/simple-with-ups/buildtools.cfg]] file.  In order to make its =ups= program available for later operations it should be built in an early worch group.
+Worch can build UPS itself.  The native UPS build system is rather baroque but it can be shoe-horned into the usual =tarball, prepare, makemake= feature trio.  In addition, a =upsdb= must be added to initialize cause the UPS "database" directory (as set by the worch =ups_products= variable) to be initialized and a =upspkg= feature (see next section) should be added to setup the "version" and "chain" files for UPS itself.
 
-* Creation of a UPS products "database"
+The "standard" way for a user to setup for running UPS commands is to =source= the =setup= script which will be found at the top of the UPS "database" directory.  For this to work, the worch =install_dir= for the UPS package itself, which normally points to where the binaries are installed, must instead point to a proper location under the directory to which the worch =ups_products= variable points.  See the example suite under [[../examples/simple-with-ups/]].  
 
-Worch installs packages in to a directory structure set by the =install_dir= configuration variable.  UPS relies on a directory structure as well.  These two can be one in the same or they can be kept distinct.  UPS locates the root of its directory structure (a.k.a. its "database) by the environment variable =PRODUCTS=.  The details of the structure below this point are spread out among the various UPS files found under that.  
+* Producing UPS configuration files
 
-To create a UPS "products" area a final feature =upsdatabase= should be appended to the build of the UPS package.    The worch configuration variable =ups_products= will set the root directory of the "database".
-
-* UPS related worch features
-
-** =upstable=
-
-** =upsdeclare=
+UPS "table", "version" and "chain" files for a package built by worch will be created by adding =upspkg= to the package's feature list.
 
 * Building packages which depend on UPS
+
+In order to make the =ups= program available for later operations it should be built in an early worch group.  Packages that rely on UPS to build tend to have build systems that assume the =setup= script mentioned above has already been "sourced".  
+
+How to handle this?
 
