@@ -9,6 +9,7 @@ Make a UPS configuration for a package.  Adding this feature assures:
 UPS itself is not required.
 '''
 
+import os
 from .pfi import feature
 from orch.ups import simple_setup_table_file as gen_table_file
 from orch.ups import simple_setup_version_file as gen_version_file
@@ -28,6 +29,9 @@ def feature_upspkg(info):
     # write content to target
     def wctt(task, content):
         out = task.outputs[0].abspath()
+        if os.path.exists(out):
+            info.debug('Not over writing UPS file: %s' % out)
+            return
         #print 'UPS: writing to: %s' % out
         with open(out, "w") as fp:
             fp.write(content)

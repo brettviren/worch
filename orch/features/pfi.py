@@ -63,10 +63,16 @@ class PackageFeatureInfo(object):
         return self.node(name, dir)
 
     def items(self):
+        ret = dict()
         for k,v in self._data.items():
             if v is None:
                 continue
-            yield (k, self.__getattr__(k))
+            v = getattr(self,k)
+            ret[k] = v
+            r = reqmod.pool.get(k)
+            if r and r.typecode in ['d','f']:
+                ret[k+'_abspath'] = v.abspath()
+        return ret.items()
         
 
     def exports(self):

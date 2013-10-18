@@ -135,14 +135,15 @@ reqdesc_list = [
             doc='File that is produced upon successful installation'),
 
     # UPS special tasks (ups*) from the ups features.
-    ReqDesc('ups_prod_dir_prefix', '{PREFIX}', typecode='d',
-            doc='Absolute path to where UPS should find installed binaries'),
     ReqDesc('ups_products', '{PREFIX}', typecode='d',
             doc='Absolute path to UPS "PRODUCTS" directory'),
     ReqDesc('ups_version_string', 'v{version_underscore}',
             doc='The version string used to make UPS database files/directories'),
     ReqDesc('ups_qualifiers', '',
             doc='List of UPS qualifiers.'),
+    ReqDesc('ups_prod_subdir', '{package}/{ups_version_string}',
+            doc='Subdirectory under UPS products directory where ups/package.table file is.'),
+
 
     # modules.sf.net modulefile
     ReqDesc('modules_dir','{PREFIX}/modules', typecode='d', 

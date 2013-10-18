@@ -22,3 +22,48 @@ In order to make the =ups= program available for later operations it should be b
 
 Some native build systems rely on UPS environment to pre-exist and more extremely assume that UPS variables defined to locate UPS configuration files also locate installed package binaries.  The build system for the ART framework is one such case.  If the worch software suite is to be built in such a way to support this degenerate arrangement then =ups_products= and =ups_prod_dir_prefix= must coincide as must the =install_dir= and ={ups_products}/{package}/{ups_version_string}= settings.
 
+* Example:
+
+#+BEGIN_EXAMPLE
+$ waf --prefix=install --orch-config=examples/simple-with-ups/simple.cfg configure build
+$ source ./install/setup
+$ ups list -aK+
+"bc" "v1_06" "Linux64bit+2.6-2.12" "" "current" 
+"hello" "v2_8" "Linux64bit+2.6-2.12" "" "current" 
+"ups" "v5_0_0" "Linux64bit+2.6-2.12" "" "current" 
+$ setup hello
+$ hello
+Hello, world!
+#+END_EXAMPLE
+
+Unfscking believable.
+
+* Notes about UPS:
+
+The UPS manual is misleading.
+
+** UPS environment variables
+
+ - =PRODUCTS= :: A colon-separated path list of UPS "database" directories
+ - =UPS_THIS_DB= :: A particular UPS "database" directory referenced internally by files in that DB
+ - ={PACKAGE}_DIR= :: The path to the location of the installed package binaries.  
+ - =PROD_DIR_PREFIX= :: The above var can be relative to this and is usually degenerate with =PRODUCTS=.
+
+** UPS database files
+
+*** Database-level 
+
+ - =.upsfiles/dbconfig= :: marks a UPS "database" directory and provides two important variables:
+   - =VERSION_SUBDIR= :: undocumented, controls if the version file is a file or a directory of many files each named after flavor_qualifiers.  
+   - =PROD_DIR_PREFIX= :: points to top-level directory holding binaries described by this UPS DB.  For degenerate binary/database directories this is set to =${UPS_THIS_DIR}=.
+
+*** Package level
+
+Each package has a portion of the UPS "database" held in directories and files under =${ups_products}/{package}/=.  Relative to this path they are:
+
+ - ={ups_prod_dir}/ups/{package}.table= :: the UPS "table" file which is used to set up the environment for the package (and in principle to build it from source).  It is typical for it to define the ={PACKAGE}_DIR= variable described above.
+ - ={ups_version_string}.version/{ups_flavor}_{ups_qualifiers}= :: defines variables to find the table file for a given version, flavor and qualifier.  In particular:
+   - =PROD_DIR= :: directory holding the =ups/{package}.table= file
+   - =UPS_DIR= :: location of the directory, usually =ups/=, holding (some) UPS database files, in particular the table file.
+   - =TABLE_FILE= :: location of the table file.  If relative, then w.r.t. =UPS_DIR= (but see [[http://www.fnal.gov/docs/products/ups/ReferenceManual/html/versionfiles.html#35235][these details]]).
+ - ={package}/current.chain/{ups_flavor}_{ups_qualifiers}= :: adds the package to the "current chain" by associating it with a package name, version, flavor and qualifiers.
