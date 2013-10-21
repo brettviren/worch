@@ -1,0 +1,11 @@
+#+TITLE: Worch and Environment Modules
+
+Worch can be used with [[http://modules.sf.net/][Environment Modules]] (modules).
+
+* Configuring worch for modules
+
+To have worch make a =modulefile= for a package simply add the feature =modulefile= to its feature list.
+
+* Example
+
+The [[../examples/simple-with-modules/]] example holds a small working example.
