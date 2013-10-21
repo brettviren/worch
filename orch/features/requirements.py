@@ -51,6 +51,9 @@ reqdesc_list = [
     ReqDesc('tags','',
             doc='A list of asserted tags to drive features in optional manners'),
     
+    # debugging
+    ReqDesc('dumpenv_cmd', "env | sort",
+            doc="Shell command line to dump info about the environment"),
 
     # locations
     ReqDesc('urlfile_dir', 'urlfiles', typecode='d', 
