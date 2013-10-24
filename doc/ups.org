@@ -2,7 +2,7 @@
 
 [[https://github.com/brettviren/worch][Worch]] has support for building [[http://www.fnal.gov/docs/products/ups/][UPS]] as it does any other package.  In addition it can generate UPS "table", "version" and "chain" files for packages that it builds based on the information in the worch configuration.   In this way, worch-built suites may have their user environment set up using UPS (see also [[./modules.org]]). Worch itself does not rely on UPS to do any of this.
 
-Worch also provides support for installing packages which have build-time dependencies on UPS and/or UPS-produced environment.
+Worch also provides a mechanism by which packages can be configured to build inside an environment that is augmented by UPS setup.
 
 * Installation of UPS
 
@@ -10,23 +10,75 @@ Worch can build the UPS binaries themselves from source.  The native UPS build m
 
 * Producing UPS configuration files
 
-UPS "table", "version" and "chain" files for a package built by worch will be created by adding =upspkg= to the package's feature list.  The worch variable =ups_prod_dir_prefix= must be set in order to locate the base of the binary package installation area.  
+UPS "table", "version" and "chain" files for a package built by worch will be created by adding =upspkg= to the package's feature list.  The worch variable =ups_prod_dir_prefix= must be set in order to locate the base of the binary package installation area.  See below for UPS restrictions that relate to the setting of this variable.
 
-* Building packages which depend on UPS environment setup
+* Building a package that requires UPS
 
-In order to make the =ups= program available for later operations it should be built in an early worch group.  Packages that rely on UPS to build tend to have native build mechanisms that assume the =setup= script mentioned above has already been "sourced".   FIXME: How to handle this implicit sourcing?
+As with any dependency, a package which requires UPS to be installed may depend on it via the usual worch methods: the =depends= and =environment= worch configuration items and/or by placing UPS in a group that precedes the one holding the package in question.  Like with all packages a =ups_install_dir= can be used to locate its =install_dir=.
 
-* UPS database and binary installation directories.
+* Building a package that assumes a UPS setup environment exists
+
+If a package's native build system assumes that a UPS environment has already been set up one needs to tell worch this.  To do this the usual =buildenv_*= mechanism is used with a =shell:= command type.  For example:
+
+#+BEGIN_EXAMPLE
+[package somepackage]
+buildenv_upssetup = shell:source {ups_products}/setup
+...
+#+END_EXAMPLE
+
+Caveats:
+
+ - This only setups up UPS and this only applies to the package
+ - Worch does not currently propagate shell functions so the crucial =setup= function is lost here, only environment variables are saved.
+
+* Building a package that relies on UPS to setup another package
+
+The same mechanism as show above is extended to allow UPS to setup any environment for a dependency.
+
+#+BEGIN_EXAMPLE
+[package somepackage]
+buildenv_upssetup = shell:source {ups_products}/setup && setup package1 && setup package2
+buildenv_upssetup_more = shell:source {ups_products}/setup && setup package3
+...
+#+END_EXAMPLE
+
+Note:
+
+ - adding UPS generated environment can be done through multiple calls to the =setup= function
+ - these calls can be spread across multiple =buildenv_*= items
+ - each must source the UPS setup script before using its defined function (see caveats from previous section).
+
+It is also possible to move this UPS setup crap to the package on which another depends.  However, this is bad design as it is inflicting UPS on a package that does not require it in order to help a package that does. Nevertheless this can be done like:
+
+#+BEGIN_EXAMPLE
+[package somedependency]
+export_upssetup = shell:source {ups_products}/setup && setup {package}
+...
+
+[package somepackage]
+depends = package:somedependency
+...
+#+END_EXAMPLE
+
+* Note on UPS database and binary installation directories.
 
 The "standard" way to set up user environment with UPS is to first =source= the =setup= script which will be found at the top of the UPS "database" directory and then to use the defined shell alias/function =setup= to further set environment for a particular package.  UPS makes certain assumptions about the layout of the installation directories.  In particular, one must "overlay" the UPS "database" directory structure with the installation structure that worch is told to produce for the package binaries.
 In this case the worch configuration variable =install_dir= must be defined as ={ups_products}/{ups_prod_subdir}= where the latter is ={package}/{ups_version_string}=.  The UPS version string is traditionally =v{version_underscore}=.
 
 * Example:
 
-For a working example, see the small example suite under [[../examples/simple-with-ups/]].
+For a working example, see the small example suite under [[../examples/simple-with-ups/]].  It illustrates both how to have an end-user environment manged by UPS as well as how to mix in UPS dependencies to the build.
 
 #+BEGIN_EXAMPLE
 $ waf --prefix=install --orch-config=examples/simple-with-ups/simple.cfg configure build
+...
+hello is at /data3/bv/w/worch/install-ups/hello/v2_8
+Hello, world!
+hello is at /data3/bv/w/worch/install-ups/hello/v2_8, bc is at /data3/bv/w/worch/install-ups/bc/v1_06
+bc 1.06
+Copyright 1991-1994, 1997, 1998, 2000 Free Software Foundation, Inc.
+Hello, world!
+
 $ source ./install/setup
 $ ups list -aK+
 "bc" "v1_06" "Linux64bit+2.6-2.12" "" "current" 
@@ -39,7 +91,7 @@ Hello, world!
 
 Un-fscking-believable.
 
-* Notes about UPS:
+* Random notes about UPS itself:
 
 The UPS manual is misleading.
 
