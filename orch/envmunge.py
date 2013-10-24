@@ -65,12 +65,15 @@ def make_envmungers(pkg, all_packages):
         _, step = dep.split(':')
         what = step.split('_')[0]
         if what in all_packages:
+            #print 'autoenv: package: "%s"' % what
             autoenv.append('package:%s' % what)
         else: # FIXME: assume this is a group, then.
+            #print 'autoenv: group: "%s"' % what
             autoenv.append('group:%s' % what)
 
     if pkg.get('environment'):
         en = pkg.get('environment')
+        #print 'autoenv: environment: "%s"' % en
         autoenv.extend([x.strip() for x in en.split(',')])
         
     ret = list()

@@ -70,6 +70,7 @@ def cmd_munger(cmd, **environ):
     "env_executable" variable.
     '''
     #print 'munger: apply: "%s"' % cmd
+    #print 'PATH=%s' % environ.get('PATH','')
     fd, fname = tempfile.mkstemp()
     cmd += ' && %s > %s' % (env_executable, fname)
     util.check_output(cmd, shell=True, env=environ)
@@ -86,10 +87,10 @@ def make_munger(name, cmdstr):
 
     Returns a munger object.
     '''
-
+    #print 'munger: %s: "%s"' % (name, cmdstr) 
+        
     if cmdstr.startswith('shell'):
         delim, cmdline = split_var_munger_command(cmdstr, 'shell')
-        #print 'munger: %s: "%s"' % (name, cmdline) 
         return lambda **environ: cmd_munger(cmdline, **environ)
     return lambda **environ: update_var(name, cmdstr, **environ)
 
