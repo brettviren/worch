@@ -13,6 +13,15 @@ def split_var_munger_command(cmdstr, cmd):
     return rest[0], rest[1:]
 
 def make_var_munger(cmdstr):
+    '''
+    Make a variable munger from the variable setting micro language.
+    The returned callable takes an existing value for a variable and
+    returns a value with the cmdstr interpreted and applied.
+
+    - append:value :: appends value to existing value
+    - prepend:value :: prepends value to existing value
+    - set:value :: ignores existing value and returns value.
+    '''
 
     if cmdstr.startswith('append'):
         delim,val = split_var_munger_command(cmdstr, 'append')
@@ -26,6 +35,10 @@ def make_var_munger(cmdstr):
     return lambda oldval: cmdstr
 
 def make_envmungers_from_package(pkg, prefix='export_'):
+    '''
+    Return a dict keyed by an environment variable name with values
+    which are a list of "munger" functions.  
+    '''
     ret = defaultdict(list)
     for key, value in pkg.items():
         if not key.startswith(prefix):
@@ -84,6 +97,7 @@ def collapse_envmungers(mungers):
             ret[k].extend(v)
     return ret
 
+
 def make_envmungers(pkg, all_packages):
     '''Make a environment munger that will apply the export_VARIABLE
     settings from all dependency packages indicated by the
@@ -92,7 +106,6 @@ def make_envmungers(pkg, all_packages):
     itself.  Note, that the export_* variables from a given package
     are explicitly NOT applied to the package itself.
     '''
-    mungers = list()
     autoenv = []
     deps = pkg.get('depends') or []
     if isinstance(deps, type("")): deps = deps.split()
@@ -109,26 +122,39 @@ def make_envmungers(pkg, all_packages):
         en = pkg.get('environment')
         autoenv.extend([x.strip() for x in en.split(',')])
         
+    mungers = list()
     for other_pkg in resolve_packages(all_packages, autoenv):
-        new = make_envmungers_from_package(other_pkg)
+        new = make_envmungers_from_package(other_pkg, prefix='export_')
+        #new = make_envmungers_from_package(other_pkg, prefix='exportcmd_')
         mungers.append(new)
         pass
 
     new = make_envmungers_from_package(pkg, prefix='buildenv_')
+    #new = make_envmungers_from_package(pkg, prefix='buildenvcmd_')
     mungers.append(new)
 
     # Do NOT append export_ mungers for the current pkg.
 
     return collapse_envmungers(mungers)
 
-def apply_envmungers(environ, mungers):
-    environ = dict(environ)
+def apply_envmungers(mungers, **environ):
+    '''
+    Apply all environment mungers to the given environment variables.
+    Return the result.
+    '''
     for var,ms in mungers.items():
         val = environ.get(var,'')
         for m in ms:
             val = m(val)
         environ[var] = val
     return environ
+
+def apply_cmdmungers(mungers, **environ):
+    '''
+    Apply the given command mungers in order to the environ.
+    Return the result.  Each munger 
+    '''
+    not_implemented
 
 def decompose(cfg, suite):
     '''Decompose suite into packages and groups of packages.  
@@ -161,9 +187,12 @@ def decompose(cfg, suite):
     base_env.orch_package_dict = pd
 
     for pkg_name, pkg in pd.items():
-        new_env = base_env.derive()
+
         mungers = make_envmungers(pkg, pd)
-        new_env.munged_env = apply_envmungers(os.environ, mungers)
+        menv = apply_envmungers(mungers, **os.environ)
+
+        new_env = base_env.derive()
+        new_env.munged_env = menv
         cfg.setenv(pkg_name, new_env)
 
     return
