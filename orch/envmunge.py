@@ -77,7 +77,7 @@ def make_envmungers(pkg, all_packages):
     for other_pkg in resolve_packages(all_packages, autoenv):
         ret += mungers.construct('export_', **other_pkg)
 
-    ret += mungers.construct('build_env', **pkg)
+    ret += mungers.construct('buildenv_', **pkg)
 
     # Do NOT append export_ mungers for the current pkg.
 
