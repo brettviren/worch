@@ -1,53 +1,12 @@
 #!/usr/bin/env python
 '''
 
-This module provides the decompose() function.
+This module primarily provides the decompose() function.
 
 '''
-import os
-from collections import defaultdict
 
+import mungers
 
-def split_var_munger_command(cmdstr, cmd):
-    rest = cmdstr[len(cmd):]
-    return rest[0], rest[1:]
-
-def make_var_munger(cmdstr):
-    '''
-    Make a variable munger from the variable setting micro language.
-    The returned callable takes an existing value for a variable and
-    returns a value with the cmdstr interpreted and applied.
-
-    - append:value :: appends value to existing value
-    - prepend:value :: prepends value to existing value
-    - set:value :: ignores existing value and returns value.
-    '''
-
-    if cmdstr.startswith('append'):
-        delim,val = split_var_munger_command(cmdstr, 'append')
-        return lambda oldval: oldval + delim + val if oldval else val
-    if cmdstr.startswith('prepend'):
-        delim,val = split_var_munger_command(cmdstr, 'prepend')
-        return lambda oldval: val + delim + oldval if oldval else val
-    if cmdstr.startswith('set'):
-        delim,val = split_var_munger_command(cmdstr, 'set')
-        return lambda oldval: val
-    return lambda oldval: cmdstr
-
-def make_envmungers_from_package(pkg, prefix='export_'):
-    '''
-    Return a dict keyed by an environment variable name with values
-    which are a list of "munger" functions.  
-    '''
-    ret = defaultdict(list)
-    for key, value in pkg.items():
-        if not key.startswith(prefix):
-            #print ('Skipping key: "%s", not start with "%s"' % (key, prefix))
-            continue
-        var = key.split('_',1)[1]
-        mun = make_var_munger(value)
-        ret[var].append(mun)
-    return ret
 
 def packages_in_group(pkglist, group_name):
     '''
@@ -90,14 +49,6 @@ def resolve_packages(all_packages, desclist):
     return ret
 
         
-def collapse_envmungers(mungers):
-    ret = defaultdict(list)
-    for m in mungers:
-        for k,v in m.items():
-            ret[k].extend(v)
-    return ret
-
-
 def make_envmungers(pkg, all_packages):
     '''Make a environment munger that will apply the export_VARIABLE
     settings from all dependency packages indicated by the
@@ -122,39 +73,15 @@ def make_envmungers(pkg, all_packages):
         en = pkg.get('environment')
         autoenv.extend([x.strip() for x in en.split(',')])
         
-    mungers = list()
+    ret = list()
     for other_pkg in resolve_packages(all_packages, autoenv):
-        new = make_envmungers_from_package(other_pkg, prefix='export_')
-        #new = make_envmungers_from_package(other_pkg, prefix='exportcmd_')
-        mungers.append(new)
-        pass
+        ret += mungers.construct('export_', **other_pkg)
 
-    new = make_envmungers_from_package(pkg, prefix='buildenv_')
-    #new = make_envmungers_from_package(pkg, prefix='buildenvcmd_')
-    mungers.append(new)
+    ret += mungers.construct('build_env', **pkg)
 
     # Do NOT append export_ mungers for the current pkg.
 
-    return collapse_envmungers(mungers)
-
-def apply_envmungers(mungers, **environ):
-    '''
-    Apply all environment mungers to the given environment variables.
-    Return the result.
-    '''
-    for var,ms in mungers.items():
-        val = environ.get(var,'')
-        for m in ms:
-            val = m(val)
-        environ[var] = val
-    return environ
-
-def apply_cmdmungers(mungers, **environ):
-    '''
-    Apply the given command mungers in order to the environ.
-    Return the result.  Each munger 
-    '''
-    not_implemented
+    return ret
 
 def decompose(cfg, suite):
     '''Decompose suite into packages and groups of packages.  
@@ -166,6 +93,9 @@ def decompose(cfg, suite):
     variable or through any variables with names beginning with
     "buildenv_".
 
+    The waf env is given a "munged_env" element which holds the result
+    of any environment munging applied to the current process
+    environment (os.environ).
     '''
     base_env = cfg.env
 
@@ -188,8 +118,8 @@ def decompose(cfg, suite):
 
     for pkg_name, pkg in pd.items():
 
-        mungers = make_envmungers(pkg, pd)
-        menv = apply_envmungers(mungers, **os.environ)
+        mlist = make_envmungers(pkg, pd)
+        menv = mungers.apply(mlist)
 
         new_env = base_env.derive()
         new_env.munged_env = menv
