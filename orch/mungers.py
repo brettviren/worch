@@ -30,7 +30,8 @@ Where:
 
 import os
 import tempfile
-import util
+
+from . import util
 
 def split_var_munger_command(cmdstr, cmd):
     'cmd<delim><string> --> (<delim>,<string>'

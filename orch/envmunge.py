@@ -5,7 +5,7 @@ This module primarily provides the decompose() function.
 
 '''
 
-import mungers
+from . import mungers
 
 
 def packages_in_group(pkglist, group_name):
