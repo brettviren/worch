@@ -146,6 +146,8 @@ reqdesc_list = [
             doc='List of UPS qualifiers.'),
     ReqDesc('ups_prod_subdir', '{package}/{ups_version_string}',
             doc='Subdirectory under UPS products directory where ups/package.table file is.'),
+    ReqDesc('ups_db_files', 'version, chain, table',
+            doc='Which UPS "database" files should be produced by the upspkg feature'),
 
 
     # modules.sf.net modulefile

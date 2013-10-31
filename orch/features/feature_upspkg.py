@@ -18,6 +18,7 @@ from orch.ups import simple_setup_chain_file as gen_chain_file
 requirements = dict(
     ups_products = None,
     ups_qualifiers = None,
+    ups_db_files = None,
     )
 
 
@@ -40,24 +41,27 @@ def feature_upspkg(info):
     products_dir = info.ups_products
 
     table_file = products_dir.make_node(
-        info.format('{package}/{ups_version_string}/ups/{package}.table'))
+        info.format('{ups_prod_subdir}/ups/{package}.table'))
     version_file = products_dir.make_node(
         info.format('{package}/{ups_version_string}.version/{ups_flavor}_{ups_qualifiers}'))
     chain_file = products_dir.make_node(
         info.format('{package}/current.chain/{ups_flavor}_{ups_qualifiers}'))
 
-    info.task("upstablegen",
-              rule = lambda task: wctt(task, gen_table_file(**dict(info.items()))),
-              update_outputs = True,
-              target = table_file)
+    if 'table' in info.ups_db_files:
+        info.task("upstablegen",
+                  rule = lambda task: wctt(task, gen_table_file(**dict(info.items()))),
+                  update_outputs = True,
+                  target = table_file)
 
-    info.task("upsversiongen",
-              rule = lambda task: wctt(task, gen_version_file(**dict(info.items()))),
-              update_outputs = True,
-              target = version_file)
+    if 'version' in info.ups_db_files:
+        info.task("upsversiongen",
+                  rule = lambda task: wctt(task, gen_version_file(**dict(info.items()))),
+                  update_outputs = True,
+                  target = version_file)
 
-    info.task("upschaingen",
-              rule = lambda task: wctt(task, gen_chain_file(**dict(info.items()))),
-              update_outputs = True,
-              target = chain_file)
+    if 'chain' in info.ups_db_files:
+        info.task("upschaingen",
+                  rule = lambda task: wctt(task, gen_chain_file(**dict(info.items()))),
+                  update_outputs = True,
+                  target = chain_file)
     return

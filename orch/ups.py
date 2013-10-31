@@ -102,7 +102,7 @@ QUALIFIERS = "{ups_qualifiers}"
   MODIFIER = {date}
   PROD_DIR = {ups_prod_subdir}
   UPS_DIR = ups
-  TABLE_FILE = {ups_version_string}/ups/{package}.table
+  TABLE_FILE = {package}.table
 '''.format(user = os.environ.get('USER','unknown'),
            date = time.strftime('%Y-%m-%d %H.%M.%S GMT', time.gmtime(time.time())),
            **cfg)

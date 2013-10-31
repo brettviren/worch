@@ -120,3 +120,89 @@ Each package has a portion of the UPS "database" held in directories and files u
    - =UPS_DIR= :: location of the directory, usually =ups/=, holding (some) UPS database files, in particular the table file.
    - =TABLE_FILE= :: location of the table file.  If relative, then w.r.t. =UPS_DIR= (but see [[http://www.fnal.gov/docs/products/ups/ReferenceManual/html/versionfiles.html#35235][these details]]).
  - ={package}/current.chain/{ups_flavor}_{ups_qualifiers}= :: adds the package to the "current chain" by associating it with a package name, version, flavor and qualifiers.
+
+** Eyeballing an installation at FNAL
+
+*** UPS itself
+
+#+BEGIN_EXAMPLE
+$ cat /nusoft/app/externals/ups/v5_0_1.version/Linux64bit+2.6-2.5_ 
+FILE = version
+PRODUCT = ups
+VERSION = v5_0_1
+
+#*************************************************
+#
+FLAVOR = Linux64bit+2.6-2.5
+QUALIFIERS = ""
+  DECLARER = garren
+  DECLARED = 2013-10-25 22.02.00 GMT
+  MODIFIER = garren
+  MODIFIED = 2013-10-25 22.02.00 GMT
+  PROD_DIR = ups/v5_0_1/Linux64bit+2.6-2.5
+  UPS_DIR = ups
+  TABLE_FILE = ups.table
+#+END_EXAMPLE
+
+Table file is at 
+#+BEGIN_EXAMPLE
+/nusoft/app/externals/ups/v5_0_1/Linux64bit+2.6-2.5/ups/ups.table
+#+END_EXAMPLE
+
+Binaries are at:
+#+BEGIN_EXAMPLE
+/nusoft/app/externals/ups/v5_0_1/Linux64bit+2.6-2.5/
+#+END_EXAMPLE
+
+*** CMake
+
+#+BEGIN_EXAMPLE
+$ cat /nusoft/app/externals/cmake/v2_8_8.version/Linux64bit+2.6-2.5_ 
+FILE = version
+PRODUCT = cmake
+VERSION = v2_8_8
+
+#*************************************************
+#
+FLAVOR = Linux64bit+2.6-2.5
+QUALIFIERS = ""
+  DECLARER = fwdev
+  DECLARED = 2013-08-29 16.00.11 GMT
+  MODIFIER = fwdev
+  MODIFIED = 2013-08-29 16.00.11 GMT
+  PROD_DIR = cmake/v2_8_8
+  UPS_DIR = ups
+  TABLE_FILE = cmake.table
+#+END_EXAMPLE
+
+Table file is at:
+#+BEGIN_EXAMPLE
+/nusoft/app/externals/cmake/v2_8_8/ups/cmake.table
+#+END_EXAMPLE
+
+Binaries are at:
+#+BEGIN_EXAMPLE
+/nusoft/app/externals/cmake/v2_8_8/Linux64bit+2.6-2.5
+#+END_EXAMPLE
+
+*** ROOT
+
+#+BEGIN_EXAMPLE
+$ grep PROD_DIR /nusoft/app/externals/root/v5_34_09b.version/Linux64bit+2.6-2.5_*
+/nusoft/app/externals/root/v5_34_09b.version/Linux64bit+2.6-2.5_debug_e4:  PROD_DIR = root/v5_34_09b
+/nusoft/app/externals/root/v5_34_09b.version/Linux64bit+2.6-2.5_debug_e4_nu:  PROD_DIR = root/v5_34_09b
+/nusoft/app/externals/root/v5_34_09b.version/Linux64bit+2.6-2.5_e4_nu_prof:  PROD_DIR = root/v5_34_09b
+/nusoft/app/externals/root/v5_34_09b.version/Linux64bit+2.6-2.5_e4_prof:  PROD_DIR = root/v5_34_09b
+#+END_EXAMPLE
+
+Separate binary directories for each under:
+#+BEGIN_EXAMPLE
+/nusoft/app/externals/root/v5_34_09b/Linux64bit+*/
+#+END_EXAMPLE
+
+Single table file for everything under the sun:
+#+BEGIN_EXAMPLE
+/nusoft/app/externals/root/v5_34_09b/ups/root.table
+#+END_EXAMPLE
+
+"Flavor" is "ANY", qualifiers differentiate.
