@@ -163,12 +163,33 @@ class PackageFeatureInfo(object):
         '''
         Call after all task() has been called for whole suite.
         '''
+
         for before, after in self._inserted_dependencies:
             msg.debug('orch: dependency: %s --> %s' % (before, after))
-            tsk = self._ctx.get_tgen_by_name(after)
-            if not hasattr(tsk,'depends_on'):
-                tsk.depends_on = list()
-            tsk.depends_on.append(before)
+            #print('orch: dependency: %s --> %s' % (before, after))
+            
+            #tsk = self._ctx.get_tgen_by_name(after)
+            #if not hasattr(tsk,'depends_on'):
+            #    tsk.depends_on = list()
+            #tsk.depends_on.append(before)
+
+            # beware: Dr. Seuss programmed the following two stanzas
+
+            before_tsk = self._ctx.get_tgen_by_name(before)
+            if not hasattr(before_tsk, 'before'):
+                before_tsk.before = list()
+            if after not in before_tsk.before:
+                before_tsk.before.append(after)
+
+            after_tsk = self._ctx.get_tgen_by_name(after)
+            if not hasattr(after_tsk, 'after'):
+                after_tsk.after = list()
+            if before not in after_tsk.after:
+                after_tsk.after.append(before)
+
+            continue
+        return
+
 
 
     def dependency(self, before, after):
