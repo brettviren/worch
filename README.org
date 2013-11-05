@@ -48,13 +48,14 @@ Worch comes with example configuration files that build a few simple Free Softwa
 
 ** Install waf
 
-See the [[http://docs.waf.googlecode.com/git/book_17/single.html#_download_and_installation][waf book]] for instructions on installing waf.  The rest of this assumes that =waf= is in your =PATH= or otherwise defined as an shell alias/function.
+Worch includes a copy of waf program in the top level directory but see the [[http://docs.waf.googlecode.com/git/book_17/single.html#_download_and_installation][waf book]] for if you wish to explicitly install.
 
 ** Get Worch
 
 #+BEGIN_EXAMPLE
 $ git clone https://github.com/brettviren/worch.git
 $ cd worch
+$ alias waf=`pwd`/waf
 #+END_EXAMPLE
 
 ** Run waf on the worch configuration files
