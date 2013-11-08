@@ -1,0 +1,105 @@
+#!/usr/bin/env python
+
+def configure(conf):
+    pass
+
+package_data = [
+    dict(package='hello', version='2.8', 
+         url='http://ftp.gnu.org/gnu/hello/hello-2.8.tar.gz',
+         source_archive = 'hello-2.8.tar.gz',
+         source_unpacked = 'hello-2.8',
+         unpack_target = 'configure',
+         features='tarball', 
+         control_dir = 'controls', urlfile_dir = 'urlfiles', 
+         download_dir='downloads', source_dir='sources'),
+]
+
+def build(bld):
+    for pd in package_data:
+        bld.worch_package(**pd)
+
+# https://code.google.com/p/waf/source/browse/playground/abstract_process/wscript
+### user API
+from waflib.Build import BuildContext
+def worch_package(ctx, *args, **kw):
+    kw['name'] = kw['package']
+    return ctx(*args, **kw)
+BuildContext.worch_package = worch_package
+del worch_package
+
+#### Feature implementations
+
+from waflib.TaskGen import feature
+
+
+def make_path(feature, dirtype, filename = None):
+    'Return a node for <filename> in a directory of given <dirtype> using <feature> info.'
+    path = getattr(feature, dirtype + '_dir')
+    if filename:
+        path = '%s/%s' % (path, filename)
+    return feature.path.find_or_declare(path)
+
+def control_filename(feature, step):
+    'Return a node in the control directory for the given step'
+    return make_path(feature, 'control', '%s.%s' % (feature.name, step))
+
+
+@feature('tarball')
+def feature_tarball(self):
+    seturl_control = control_filename(self, 'seturl')
+    seturl = self.create_task('seturl')
+    seturl.URL = self.url
+    seturl.outputs = [seturl_control]
+    
+    download_control = control_filename(self, 'download')
+    archive_file = make_path(self, 'download', self.source_archive)
+    download = self.create_task('download')
+    download.inputs = [seturl_control]
+    download.outputs = [download_control, archive_file]
+    
+    unpack_control = control_filename(self, 'unpack')
+    unpack_target = make_path(self, 'source', '%s/%s' % (self.source_unpacked,self.unpack_target))
+    unpack = self.create_task('unpack')
+    unpack.SRCDIR = make_path(self, 'source').abspath()
+    unpack.inputs = [archive_file, download_control]
+    unpack.outputs = [unpack_control, unpack_target]
+
+### task classes
+from waflib.Task import Task
+
+class seturl(Task):
+    vars = ['URL']
+    update_outputs = True
+    def run(self):
+        self.outputs[0].write(self.URL)
+
+class download(Task):
+    def run(self):
+        from urllib import urlopen
+        urlfile = self.inputs[0]
+        ctlfile,tarfile = self.outputs
+        url = urlfile.read().strip()
+        web = urlopen(url)
+        tarfile.write(web.read(),'wb')
+        ctlfile.write('all ok')
+
+def get_unpacker(filename, dirname):
+    if filename.endswith('.zip'): 
+        return 'unzip -d %s %s' % (dirname, filename)
+    
+    text2flags = {'.tar.gz':'xzf', '.tgz':'xzf', '.tar.bz2':'xjf', '.tar':'xf' }
+    for ext, flags in text2flags.items():
+        if filename.endswith(ext):
+            return 'tar -C %s -%s %s' % (dirname, flags, filename)
+    return 'tar -C %s -xf %s' % (dirname, filename)
+
+class unpack(Task):
+    SRCDIR = None
+    def run(self):
+        arch, _ = self.inputs
+        ctrl, tgt = self.outputs
+        cmdstr = get_unpacker(arch.abspath(), self.SRCDIR)
+        rc = self.exec_command(cmdstr)
+        if rc == 0:
+            ctrl.write('all ok')
+        return rc
