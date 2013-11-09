@@ -29,6 +29,15 @@ import time
 from orch.wafutil import exec_command
 from orch.util import string2list
 
+default_step_cwd = dict(
+    download = '{download_dir}',
+    unpack = '{source_dir}',
+    patch = '{source_dir}',
+    prepare = '{build_dir}',
+    build = '{build_dir}',
+    install = '{build_dir}',
+)
+
 # Main interface to worch configuration items
 class WorchConfig(object):
     def __init__(self, **pkgcfg):
@@ -52,11 +61,12 @@ def worch_hello(self):
     print self.worch.format('Hi from worch, my name is "{package}/{version}" and I am using "{dumpenv_cmd}" with extra {extra}', extra='spice')
     print 'My bld.env: %s' % (self.bld.env.keys(),)
     print 'My all_envs: %s' % (sorted(self.bld.all_envs.keys()),)
-    print 'My package env: %s' % (self.bld.all_envs[self.worch.package].keys(),)
-    print 'My package munged environ: %s' % (self.bld.all_envs[self.worch.package]['munged_env'].keys(),)
-    print 'My groups: %s' % (self.bld.env['orch_group_dict'].keys(),)
-    print 'My packages: %s' % (self.bld.env['orch_package_list'],)
+    print 'My env: %s' % (self.env.keys(),)
+    print 'My groups: %s' % (self.env['orch_group_dict'].keys(),)
+    print 'My packages: %s' % (self.env['orch_package_list'],)
 #    print 'My package dict: %s' % '\n'.join(['%s=%s' %kv for kv in sorted(self.bld.env['orch_package_dict'][self.worch.package].items())])
+
+
 
 @taskgen_method
 def step(self, name, rule, **kwds):
@@ -69,11 +79,6 @@ def step(self, name, rule, **kwds):
     - if the rule is a string (scriptlet) then the worch exec_command is used
     - successful execution of the rule leads to a worch control file being produced.
     '''
-    # functionalize scriptlet
-    rulef = rule
-    if isinstance(rule, type('')):
-        rulef = lambda t: exec_command(t, rule)
-
     # append control file as an additional output
     target = string2list(kwds.get('target', ''))
     if not isinstance(target, list):
@@ -83,16 +88,32 @@ def step(self, name, rule, **kwds):
         target.append(cn)
     kwds['target'] = target
     
+    kwds.setdefault('env', self.env)
+    
+    cwd = default_step_cwd.get(name)
+    if cwd and not kwds.has_key('cwd'):
+        cwd = self.worch.format(cwd)
+        cwd = self.path.find_or_declare(cwd)
+        kwds['cwd'] = cwd.abspath()
+
+    step_name = '%s_%s' % (self.worch.package, name)
+
+    # functionalize scriptlet
+    rulefun = rule
+    if isinstance(rule, type('')):
+        rulefun = lambda t: exec_command(t, rule)
+
     # curry the real rule function in order to write control file if successful
     def runit(t):
-        rc = rulef(t)
-        if rc == 0:
+        rc = rulefun(t)
+        if not rc:
+            msg.debug('orch: successfully ran %s' % step_name)
             cn.write(time.asctime(time.localtime()) + '\n')
         return rc
 
-    kwds.setdefault('env', self.env)
+    msg.debug('orch: step "%s" with %s in %s\nsource=%s\ntarget=%s' % \
+              (step_name, rulefun, cwd, kwds.get('source'), kwds.get('target')))
 
-    step_name = '%s_%s' % (self.worch.package, name)
     self.bld(name=step_name, rule = runit, **kwds)
 
     
@@ -107,6 +128,14 @@ def control_node(self, step, package = None):
     path = self.worch.format('{control_dir}/{filename}', filename=filename)
     return self.path.find_or_declare(path)
 
+@taskgen_method
+def make_node(self, path, parent_node=None):
+    if not parent_node:
+        if path.startswith('/'):
+            parent_node = self.bld.root
+        else:
+            parent_node = self.bld.bldnode
+    return parent_node.make_node(path)
 
 
 import waflib.Logs as msg
@@ -123,7 +152,6 @@ def worch_package(ctx, worch_config, *args, **kw):
     tgen = ctx(*args, worch=worch, **kw)
     tgen.env = ctx.all_envs[worch.package]
     tgen.env.env = tgen.env.munged_env
-
     msg.debug('orch: building package "%s" with "%s" and features: %s' % \
               (kw['name'], tgen, kw['features']))
     return tgen

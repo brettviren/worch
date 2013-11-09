@@ -5,6 +5,7 @@ Utility functions needing waf
 import os
 import os.path as osp
 import waflib.Logs as msg
+from waflib.Errors import WafError
 
 def exec_command(task, cmd, **kw):
     '''
@@ -39,6 +40,9 @@ def exec_command(task, cmd, **kw):
     try:
         ret = task.exec_command(cmd, **cmd_dict)
     except KeyboardInterrupt:
+        raise
+    except WafError:
+        msg.error('Command failed with WafError: %s in %s' % (cmd, cwd))
         raise
     finally:
         flog.close()

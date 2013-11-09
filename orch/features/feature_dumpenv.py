@@ -3,8 +3,8 @@
 from waflib.TaskGen import feature
 import waflib.Logs as msg
 
-
-defaults = dict(dumpenv_cmd = 'env')
+import orch.features
+orch.features.register_defaults('dumpenv', dumpenv_cmd = 'env')
 
 @feature('dumpenv')
 def feature_dumpenv(tgen):

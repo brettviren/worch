@@ -84,7 +84,7 @@ class PkgFormatter(object):
             raise
         return ret
 
-def fold_in_feature_requirements(suite, formatter = None, **kwds):
+def fold_in_feature_defaults(suite, formatter = None, **kwds):
     # fold in feature defaults
     for group in suite['groups']:
         new_packages = list()
@@ -167,7 +167,7 @@ def load(filename, start='start', formatter = None, **kwds):
     # load in initial configuration but delay formatting
     suite = deconf.load(filename, start=start, formatter=formatter, **kwds)
     suite = fold_in_worch_values(suite, formatter, **kwds)
-    suite = fold_in_feature_requirements(suite, formatter, **kwds)
+    suite = fold_in_feature_defaults(suite, formatter, **kwds)
     suite = fold_in_package_vars(suite, formatter, **kwds)
     
     return suite
