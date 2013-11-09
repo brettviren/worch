@@ -90,7 +90,7 @@ def fold_in_feature_requirements(suite, formatter = None, **kwds):
         new_packages = list()
         for package in group['packages']:
             featlist = string2list(package.get('features'))
-            featcfg = featmod.feature_requirements(featlist)
+            featcfg = featmod.defaults(featlist)
             package = update_if(featcfg, None, **package)            
             new_packages.append(package)
         group['packages'] = new_packages
@@ -119,6 +119,10 @@ def munge_package(package):
         package.setdefault('version_underscore', version.replace('.','_'))
         package.setdefault('version_dashed', version.replace('.','-'))
         package.setdefault('version_nodots', version.replace('.',''))
+
+
+    for sysdir in 'control urlfile download patch source build'.split():
+        package.setdefault('%s_dir' % sysdir, sysdir + 's')
 
     dest_install_dir = package.get('dest_install_dir') or package.get('install_dir')
     package['dest_install_dir'] = dest_install_dir

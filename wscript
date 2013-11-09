@@ -8,15 +8,16 @@ top = '.'
 out = 'tmp'
 
 def options(opt):
-    opt.load('orch.waffuncs', tooldir='.')
+    opt.load('orch.tools', tooldir='.')
+
     opt.add_option('--dot', action = 'store', default = None,
                    help = 'Produce a dot file of given name with dependency graph')
     opt.add_option('--dump-suite', action = 'store_true', default = False,
                    help = 'Dump the processed suite configuration data')
 
 def configure(cfg):
-    cfg.load('orch.waffuncs', tooldir='.')
-    #cfg.orch_dump()
+    cfg.load('orch.tools', tooldir='.')
+
 
 def dot(ctx):
     import orch.dot as odot
@@ -35,7 +36,7 @@ def dump(ctx):
     sys.exit(0)
 
 def build(bld):
-    bld.load('orch.waffuncs', tooldir='.')
+    bld.load('orch.tools', tooldir='.')
     if bld.options.dot:
         # needs to be a pre-fun, not a post-fun
         bld.add_pre_fun(dot)

@@ -1,0 +1,75 @@
+#+TITLE: worch features
+
+worch supports waf "features".  In fact, all waf operations are enacted via waf features.  
+
+In addition, worch allows authors of features to register a collection of default configuration items.  These configuration items may be overridden by user configuration.
+
+worch provides feature authors a means to access the configuration items belonging to the package the feature is operating on.  
+
+Note, in worch features tend to work in concert and can not be applied arbitrarily to a package.  In particular to assure dependency resolution some conventions must be followed when writing worch feature methods.
+
+Note: what is described here is a work in progress and is not currently all true.  See the section [[Refactoring]].
+
+* waf features
+
+A waf feature method that is bound to a =TaskGen= object through a decorator.  The method takes only the =TaskGen= object as =self=.  Note, waf features are expected to be defined when a build context is active.
+
+#+BEGIN_SRC python
+  bld(features="afeat anotherfeat",...)
+  
+  @TaskGen.feature('afeat')
+  def some_method_name_it_does_not_matter(self):
+       print 'Inputs are',self.inputs
+       print 'Outputs are',self.outputs
+       self.bld(rule='aprogram -args', ...)
+#+END_SRC
+
+* worch features
+
+In worch, features are associated with a package by listing their names in the package's configuration section:
+
+#+BEGIN_EXAMPLE
+[package foo]
+features = tarball, autoconf, makemake
+#+END_EXAMPLE
+
+A worch feature may be defined identically as in waf. 
+
+#+BEGIN_SRC python
+  from orch.feature import decorator as feature
+  
+  @feature('featname', featarg=42, featother='Hello World!')
+  def some_method_name(info):
+      info.bld.step('name', rule = 'frobnicate %s' % info.config_thing)
+  
+#+END_SRC
+
+The differences is that the decorator takes any number of parameters which provide default values, and may later be retrieved from the =info= object.  If the user has set any of these parameters in the configuration then those settings take precedence.  Also shown is the =info.bld.step()= call which is a special case of invoking the build context directly.
+
+** External features
+
+Worch comes with some batteries-included features. If worch is applied to packages that require additional features they can be created as Python modules and loaded via waf's "tool" mechanism.  This is specified in the configuration like:
+
+#+BEGIN_EXAMPLE
+[package foo]
+features = frobnicate
+tools = frob.tools
+#+END_EXAMPLE
+
+The =frob.tools= Python module will be loaded using waf's =load()= method from the =configure= context.  Any such tools are responsible for assuring any worch feature methods, as described above, are imported. 
+
+* Refactoring
+
+In its proto-form, worch used waf features but due to some confusion in how they worked they were abandoned and a similar pattern was invented.  After a better understanding worch is in the process of reverting back to waf features in order to allow the tool-based loading of outside features described above.
+
+The confusion was largely related to inter-task dependency resolution.  Leading out of that confusion left behind complicated code which is not needed and hinders allowing outside features to be loaded.
+
+To get there from here the following development is needed roughly in order:
+
+ [ ] modify the existing worch features to include the waf =feature()= decorator
+ [ ] modify the worch =feature()= decorator to translate the passed in taskgen =self= object into a =pfi= info object
+ [ ] modify the "requirements" mechanism in order to remove the global requirements list and allow features to declare default configuration items when they call their worch =feature()= decorator
+ [ ] modify the  =worch.pkgconf= module to apply these defaults instead of the central requirements list
+
+
+

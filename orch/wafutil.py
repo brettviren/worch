@@ -14,7 +14,7 @@ def exec_command(task, cmd, **kw):
      - printout the content of that file when the command fails
     '''
     cwd = getattr(task, 'cwd', task.generator.bld.out_dir)
-    msg.debug('orch: exec command: %s: "%s" in %s' % (task.name, cmd, cwd))
+    msg.debug('orchstep: exec command: %s: "%s" in %s' % (task.name, cmd, cwd))
     if not osp.exists(cwd):
         os.makedirs(cwd)
     flog = open(osp.join(cwd, "worch_%s.log.txt" % task.name), 'w')
@@ -42,9 +42,9 @@ def exec_command(task, cmd, **kw):
         raise
     finally:
         flog.close()
-    if msg.verbose and ret == 0 and 'orch' in msg.zones:
+    if msg.verbose and ret == 0 and 'orchstep' in msg.zones:
         with open(flog.name) as f:
-            msg.pprint('NORMAL','orch: %s (%s)\n%s' % \
+            msg.pprint('NORMAL','orchstep: %s (%s)\n%s' % \
                            (task.name, flog.name, ''.join(f.readlines())))
             pass
         pass
