@@ -5,7 +5,6 @@ Features to produce a source directory from an online tar/zip archive.
 It requires no previous steps.  It provides the 'seturl', 'download' and 'unpack' steps.
 '''
 
-
 from waflib.TaskGen import feature
 import waflib.Logs as msg
 
@@ -78,7 +77,6 @@ def feature_tarball(tgen):
 
     def unpack_task(task):
         cmd = get_unpacker(task.inputs[0].abspath())
-        msg.debug('orch: unpacker command: "%s"' % cmd)
         return exec_command(task, cmd)
 
     tgen.step('unpack',

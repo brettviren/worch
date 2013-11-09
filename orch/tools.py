@@ -52,6 +52,16 @@ class WorchConfig(object):
         d = dict(self._config, **kwds)
         return string.format(**d)
 
+    def depends(self, step):
+        '''
+        Return a list of steps that this step depends on
+        '''
+        d = self._config.get('depends')
+        if not d: return list()
+        ds = [x[1] for x in [s.split(':') for s in string2list(d)] if x[0] == step]
+        return ds
+        
+
 # Augment the task generator with worch-specific methods
 from waflib.TaskGen import taskgen_method
 
@@ -96,7 +106,14 @@ def step(self, name, rule, **kwds):
         cwd = self.path.find_or_declare(cwd)
         kwds['cwd'] = cwd.abspath()
 
+
     step_name = '%s_%s' % (self.worch.package, name)
+
+    depends = self.worch.depends(name)
+    after = string2list(kwds.get('after',[])) + depends
+    if after:
+        kwds['after'] = after
+        msg.debug('orch: run %s AFTER: %s' % (step_name, after))
 
     # functionalize scriptlet
     rulefun = rule
@@ -111,9 +128,11 @@ def step(self, name, rule, **kwds):
             cn.write(time.asctime(time.localtime()) + '\n')
         return rc
 
-    msg.debug('orch: step "%s" with %s in %s\nsource=%s\ntarget=%s' % \
-              (step_name, rulefun, cwd, kwds.get('source'), kwds.get('target')))
+    # msg.debug('orch: step "%s" with %s in %s\nsource=%s\ntarget=%s' % \
+    #           (step_name, rulefun, cwd, kwds.get('source'), kwds.get('target')))
 
+    # have to switch group each time as steps are called already asynchronously
+    self.bld.set_group(self.worch.group)
     self.bld(name=step_name, rule = runit, **kwds)
 
     
@@ -144,7 +163,7 @@ def worch_package(ctx, worch_config, *args, **kw):
 
     # transfer waf-specific keywords explicitly
     kw['name'] = worch_config['package']
-    kw['features'] = worch_config['features']
+    kw['features'] = ' '.join(string2list(worch_config['features']))
     kw['use'] = worch_config.get('use')
 
     # make the TaskGen object for the package
@@ -152,8 +171,8 @@ def worch_package(ctx, worch_config, *args, **kw):
     tgen = ctx(*args, worch=worch, **kw)
     tgen.env = ctx.all_envs[worch.package]
     tgen.env.env = tgen.env.munged_env
-    msg.debug('orch: building package "%s" with "%s" and features: %s' % \
-              (kw['name'], tgen, kw['features']))
+    msg.debug('orch: package "%s" with features: %s' % \
+              (kw['name'], ', '.join(kw['features'].split())))
     return tgen
 BuildContext.worch_package = worch_package
 del worch_package

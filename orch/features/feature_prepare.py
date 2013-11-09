@@ -5,6 +5,7 @@ Features for prepare source code.
 These features all rely on the "unpack" step to have run.  It produces a "prepare" step.
 '''
 
+
 from waflib.TaskGen import feature
 import waflib.Logs as msg
 
@@ -28,9 +29,12 @@ def feature_autoconf(tgen):
         opts = tgen.worch.format('{prepare_cmd_std_opts} {prepare_cmd_options}')
         cmd = '%s %s' % (script, opts)
         return exec_command(task, cmd)
+
+    prepcmd = tgen.make_node(tgen.worch.prepare_cmd)
+    #msg.debug('orch: prepcmd: %s' % prepcmd.abspath())
     tgen.step('prepare',
               rule = prepare,
-              source = [tgen.worch.prepare_cmd, tgen.control_node('unpack')],
+              source = [prepcmd, tgen.control_node('unpack')],
               target = tgen.worch.prepare_target_path)
         
 orch.features.register_defaults(
@@ -49,8 +53,11 @@ def feature_cmake(tgen):
         cmdstr = '{prepare_cmd} {srcdir} {prepare_cmd_std_opts} {prepare_cmd_options}'
         cmd = tgen.worch.format(cmdstr, srcdir=task.inputs[0].parent.abspath())
         return exec_command(task, cmd)
+
+    cmkfile = tgen.make_node(tgen.worch.source_unpacked_path + '/CMakeLists.txt')
+    #msg.debug('orch: cmkfile: %s' % cmkfile.abspath())
     tgen.step('prepare',
               rule = prepare,
-              source = [tgen.worch.source_unpacked_path + '/CMakeLists.txt', 
+              source = [cmkfile, 
                         tgen.control_node('unpack')],
               target = tgen.worch.prepare_target_path)

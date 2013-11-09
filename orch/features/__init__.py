@@ -14,6 +14,7 @@ def load():
     for fpath in glob("%s/feature_*.py"%mydir):
         ffile = osp.basename(fpath)
         modname = osp.splitext(ffile)[0]
+        msg.debug('orch: loading module: "%s"' % modname)
         exec("from . import %s"%modname)
     msg.debug('orch: worch features: %s' % (', '.join(sorted(registered_defaults.keys())), ))
     from waflib.TaskGen import feats as available_features

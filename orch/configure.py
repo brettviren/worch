@@ -50,6 +50,6 @@ def configure(cfg):
     envmunge.decompose(cfg, suite)
 
     cfg.msg('Orch configure envs', '"%s"' % '", "'.join(cfg.all_envs.keys()))
-
+    msg.debug('orch: CONFIG CALLED [done]')
     return
 

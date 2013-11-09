@@ -33,10 +33,6 @@ def build(bld):
             pkgname = package['package']
 
             pkgcfg = bld.env.orch_package_dict[pkgname]
-            featlist = util.string2list(pkgcfg.get('features'))
-            msg.debug('orch: features for %s: "%s"' % (pkgname, '", "'.join(featlist)))
-            #for feat in featlist:
-            #    assert feat in available_features.keys(), 'Unknown feature: "%s"' % feat
             bld.worch_package(pkgcfg)
 
     msg.debug ('orch: BUILD CALLED [done]')
