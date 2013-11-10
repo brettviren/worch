@@ -34,7 +34,7 @@ def single_cmd_rule(func):
         tgen.step('unpack',
                   rule = task_func,
                   source = tgen.worch.source_urlfile,
-                  target = tgen.worch.unpacked_target)
+                  target = tgen.worch.source_unpacked_target)
     return rule
 
 @single_cmd_rule
@@ -55,7 +55,7 @@ def do_svn(tgen):
         msg.error(err)
         raise ValueError(err)
     pat = "svn checkout {source_url} {source_unpacked}"
-    return msg.worch.format(pat)
+    return tgen.worch.format(pat)
 
 
 @single_cmd_rule
@@ -70,7 +70,7 @@ def do_hg(tgen):
 
 def do_git(tgen):
 
-    git_dir = tgen.make_node(tgen.worch.format('{_dir}/{package}.git'))
+    git_dir = tgen.make_node(tgen.worch.format('{download_dir}/{package}.git'))
 
     if osp.exists(git_dir.abspath()):
         clone_or_update = 'git --git-dir={git_dir} fetch --all --tags'
@@ -89,7 +89,7 @@ def do_git(tgen):
     checkout = tgen.worch.format(checkout, git_dir=git_dir.abspath())
     tgen.step('unpack',
               rule = checkout,
-              source = git_dir,
+              source = tgen.control_node('download'),
               target = tgen.worch.source_unpacked_target)
     
 

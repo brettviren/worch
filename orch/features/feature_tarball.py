@@ -21,7 +21,7 @@ orch.features.register_defaults(
     source_archive_checksum = '',
     source_unpacked = '{package}-{version}',
     source_unpacked_path = '{source_dir}/{source_unpacked}',
-    unpacked_target = 'README',
+    unpacked_target = 'README-{package}',
     source_unpacked_target = '{source_unpacked_path}/{unpacked_target}',
 )
 

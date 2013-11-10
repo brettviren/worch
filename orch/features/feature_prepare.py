@@ -62,23 +62,23 @@ orch.features.register_defaults(
     'cmake',
     source_unpacked_path = '{source_dir}/{source_unpacked}',
     prepare_cmd = 'cmake',
-    prepare_cmd_std_opts = '{source_dir}/{source_unpacked}/CMakeLists.txt -DCMAKE_INSTALL_PREFIX={install_dir}',
+    prepare_cmd_std_opts = '-DCMAKE_INSTALL_PREFIX={install_dir}',
     prepare_cmd_options = '',
-    prepare_target = 'config.status',
+    prepare_target = 'CMakeCache.txt',
     prepare_target_path = '{build_dir}/{prepare_target}',
 )
 
 @feature('cmake')
 def feature_cmake(tgen):
+    cmkfile = tgen.make_node(tgen.worch.source_unpacked_path + '/CMakeLists.txt')
+
     def prepare(task):
         cmdstr = '{prepare_cmd} {srcdir} {prepare_cmd_std_opts} {prepare_cmd_options}'
-        cmd = tgen.worch.format(cmdstr, srcdir=task.inputs[0].parent.abspath())
+        cmd = tgen.worch.format(cmdstr, srcdir=cmkfile.parent.abspath())
         return exec_command(task, cmd)
 
-    cmkfile = tgen.make_node(tgen.worch.source_unpacked_path + '/CMakeLists.txt')
     #msg.debug('orch: cmkfile: %s' % cmkfile.abspath())
     tgen.step('prepare',
               rule = prepare,
-              source = [cmkfile, 
-                        tgen.control_node('unpack')],
+              source = [tgen.control_node('unpack')],
               target = tgen.worch.prepare_target_path)
