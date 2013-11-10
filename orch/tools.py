@@ -45,6 +45,9 @@ class WorchConfig(object):
     def __getattr__(self, name):
         return self._config[name]
 
+    def get(self, name, default = None):
+        return self._config.get(name,default)
+
     def format(self, string, **kwds):
         '''
         Return a string formatted with kwds and configuration items

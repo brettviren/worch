@@ -26,6 +26,48 @@ orch.features.register_defaults(
     vcs_module = '',            # used by cvs
 )
 
+def single_cmd_rule(func):
+    def rule(tgen):
+        def task_func(task):
+            cmd = func(tgen)
+            return exec_command(task, cmd)
+        tgen.step('unpack',
+                  rule = task_func,
+                  source = tgen.worch.source_urlfile,
+                  target = tgen.worch.unpacked_target)
+    return rule
+
+@single_cmd_rule
+def do_cvs(tgen):
+    tag = tgen.worch.get('vcs_tag', '')
+    if tag:
+        tag = '-r ' + tag
+    module = tgen.worch.get('vcs_module', '')
+    if not module:
+        module = tgen.worch.package
+    pat = 'cvs -d {source_url} checkout {vcs_tag_opt} -d {source_unpacked} {module}'
+    return tgen.worch.format(pat, vcs_tag_opt=tag, module=module)
+
+@single_cmd_rule
+def do_svn(tgen):
+    if tgen.worch.get('vcs_tag'):
+        err = tgen.worch.format('SVN has no concept of tags, can not honor: "{vcs_tag}"')
+        msg.error(err)
+        raise ValueError(err)
+    pat = "svn checkout {source_url} {source_unpacked}"
+    return msg.worch.format(pat)
+
+
+@single_cmd_rule
+def do_hg(tgen):
+    tag = tgen.worch.get('vcs_tag', '')
+    if tag:
+        tag = '-b ' + tag
+    pat = "hg clone {vcs_tag_opt} {source_url} {source_unpacked}"
+    return tgen.worch.format(pat, vcs_tag_opt=tag)
+
+
+
 def do_git(tgen):
 
     git_dir = tgen.make_node(tgen.worch.format('{_dir}/{package}.git'))
