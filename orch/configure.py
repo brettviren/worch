@@ -47,6 +47,22 @@ def configure(cfg):
     msg.debug('top="{top}" out="{out}" DESTDIR="{DESTDIR}"'.format(**extra))
 
     suite = pkgconf.load(orch_config, start = cfg.options.orch_start, **extra)
+
+    # load in any external tools in this configuration context that
+    # may be referenced in the configuration
+    for group in suite['groups']:
+        for package in group['packages']:
+            tools = package.get('tools')
+            if not tools: continue
+            for tool in util.string2list(tools):
+                msg.debug('orch: loading tool: "%s" for package "%s"'  % (tool, package['package']))
+                cfg.load(tool)
+
+    suite = pkgconf.fold_in(suite, **extra)    
+    #pkgconf.dump_suite(suite)
+
+
+    # decompose the hierarchy of dicts into waf data
     envmunge.decompose(cfg, suite)
 
     cfg.msg('Orch configure envs', '"%s"' % '", "'.join(cfg.all_envs.keys()))

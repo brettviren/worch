@@ -52,7 +52,7 @@ class WorchConfig(object):
         d = dict(self._config, **kwds)
         return string.format(**d)
 
-    def depends(self, step):
+    def depends_step(self, step):
         '''
         Return a list of steps that this step depends on
         '''
@@ -61,6 +61,43 @@ class WorchConfig(object):
         ds = [x[1] for x in [s.split(':') for s in string2list(d)] if x[0] == step]
         return ds
         
+    def dependencies(self):
+        '''
+        Return all dependencies set via "depends" configuration items 
+        return list of tuples: (mystep, package, package_step)
+        eg: ('prepare', 'gcc', 'install')
+        '''
+        ret = list()
+        try:
+            deps = getattr(self, 'depends', None)
+        except KeyError:
+            return list()
+        for dep in string2list(deps):
+            mystep, other = dep.split(':')
+            pkg,pkg_step = other.split('_',1)
+            ret.append((mystep, pkg, pkg_step))
+        return ret
+
+    def exports(self):
+        '''
+        Return all environment settings via export_* configuration items
+        return list of tuples: (variable, value, operator) for exports
+        eg: ('PATH', '/blah/blah', 'prepend')
+        '''
+        ret = list()
+        for key,val in self._config.items():
+            if not key.startswith('export_'):
+                continue
+            var = key[len('export_'):]
+            oper = 'set'
+            for maybe in ['prepend', 'append', 'set']:
+                if val.startswith(maybe+':'):
+                    oper = maybe
+                    val = val[len(maybe)+1:]
+            ret.append((var, val, oper))
+        return ret
+
+
 
 # Augment the task generator with worch-specific methods
 from waflib.TaskGen import taskgen_method
@@ -109,7 +146,7 @@ def step(self, name, rule, **kwds):
 
     step_name = '%s_%s' % (self.worch.package, name)
 
-    depends = self.worch.depends(name)
+    depends = self.worch.depends_step(name)
     after = string2list(kwds.get('after',[])) + depends
     if after:
         kwds['after'] = after

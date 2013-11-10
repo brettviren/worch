@@ -6,6 +6,7 @@ import os
 import os.path as osp
 import waflib.Logs as msg
 from waflib.Errors import WafError
+from . import util
 
 def exec_command(task, cmd, **kw):
     '''
@@ -67,3 +68,5 @@ def exec_command(task, cmd, **kw):
         fp.write('\n\n%s\n' % cmd)
     msg.error('reproduce with: %s' % repo)
     return ret
+
+

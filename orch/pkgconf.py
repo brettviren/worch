@@ -165,7 +165,10 @@ def fold_in_package_vars(suite, formatter, **kwds):
 def load(filename, start='start', formatter = None, **kwds):
 
     # load in initial configuration but delay formatting
-    suite = deconf.load(filename, start=start, formatter=formatter, **kwds)
+    return deconf.load(filename, start=start, formatter=formatter, **kwds)
+
+def fold_in(suite, formatter = None, **kwds):
+
     suite = fold_in_worch_values(suite, formatter, **kwds)
     suite = fold_in_feature_defaults(suite, formatter, **kwds)
     suite = fold_in_package_vars(suite, formatter, **kwds)

@@ -11,7 +11,7 @@ FIXME: recursion to external wscript files has been removed.
 
 import waflib.Logs as msg
 from waflib.TaskGen import feats as available_features
-from . import util
+from . import util, wafutil
 
 
 def assert_features(pkgcfg):
@@ -23,9 +23,20 @@ def assert_features(pkgcfg):
 def build(bld):
     msg.debug ('orch: BUILD CALLED')
 
+    # batteries-included
     from . import features
     features.load()
-    
+
+    # external tools
+    for pkgname, pkgdict in bld.env.orch_package_dict.items():
+        tools = pkgdict.get('tools')
+        if not tools: continue
+        for tool in util.string2list(tools):
+            bld.load(tool)
+
+    from waflib.TaskGen import feats as available_features
+    msg.debug('orch: available features: %s' % (', '.join(sorted(available_features.keys())), ))
+
     msg.info('Supported waf features: "%s"' % '", "'.join(sorted(available_features.keys())))
     msg.debug('orch: Build envs: %s' % ', '.join(sorted(bld.all_envs.keys())))
 
