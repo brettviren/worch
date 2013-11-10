@@ -2,6 +2,10 @@
 '''
 Features for prepare source code.  
 
+ - prepare :: generic
+ - autoconf :: run "configure" script found in source directory
+ - cmake :: run cmake
+
 These features all rely on the "unpack" step to have run.  It produces a "prepare" step.
 '''
 
@@ -11,6 +15,27 @@ import waflib.Logs as msg
 
 from orch.wafutil import exec_command
 import orch.features
+
+orch.features.register_defaults(
+    'prepare',
+    source_unpacked_path = '{source_dir}/{source_unpacked}',
+    prepare_cmd = None,         # must provide
+    prepare_cmd_std_opts = '',
+    prepare_cmd_options = '',
+    prepare_target = None,      # must provide
+    prepare_target_path = '{build_dir}/{prepare_target}',
+)
+
+@feature('prepare')
+def feature_prepare(tgen):
+
+    cmdstr = tgen.worch.format('{prepare_cmd} {prepare_cmd_std_opts} {prepare_cmd_options}')
+    tgen.step('prepare',
+              rule = cmdstr,
+              source = tgen.control_node('unpack'),
+              target = tgen.worch.prepare_target_path)
+
+
 
 orch.features.register_defaults(
     'autoconf',
