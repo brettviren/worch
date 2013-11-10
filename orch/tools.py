@@ -133,8 +133,7 @@ def step(self, name, rule, **kwds):
 
     # have to switch group each time as steps are called already asynchronously
     self.bld.set_group(self.worch.group)
-    self.bld(name=step_name, rule = runit, **kwds)
-
+    return self.bld(name=step_name, rule = runit, **kwds)
     
 @taskgen_method
 def control_node(self, step, package = None):

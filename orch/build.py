@@ -14,6 +14,12 @@ from waflib.TaskGen import feats as available_features
 from . import util
 
 
+def assert_features(pkgcfg):
+    features = util.string2list(pkgcfg['features'])
+    for feat in features:
+        assert feat in available_features.keys(), 'Unknown feature "%s" for package "%s"' % (feat, pkgcfg['package'])
+        
+
 def build(bld):
     msg.debug ('orch: BUILD CALLED')
 
@@ -32,8 +38,17 @@ def build(bld):
         for package in group['packages']:
             pkgname = package['package']
 
+            assert_features(package)
+
             pkgcfg = bld.env.orch_package_dict[pkgname]
             bld.worch_package(pkgcfg)
 
+
+    bld.add_pre_fun(pre_process)
+    bld.add_post_fun(post_process)
     msg.debug ('orch: BUILD CALLED [done]')
 
+def pre_process(bld):
+    msg.debug('orch: PREPROCESS')
+def post_process(bld):
+    msg.debug('orch: POSTPROCESS')

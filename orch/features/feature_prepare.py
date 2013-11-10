@@ -30,10 +30,11 @@ def feature_autoconf(tgen):
         cmd = '%s %s' % (script, opts)
         return exec_command(task, cmd)
 
-    prepcmd = tgen.make_node(tgen.worch.prepare_cmd)
+    prepcmd = tgen.path.find_or_declare(tgen.worch.prepare_cmd)
     #msg.debug('orch: prepcmd: %s' % prepcmd.abspath())
     tgen.step('prepare',
               rule = prepare,
+              after = tgen.worch.package + '_unpack',
               source = [prepcmd, tgen.control_node('unpack')],
               target = tgen.worch.prepare_target_path)
         
