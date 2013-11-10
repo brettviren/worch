@@ -18,3 +18,4 @@ install*
 foo.*
 .waf-*
 old
+.waf3-*
