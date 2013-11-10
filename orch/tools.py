@@ -126,6 +126,8 @@ def step(self, name, rule, **kwds):
     - if the rule is a string (scriptlet) then the worch exec_command is used
     - successful execution of the rule leads to a worch control file being produced.
     '''
+    step_name = '%s_%s' % (self.worch.package, name)
+
     # append control file as an additional output
     target = string2list(kwds.get('target', ''))
     if not isinstance(target, list):
@@ -136,15 +138,16 @@ def step(self, name, rule, **kwds):
     kwds['target'] = target
     
     kwds.setdefault('env', self.env)
-    
-    cwd = default_step_cwd.get(name)
-    if cwd and not kwds.has_key('cwd'):
+
+    cwd = kwds.get('cwd')
+    if not cwd:
+        cwd = default_step_cwd.get(name)
+    if cwd:
         cwd = self.worch.format(cwd)
-        cwd = self.path.find_or_declare(cwd)
+        cwd = self.make_node(cwd)
+        msg.debug('orch: using cwd for step "%s": %s' % (step_name, cwd.abspath()))
         kwds['cwd'] = cwd.abspath()
 
-
-    step_name = '%s_%s' % (self.worch.package, name)
 
     depends = self.worch.depends_step(name)
     after = string2list(kwds.get('after',[])) + depends

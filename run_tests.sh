@@ -19,8 +19,10 @@ run_tests () {
 
 
 
-    for config in tests/configs/deps.cfg 'examples/simple-with-patch/*.cfg'
-
+    for config in \
+	examples/python/main.cfg \
+	examples/simple-with-modules/main.cfg \
+	tests/configs/deps.cfg 'examples/simple-with-patch/*.cfg'
     do
 	run $python waf --prefix=install --out=tmp --orch-config=$config configure build
     done

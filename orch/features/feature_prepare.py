@@ -24,18 +24,13 @@ orch.features.register_defaults(
 
 @feature('autoconf')
 def feature_autoconf(tgen):
-    def prepare(task):
-        script = task.inputs[0].abspath()
-        opts = tgen.worch.format('{prepare_cmd_std_opts} {prepare_cmd_options}')
-        cmd = '%s %s' % (script, opts)
-        return exec_command(task, cmd)
 
-    prepcmd = tgen.path.find_or_declare(tgen.worch.prepare_cmd)
-    #msg.debug('orch: prepcmd: %s' % prepcmd.abspath())
+    cmdstr = tgen.make_node(tgen.worch.prepare_cmd).abspath()
+    cmdstr += tgen.worch.format(' {prepare_cmd_std_opts} {prepare_cmd_options}')
     tgen.step('prepare',
-              rule = prepare,
-              after = tgen.worch.package + '_unpack',
-              source = [prepcmd, tgen.control_node('unpack')],
+              rule = cmdstr,
+              #after = tgen.worch.package + '_unpack',
+              source = tgen.control_node('unpack'),
               target = tgen.worch.prepare_target_path)
         
 orch.features.register_defaults(

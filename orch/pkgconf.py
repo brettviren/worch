@@ -121,8 +121,10 @@ def munge_package(package):
         package.setdefault('version_nodots', version.replace('.',''))
 
 
-    for sysdir in 'control urlfile download patch source build'.split():
+    for sysdir in 'control urlfile download patch source'.split():
         package.setdefault('%s_dir' % sysdir, sysdir + 's')
+    package.setdefault('install_dir', '{PREFIX}')
+    package.setdefault('build_dir', 'builds/{package}-{version}')
 
     dest_install_dir = package.get('dest_install_dir') or package.get('install_dir')
     package['dest_install_dir'] = dest_install_dir
