@@ -354,10 +354,49 @@ This causes the =tarball= and =autoconf= features to look for a =bootstrap= inst
 
 ** Writing your own /feature/
 
-* Extended example
 
- - [[./examples/art/README.org]] 
+* Waf tricks
 
+** Rerunning a step
+
+Waf honors dependencies and will rerun a step when needed.  However, if the configuration is being modified sometimes one must tell waf manually to rerun a step when it thinks that the step's output is already produced.  To do this one can do:
+
+#+BEGIN_EXAMPLE
+$ waf step --files=path/to/target/file
+#+END_EXAMPLE
+
+The target files need to be a declared target.  
+
+As an example, it was discovered that Geant4's data files were not getting installed in the [[./examples/orka/packages.cfg][ORKA example]].  The fix required adding =-DGEANT4_INSTALL_DATA=ON= to the =prepare_cmd_options=.  To avoid rebuilding the entire suite and just causing the =cmake= and =makemake= steps to rerun the following commands were run:
+
+#+BEGIN_EXAMPLE
+$ waf [...] configure  # rerun configure if configuration changed
+$ waf step --files=tmp/builds/geant-4.9.6.p01-debug/CMakeCache.txt
+$ waf step --files=`pwd`/tmp/builds/geant-4.9.6.p01-debug/outputs/library/Linux-g++/libG4track.so
+$ waf step --files=/data3/bv/orka/inst/geant/4.9.6.p01/debug/include/Geant4/G4Track.hh
+$ waf                  # just to make sure any dependencies are mopped up
+#+END_EXAMPLE
+
+In another example one wants to tweak the =export_*= configuration items and have the =modulesfile= feature update the =modulefile= for each package.  The is an unexpressed dependency but one can manually have those steps rerun:
+
+#+BEGIN_EXAMPLE
+$ for n in /data3/bv/orka/inst/modules/*/*/modulefile
+> do 
+>   waf step --files=$n
+> done
+#+END_EXAMPLE
+
+*** Caveat 
+
+Unfortunately, one can't use tricks like this as a black-box.  Knowing which file(s) to provide requires detailed understanding of the features the package uses, the steps those features produce and the target files these steps are told to create.
+
+** Debugging info
+
+Worch can produce a lot of debugging information.  It has the concept of "zones" of logging.  To add some verbosity just for worch logs one can do:
+
+#+BEGIN_EXAMPLE
+$ waf --zones=orch [...]
+#+END_EXAMPLE 
 
 * Bundles
 

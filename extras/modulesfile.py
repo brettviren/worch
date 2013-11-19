@@ -30,7 +30,7 @@ def build(bld):
                 fp.write('#%Module1.0 #-*-tcl-*-#\n')
 
                 for mystep, deppkg, deppkgstep in tgen.worch.dependencies():
-                    load = 'module load %s {%s_version}' % (deppkg, deppkg)
+                    load = 'module load %s/{%s_version}' % (deppkg, deppkg)
                     load = tgen.worch.format(load)
                     fp.write(load + '\n')
 

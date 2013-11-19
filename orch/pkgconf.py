@@ -9,6 +9,7 @@ from . import deconf
 from .util import check_output, CalledProcessError, update_if, string2list
 from . import features as featmod
 from . import ups
+from . import rootsys
 
 def ncpus():
     try:
@@ -40,6 +41,7 @@ def host_description():
     platform = '{kernelname}-{machine}'.format(**ret)
     ret['platform'] = platform
     ret['ups_flavor'] = ups.flavor()
+    ret['root_config_arch'] = rootsys.arch()
 
     bits = '32'
     libbits = 'lib'

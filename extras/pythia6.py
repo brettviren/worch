@@ -88,3 +88,7 @@ def feature_pythiainst(tgen):
               target = inst,
               cwd = tgen.worch.build_dir)
 
+def configure(cfg):
+    pass
+def build(bld):
+    pass
