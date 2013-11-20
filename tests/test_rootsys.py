@@ -22,7 +22,7 @@ def test_arch():
 
 
 def test_my_arch():
-    print rootsys.arch()
+    print 'This hosts ROOT arch:', rootsys.arch()
 
 if '__main__' == __name__:
     test_arch()

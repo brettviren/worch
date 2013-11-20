@@ -6,6 +6,8 @@ import os
 import os.path as osp
 import waflib.Logs as msg
 from waflib.Errors import WafError
+import pprint
+
 from . import util
 
 def exec_command(task, cmd, **kw):
@@ -36,9 +38,8 @@ def exec_command(task, cmd, **kw):
         })
     flog.write('WORCH CMD: %s\n' % cmd)
     flog.write('WORCH CWD: %s\n' % cwd)
-    flog.write('WORCH TSK: %s %s\n' % (type(task), str(task)))
-    flog.write('\n\t%s' % \
-               '\n\t' .join(['%s = %s' % kv for kv in sorted(task.__dict__.items())]))
+    flog.write('WORCH TSK: %s\n' % str(task))
+    flog.write(pprint.pformat(task.__dict__, indent=2, depth=2))
     flog.write('\nWORCH ENV:\n\t%s' % \
                    '\n\t'.join(['%s = %s' % kv for kv in sorted(env.items())]))
     flog.write('\nWORCH command output:\n')
