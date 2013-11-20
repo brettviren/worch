@@ -1,0 +1,64 @@
+#+TITLE: Building ORKA-ILCRoot Suite
+
+The [[../examples/orka/suite-ilcroot.cfg][ORKA example]] builds the software for the ORKA ILCRoot application and dependencies.  
+
+* Installation
+
+Installation is done in the usual "worch way":
+
+#+BEGIN_EXAMPLE
+$ git clone https://github.com/brettviren/worch.git
+$ cd worch
+$ ./waf --prefix=/path/to/install --orch-config=examples/orka/suite-ilcroot.cfg configure
+$ ./waf
+#+END_EXAMPLE
+
+* User environment
+
+The installation includes setup files for [[http://modules.sf.net/][environment modules]].  These should include all information needed for setting up your user environment (if not, create an issue).
+
+** Setting up for Modules
+
+Currently it is assumed that the Modules package itself is already installed on your system.  Depending on how it is installed you may need to source its setup script to activate the =module= command.
+
+ - Red Hat (Scientific Linux) :: activated automatically
+ - Debian :: must do =source /usr/share/modules/init/bash=
+ - Mac OsX :: ???
+
+If you have installed modules from source you will do something similar to what is shown for Debian.
+
+** Telling Modules where to find modules
+
+You must set one environment variable telling Modules where the ORKA-ILCroot module files have been installed.  Using the example above you set:
+
+#+BEGIN_EXAMPLE
+$ export MODULEPATH=/path/to/install/modules
+#+END_EXAMPLE
+
+At this point you should be able to see what is available with:
+
+#+BEGIN_EXAMPLE
+$ module avail
+
+------------------------------ /opt/orka/inst/modules -------------------------------
+cmake/2.8.11/modulefile     geant4vmc/2.14a/modulefile  python/2.7.5/modulefile
+gccxml/20130920/modulefile  ilcroot/20130924/modulefile root/5.34.05/modulefile
+geant/4.9.6.p01/modulefile  ipython/1.1.0/modulefile    vgm/3.06/modulefile
+geant3vmc/1.15a/modulefile  pythia/6/modulefile         xerces-c/3.1.1/modulefile
+#+END_EXAMPLE
+
+** Setting up for =ilcroot=
+
+Now, it's easy:
+
+#+BEGIN_EXAMPLE
+$ module load ilcroot
+#+END_EXAMPLE
+
+If multiple versions are installed you can pick a specific one like:
+
+#+BEGIN_EXAMPLE
+$ module load ilcroot/20130924
+#+END_EXAMPLE
+
+
