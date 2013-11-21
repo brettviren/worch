@@ -2,24 +2,40 @@
 
 The [[../examples/orka/suite-ilcroot.cfg][ORKA example]] builds the software for the ORKA ILCRoot application and dependencies.  
 
-* Installation
+* Installation and bootstrapping
 
-Installation is done in the usual "worch way":
+To "install" worch and waf one simply clones the repository:
 
 #+BEGIN_EXAMPLE
 $ git clone https://github.com/brettviren/worch.git
 $ cd worch
+#+END_EXAMPLE
+
+To "bootstrap" waf one runs it with a trivial command:
+
+#+BEGIN_EXAMPLE
+$ ./waf --version
+#+END_EXAMPLE
+
+This causes waf to unpack itself and need be done only once after the clone is produced.  
+
+The next steps are to configure waf to use the worch configuration for ORKA-ILCroot and to initiate the build itself:
+
+#+BEGIN_EXAMPLE
 $ ./waf --prefix=/path/to/install --orch-config=examples/orka/suite-ilcroot.cfg configure
 $ ./waf
+
 #+END_EXAMPLE
 
 * User environment
 
-The installation includes setup files for [[http://modules.sf.net/][environment modules]].  These should include all information needed for setting up your user environment (if not, create an issue).
+The installation includes the setup files for [[http://modules.sf.net/][Environment Modules]] (EM).  The intention is for these files to include all information needed for setting up your user environment.  If any required setup is found missing feel free to make an issue in github or contact me.
 
-** Setting up for Modules
+** Setting up for Environment Modules
 
-Currently it is assumed that the Modules package itself is already installed on your system.  Depending on how it is installed you may need to source its setup script to activate the =module= command.
+Currently it is assumed that the EM package itself is already installed on your system.  If there are significant ORKA sites that do not already have EM installed it can be added to the worch suite.
+
+ Depending on how it is installed you may need to source its setup script to activate its =module= command.  Some common ways:
 
  - Red Hat (Scientific Linux) :: activated automatically
  - Debian :: must do =source /usr/share/modules/init/bash=
@@ -62,3 +78,32 @@ $ module load ilcroot/20130924
 #+END_EXAMPLE
 
 
+
+* Trouble shooting
+
+** Assure an unpolluted shell environment
+
+The shell which runs waf should not have any special environment variables set.  Any special environment that you set may be a source of problems.
+
+In particular do not include environment variable settings that will locate or otherwise pertain to software that has been installed outside of the usual OS mechanism.  Setting up for software that has overlap with the suite is particularly damaging.
+
+A reasonable =PATH= variable would be set to:
+
+#+BEGIN_EXAMPLE
+export PATH=/bin:/usr/bin:/usr/local/bin
+#+END_EXAMPLE
+
+** Some special shell environment
+
+Your build host may require some special environment due to local policy decisions.  One likely case is dealing with the need to make use of a proxy server to access external resources.  For example, on BNL's RACF cluster one currently should set:
+
+#+BEGIN_EXAMPLE
+ftp_proxy=http://192.168.1.165:3128/
+FTP_PROXY=http://192.168.1.165:3128/
+http_proxy=http://192.168.1.165:3128/
+HTTP_PROXY=http://192.168.1.165:3128/
+https_proxy=http://192.168.1.165:3128/
+HTTPS_PROXY=http://192.168.1.165:3128/
+#+END_EXAMPLE
+
+For BNL internal networks outside of RACF only the FTP related variables are needed.
