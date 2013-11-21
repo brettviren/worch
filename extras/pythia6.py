@@ -72,8 +72,10 @@ def feature_pythiainst(tgen):
               target = fo2,
               cwd = tgen.worch.build_dir)
 
+    build_rule = 'gfortran -shared -Wl,-{ld_soname_option},libPythia6.so -o {tgt} main.o pythia*.o tpythia*.o'
+    build_rule  = tgen.worch.format(build_rule, tgt = tgen.worch.build_target)
     tgen.step('build',
-              rule = 'gfortran -shared -Wl,-soname,libPythia6.so -o %s main.o pythia*.o tpythia*.o' % tgen.worch.build_target,
+              rule = build_rule,
               source = [co1, co2, fo1, fo2],
               target = tgen.worch.build_target_path,
               cwd = tgen.worch.build_dir)

@@ -4,6 +4,7 @@ Reproduce some root.cern.ch stuff
 '''
 import os
 import re
+from . import util
 
 arch_desc = [
     ("aix*", "aix5"),
@@ -50,6 +51,16 @@ def arch(uname = None):
     if not uname:
         uname = os.uname()
     arch = uname[0].lower()
+
+    if arch.lower() in ['darwin']:
+        # root cmake does this on Darwin
+        if os.path.exists('/usr/sbin/sysctl'):
+            out = util.check_output('/usr/sbin/sysctl machdep.cpu.extfeatures'.split())
+            if '64' in out:     # seems like an awful thing to match on
+                return 'macosx64'
+            else:
+                return 'macosx'
+
     rele = uname[2].lower()
     chip = uname[4].lower()
     acr = '%s:%s:%s' % (arch,chip,rele)

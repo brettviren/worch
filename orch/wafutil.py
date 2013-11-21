@@ -36,10 +36,20 @@ def exec_command(task, cmd, **kw):
         'stdout': flog,
         'stderr': flog,
         })
+
+    try:
+        pdict = bld.env['orch_package_dict'][task.name.split('_',1)[0]]
+    except KeyError:
+        pdict = dict()
+
     flog.write('WORCH CMD: %s\n' % cmd)
     flog.write('WORCH CWD: %s\n' % cwd)
     flog.write('WORCH TSK: %s\n' % str(task))
     flog.write(pprint.pformat(task.__dict__, indent=2, depth=2))
+    flog.write('\n')
+    if pdict:
+        flog.write('WORCH PKG:\n')
+        flog.write(pprint.pformat(pdict, indent=2, depth=2))
     flog.write('\nWORCH ENV:\n\t%s' % \
                    '\n\t'.join(['%s = %s' % kv for kv in sorted(env.items())]))
     flog.write('\nWORCH command output:\n')

@@ -52,6 +52,7 @@ def host_description():
     ret['libbits'] = libbits
     ret['gcc_dumpversion'] = check_output(['gcc','-dumpversion']).strip()
     ret['gcc_dumpmachine'] = check_output(['gcc','-dumpmachine']).strip()
+
     try:
         ma = check_output(
             ['gcc','-print-multiarch'],    # debian-specific
@@ -62,8 +63,12 @@ def host_description():
     ret['gcc_multiarch'] = ma
     if 'darwin' in ret['kernelname'].lower():
         libc_version = ret['kernelversion'] # FIXME: something better on Mac ?
+        ret['ld_soname_option'] = 'install_name'
+        ret['soext'] = 'dylib'
     else:
         libc_version = check_output(['ldd','--version']).split(b'\n')[0].split()[-1]
+        ret['ld_soname_option'] = 'soname'
+        ret['soext'] = 'so'
     ret['libc_version'] = libc_version
     ret['NCPUS'] = str(ncpus())
         
