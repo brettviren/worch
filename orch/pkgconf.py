@@ -122,6 +122,7 @@ def munge_package(package):
 
     version = package.get('version')
     if version:
+        version = version.format(**package)
         package.setdefault('version_2digit', '.'.join(version.split('.')[:2]))
         package.setdefault('version_underscore', version.replace('.','_'))
         package.setdefault('version_dashed', version.replace('.','-'))
