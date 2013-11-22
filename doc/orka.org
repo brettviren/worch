@@ -27,25 +27,33 @@ $ ./waf
 
 #+END_EXAMPLE
 
+
 * User environment
 
-The installation includes the setup files for [[http://modules.sf.net/][Environment Modules]] (EM).  The intention is for these files to include all information needed for setting up your user environment.  If any required setup is found missing feel free to make an issue in github or contact me.
+User environment for running the worch-built ORKA-ILCRoot suite is managed by a system called [[http://modules.sf.net/][Environment Modules]] (EM).  This system allows for the configuring of multiple shells and some interpreted languages.  It allows for multiple versions of the same package to be installed.  It provides a simple way for a user to view available packages and set up the one they want.
+
+When users use the worch-built ORKA-ILCRoot and find a need to produce significant, additional environment setup which should be shared by all users it is best to roll these settings back into the EM configuration produced by worch.  In such cases feel free to make an issue in github or otherwise contact the maintainers of the ORKA worch configuration.
+
+It is recommended that you incorporate the next *two* steps into your startup script (ie, =~/.profile=).  They alone will only minimally alter your environment.  You will then two the *third* step whenever you want to actually setup for using the software.
 
 ** Setting up for Environment Modules
 
-Currently it is assumed that the EM package itself is already installed on your system.  If there are significant ORKA sites that do not already have EM installed it can be added to the worch suite.
+The EM package itself is built along with the rest of the ORKA software.  You are free to use that copy, your own installation or one provided by your OS if there is one.  Depending on your choice you must arrange to have the =module= shell function/alias defined.  To check if it is defined you can type:
 
- Depending on how it is installed you may need to source its setup script to activate its =module= command.  Some common ways:
+#+BEGIN_EXAMPLE
+$ module help
+#+END_EXAMPLE
 
- - Red Hat (Scientific Linux) :: activated automatically
- - Debian :: must do =source /usr/share/modules/init/bash=
- - Mac OsX :: ???
+If you get a help screen you are ready.  If not, you will need to source a shell-specific EM script.  Some common locations of this script (assuming your shell is =bash=):
 
-If you have installed modules from source you will do something similar to what is shown for Debian.
+ - Built by worch :: =source /path/to/install/Modules/3.2.10/init/bash=
+ - Red Hat (Scientific Linux) package :: =/usr/share/Modules/init/bash=
+ - Debian package :: =source /usr/share/modules/init/bash=
+ - Mac Os X package :: ???
 
 ** Telling Modules where to find modules
 
-You must set one environment variable telling Modules where the ORKA-ILCroot module files have been installed.  Using the example above you set:
+You must also set one environment variable telling Modules where the ORKA-ILCroot module files have been installed.  Using the example example path used above when calling =waf configure= you must set:
 
 #+BEGIN_EXAMPLE
 $ export MODULEPATH=/path/to/install/modules
@@ -63,9 +71,12 @@ geant/4.9.6.p01/modulefile  ipython/1.1.0/modulefile    vgm/3.06/modulefile
 geant3vmc/1.15a/modulefile  pythia/6/modulefile         xerces-c/3.1.1/modulefile
 #+END_EXAMPLE
 
+Note: as the name implies =MODULEPATH= is a (colon-separated) =PATH=-like variable.  If you happen to have other EM package locations they can be added however if there is overlap in a package/version pair good behavior is not guaranteed.
+
+
 ** Setting up for =ilcroot=
 
-Now, it's easy:
+Now, that EM is set up and told where to find the ORKA packages actually setting up your environment is easy.
 
 #+BEGIN_EXAMPLE
 $ module load ilcroot
@@ -77,11 +88,12 @@ If multiple versions are installed you can pick a specific one like:
 $ module load ilcroot/20130924
 #+END_EXAMPLE
 
+As said before, the sourcing of the EM setup script and setting of =MODULEPATH= can best go in one of your login scripts (eg =~/.bashrc=).  This =module load= command is best typed interactively.  In principle it may be placed in a login script but this is not recommended.
 
 
 * Trouble shooting
 
-** Assure an unpolluted shell environment
+** Assure an unpolluted shell environment when running waf
 
 The shell which runs waf should not have any special environment variables set.  Any special environment that you set may be a source of problems.
 
@@ -93,9 +105,9 @@ A reasonable =PATH= variable would be set to:
 export PATH=/bin:/usr/bin:/usr/local/bin
 #+END_EXAMPLE
 
-** Some special shell environment
+** Some special shell environment for running waf
 
-Your build host may require some special environment due to local policy decisions.  One likely case is dealing with the need to make use of a proxy server to access external resources.  For example, on BNL's RACF cluster one currently should set:
+Contrary to the above, your build host may require some special environment due to local policy decisions.  One likely case is dealing with the need to make use of a proxy server to access external resources.  For example, on BNL's RACF cluster one currently should set:
 
 #+BEGIN_EXAMPLE
 ftp_proxy=http://192.168.1.165:3128/
@@ -107,3 +119,11 @@ HTTPS_PROXY=http://192.168.1.165:3128/
 #+END_EXAMPLE
 
 For BNL internal networks outside of RACF only the FTP related variables are needed.
+
+* Build status
+
+** ILCroot 20130924
+
+ - SL6 :: install, environment and =ilcroot sim.C= works
+ - Debian 7 (wheezy) :: install, environment and =ilcroot sim.C= works
+ - Mac OS X 10.8 :: externals build, ilcroot itself failing
