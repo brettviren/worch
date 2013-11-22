@@ -99,6 +99,7 @@ def feature_fnalsrcbundle(tgen):
 orch.features.register_defaults(
     'fnalbuilder', 
     fnal_builder_dir = '{fnal_upsprod_subdir}',
+    fnal_builder_prefix = 'source {fnal_products_path}/setup && ',
     fnal_builder_script = './build_{package}.sh',
     fnal_builder_script_options = '',
     fnal_builder_target = None,
@@ -118,7 +119,7 @@ def feature_fnalbuilder(tgen):
         p,s = ps.split('_',1)
         src.append(tgen.control_node(s,p))
 
-    build_rule = '{fnal_builder_script} {fnal_builder_script_options}'
+    build_rule = '{fnal_builder_prefix}{fnal_builder_script} {fnal_builder_script_options}'
     tgen.step('fnalbuilder',
               rule = tgen.worch.format(build_rule),
               source = src,
