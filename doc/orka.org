@@ -124,6 +124,13 @@ For BNL internal networks outside of RACF only the FTP related variables are nee
 
 ** ILCroot 20130924
 
- - SL6 :: install, environment and =ilcroot sim.C= works
- - Debian 7 (wheezy) :: install, environment and =ilcroot sim.C= works
- - Mac OS X 10.8 :: externals build, ilcroot itself failing
+Install, environment and =ilcroot sim.C= works:
+
+ - SL6
+ - Debian 7 (wheezy)
+ - FC18
+
+Not quite working:
+
+ - Mac OS X 10.8 :: ILCRoot compilation error: (FIXME link to issue needed)
+

@@ -108,13 +108,13 @@ from waflib.TaskGen import taskgen_method
 @taskgen_method
 def worch_hello(self):
     'Just testing'
-    print self.worch.format('Hi from worch, my name is "{package}/{version}" and I am using "{dumpenv_cmd}" with extra {extra}', extra='spice')
-    print 'My bld.env: %s' % (self.bld.env.keys(),)
-    print 'My all_envs: %s' % (sorted(self.bld.all_envs.keys()),)
-    print 'My env: %s' % (self.env.keys(),)
-    print 'My groups: %s' % (self.env['orch_group_dict'].keys(),)
-    print 'My packages: %s' % (self.env['orch_package_list'],)
-#    print 'My package dict: %s' % '\n'.join(['%s=%s' %kv for kv in sorted(self.bld.env['orch_package_dict'][self.worch.package].items())])
+    print ("%s" % self.worch.format('Hi from worch, my name is "{package}/{version}" and I am using "{dumpenv_cmd}" with extra {extra}', extra='spice'))
+    print ('My bld.env: %s' % (self.bld.env.keys(),))
+    print ('My all_envs: %s' % (sorted(self.bld.all_envs.keys()),))
+    print ('My env: %s' % (self.env.keys(),))
+    print ('My groups: %s' % (self.env['orch_group_dict'].keys(),))
+    print ('My packages: %s' % (self.env['orch_package_list'],))
+#    print ('My package dict: %s' % '\n'.join(['%s=%s' %kv for kv in sorted(self.bld.env['orch_package_dict'][self.worch.package].items())]))
 
 
 
