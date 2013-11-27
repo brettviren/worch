@@ -1,0 +1,51 @@
+#+TITLE: Building art and related software the Fermilab way with worch
+
+worch can be layered on top of other meta build systems and this is done in exercising the build scripts developed by Fermilab to install the [[https://cdcvs.fnal.gov/redmine/projects/art][art]] framework and its dependencies.
+
+* General Description
+
+Fermilab build scripts present a layer of tasks to worch in two major phases:
+
+ 1) download and unpack of all source code in the form of a few tar files which bundle the source tar files of individual packages and the Fermilab build scripts
+ 2) installation of individual packages based on the existence of this unpacked source 
+
+In the second phase, the build scripts expose the building of a single package or in some cases a group of related packages.  Some parts the Fermilab layer has additional layers.  For example, the packages on which art is directly dependent (=art_externals=) are each built by an individual build script while there is also a higher level build script (=buildCore.sh=) which calls the per-package ones.
+
+The worch configuration takes the approach to exercise what build scripts Fermilab provides in as fine-grained manner as possible.  To use the example above, the configuration reimplements the functionality of =buildCore.sh=.  This approach is a trade-off.  It allows for the versions and build qualifiers to be exposed to the configuration (and thus allows modification) and it increases the amount of parallel package building that may occur.  It's noted that this granularity is not as fine as it might be.  For example, the [[./orka.org][ORKA configuration]] works at the level of a package's native build system and thus can place more tasks in parallel. On the other hand, exposing these lower-level layers risks that they may change.  When or if they do, the worch configuration must adapt.
+
+
+* Installation
+
+The worch installation proceeds like all such ones.  For now the required configuration files and waf tools are distributed with worch.  To start, get worch
+
+#+BEGIN_EXAMPLE
+$ git clone https://github.com/brettviren/worch.git
+$ cd worch/
+$ ./waf --version
+#+END_EXAMPLE
+
+This initial, one-time running of =./waf --version= is required to trigger it to unpack itself.
+
+#+BEGIN_EXAMPLE
+$ ./waf --prefix=/path/to/install --orch-config=examples/fnal/suite-art.cfg configure
+$ ./waf
+#+END_EXAMPLE
+
+The first step specifies the location for the files to be installed and the worch configuration to drive the installation.  The second step performs the installation itself.  High-level steps are printed to the screen as the installation progresses.  Expect it to take several hours.
+
+* Use
+
+The installation should result in a "Fermilab-standard" UPS "products" area.  Assuming the prefix used in the example above, to make use of the installed area one needs to run:
+
+#+BEGIN_EXAMPLE
+$ source /path/to/install/products/setup
+$ ups list -aK+|grep art
+"art" "v1_08_09" "Linux64bit+2.6-2.12" "e4:nu:prof" "" 
+$ setup art v1_08_09 -q e4:nu:prof
+#+END_EXAMPLE
+
+* Outstanding problems:
+
+ - =build_pythia.sh= runs successfully, seems that it should be returning a "=0=" return code but waf is getting a "=1=".  Rerunning the debugging script that worch produces gives an expected error from re-attempting to declare the already declared product but otherwise return error code =0=.  Mystery
+
+ - there is a bug in the current Geant4 build scripts such that the Geant4 data files  fail to be downloaded and their associated UPS products are not created.  Reported to Lynn and the  manual fix still needs to be incorporated.  Until then the UPS "=setup=" command will produce errors although apparently not enough to start =art= from being setup for running
