@@ -46,6 +46,4 @@ $ setup art v1_08_09 -q e4:nu:prof
 
 * Outstanding problems:
 
- - =build_pythia.sh= runs successfully, seems that it should be returning a "=0=" return code but waf is getting a "=1=".  Rerunning the debugging script that worch produces gives an expected error from re-attempting to declare the already declared product but otherwise return error code =0=.  Mystery
-
  - there is a bug in the current Geant4 build scripts such that the Geant4 data files  fail to be downloaded and their associated UPS products are not created.  Reported to Lynn and the  manual fix still needs to be incorporated.  Until then the UPS "=setup=" command will produce errors although apparently not enough to start =art= from being setup for running
