@@ -31,7 +31,7 @@ def feature_command(tgen):
     cmd_dir = tgen.make_node(tgen.worch.command_dir)
     cmd_node = cmd_dir.make_node(tgen.worch.command_cmd)
     cmd_target = \
-        map(cmd_dir.make_node, tgen.to_list(tgen.worch.command_target))
+        map(tgen.make_node, tgen.to_list(tgen.worch.command_target))
     cmd_rule = '{command_cmd_prefix}{command_cmd} {command_cmd_options} {command_cmd_postfix}'
     tgen.step('command',
               rule = tgen.worch.format(cmd_rule),
