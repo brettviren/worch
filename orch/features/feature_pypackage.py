@@ -39,7 +39,7 @@ def feature_pypackage(tgen):
 
     tgen.step('build',
               rule = tgen.worch.format('{build_cmd} {build_cmd_options}'),
-              source = tgen.control_node('unpack'),
+              source = tgen.control_node('prepare'),
               target = tgen.worch.build_target_path,
               cwd = tgen.worch.source_unpacked_path)
 
