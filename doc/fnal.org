@@ -2,21 +2,9 @@
 
 worch can be layered on top of other meta build systems and this is done in exercising the build scripts developed by Fermilab to install the [[https://cdcvs.fnal.gov/redmine/projects/art][art]] framework and its dependencies.
 
-* General Description
-
-Fermilab build scripts present a layer of tasks to worch in two major phases:
-
- 1) download and unpack of all source code in the form of a few tar files which bundle the source tar files of individual packages and the Fermilab build scripts
- 2) installation of individual packages based on the existence of this unpacked source 
-
-In the second phase, the build scripts expose the building of a single package or in some cases a group of related packages.  Some parts the Fermilab layer has additional layers.  For example, the packages on which art is directly dependent (=art_externals=) are each built by an individual build script while there is also a higher level build script (=buildCore.sh=) which calls the per-package ones.
-
-The worch configuration takes the approach to exercise what build scripts Fermilab provides in as fine-grained manner as possible.  To use the example above, the configuration reimplements the functionality of =buildCore.sh=.  This approach is a trade-off.  It allows for the versions and build qualifiers to be exposed to the configuration (and thus allows modification) and it increases the amount of parallel package building that may occur.  It's noted that this granularity is not as fine as it might be.  For example, the [[./orka.org][ORKA configuration]] works at the level of a package's native build system and thus can place more tasks in parallel. On the other hand, exposing these lower-level layers risks that they may change.  When or if they do, the worch configuration must adapt.
-
-
 * Installation
 
-The worch installation proceeds like all such ones.  For now the required configuration files and waf tools are distributed with worch.  To start, get worch
+Jumping right in, the worch installation proceeds like all such ones.  For now the required configuration files and waf tools are distributed with worch.  To start, get worch
 
 #+BEGIN_EXAMPLE
 $ git clone https://github.com/brettviren/worch.git
@@ -24,14 +12,18 @@ $ cd worch/
 $ ./waf --version
 #+END_EXAMPLE
 
-This initial, one-time running of =./waf --version= is required to trigger it to unpack itself.
+As this shows, worch provides a copy of the =waf= executable.  Before it can be successfully used with the worch configuration it must be unpacked.  This is done with the one-time running of =./waf --version=.
+
+Now, perform the installation.  This takes two steps:
 
 #+BEGIN_EXAMPLE
 $ ./waf --prefix=/path/to/install --orch-config=examples/fnal/suite-art.cfg configure
 $ ./waf
 #+END_EXAMPLE
 
-The first step specifies the location for the files to be installed and the worch configuration to drive the installation.  The second step performs the installation itself.  High-level steps are printed to the screen as the installation progresses.  Expect it to take several hours.
+The first step specifies the location for the files to be installed and the worch configuration to drive the installation.  The second step performs the installation itself.  High-level steps are printed to the screen as the installation progresses.  Expect it to take several hours.  
+
+One can actually combine this into a single step by adding the command =build= after =configure= and leaving off the bare =./waf= invocation.
 
 * Use
 
@@ -44,6 +36,25 @@ $ ups list -aK+|grep art
 $ setup art v1_08_09 -q e4:nu:prof
 #+END_EXAMPLE
 
+
+* General Description of the Build
+
+This build exercises the Fermilab build scripts in mostly the "official" way.  It deviates from the online documentation as development of the Fermilab build scripts currently have outpaced it.  In some cases it uses higher level build scripts only to influence the configuration construction and then calls the lower-level build scripts.
+
+** Fermilab build scripts
+
+The Fermilab build scripts present a layer of tasks to worch in two major phases:
+
+ 1) download and unpack of all source code in the form of a few tar files which bundle the source tar files of individual packages and the Fermilab build scripts
+ 2) installation of individual packages based on the existence of this unpacked source 
+
+In the second phase, the build scripts expose the building of a single package or in some cases a group of related packages.  Some parts the Fermilab layer has additional layers.  For example, the packages on which art is directly dependent (=art_externals=) are each built by an individual build script while there is also a higher level build script (=buildCore.sh=) which calls the per-package ones.
+
+The worch configuration takes the approach to exercise what build scripts Fermilab provides in as fine-grained manner as possible.  To use the example above, the configuration reimplements the functionality of =buildCore.sh=.  This approach is a trade-off.  It allows for the versions and build qualifiers to be exposed to the configuration (and thus allows modification) and it increases the amount of parallel package building that may occur.  It's noted that this granularity is not as fine as it might be.  For example, the [[./orka.org][ORKA configuration]] works at the level of a package's native build system and thus can place more tasks in parallel. On the other hand, exposing these lower-level layers risks that they may change.  When or if they do, the worch configuration must adapt.
+
+
 * Outstanding problems:
 
- - there is a bug in the current Geant4 build scripts such that the Geant4 data files  fail to be downloaded and their associated UPS products are not created.  Reported to Lynn and the  manual fix still needs to be incorporated.  Until then the UPS "=setup=" command will produce errors although apparently not enough to start =art= from being setup for running
+** art 1.0809
+
+ - there is a bug in the current Geant4 build scripts such that the Geant4 data files  fail to be downloaded and their associated UPS products are not created.  Reported to Lynn and the  manual fix still needs to be incorporated.  In the mean time the manual running of this download script is handled special by worch.
