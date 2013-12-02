@@ -55,11 +55,13 @@ The worch configuration takes the approach to exercise what build scripts Fermil
 
 * Outstanding problems:
 
-** art 1.0809
+This section lists some known issues with the build.  Additional issues may be found in [[https://github.com/brettviren/worch/issues][worch's GitHub issue tracker]].
+
+** the art 1.08.09 build
 
  - there is a bug in the current Geant4 build scripts such that the Geant4 data files  fail to be downloaded and their associated UPS products are not created.  Reported to Lynn and the  manual fix still needs to be incorporated.  In the mean time the manual running of this download script is handled special by worch.
 
-* Status and Plans for this worch build configuration
+* Status and Plans
 
 The current build includes =art_suite=, =art_externals= and =nu_extras= sources related to art version 1.08.09.
 
@@ -81,6 +83,7 @@ Near term future plans for this LBNE worch configuration include:
  - extend to support building independent as well as cooperative sub-suites (for beam simulation, fastMC, ND, etc. applications)
  - fork configuration files and LBNE-specific waf tool code into FNAL Redmine
  - exploring if/how worch can help with building products at Fermilab (implications for how this fork is done)
+ - work with Fermilab to add more intra-package parallelism ("=make -jN") and intra-package parallelisms (build multiple packages at same time) to better exploit multi-CPU build hosts.
 
 * Session output
 
