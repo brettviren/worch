@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 
+import common
 from orch import util
 
 def test_update_if():
@@ -12,7 +13,7 @@ def test_update_if():
     assert end['nothing'] is None
     assert end['override'] is 'something'
     assert end['keep'] is 'lovely'
-    print end
+    print (end)
 
 
 if '__main__' == __name__:

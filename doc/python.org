@@ -1,0 +1,65 @@
+#+TITLE: worch and python
+
+Worch works with many, but not all Pythons.  This document contains information on which Pythons are supported and what to do if your system does not provide an add equate one.
+
+* Supported Python versions
+
+** cPython
+
+This is the python you know.  The minimum version supported is 2.6.  This is driven by the need for =str.format()= which forms the basis of the configuration variable expansion.  The maximum version supported is 3.2 due to current waf limitations.  
+
+** Others
+
+Waf supports other types of Python interpreters besides cPython.  In principle these may work but have not been tested.
+
+* System Python vs worch-installed Python
+
+Of course waf needs a suitable Python interpret already installed in order to run.  This Python it not related to any other Python that a worch configuration may install.  
+
+* Using a non-system Python
+
+If your system does not provide a suitable Python it is up to you to install it.  Depending on how you have installed it you may need to adjust your =PATH= variable your newly installed  =python= executable is picked up first.  Otherwise, you may have to explicitly refer to the versioned executable, eg =python3.2= to assure the correct one is used.  To be most safe of picking up your newly installed Python executable you may call it with it's full explicit path. 
+
+Using the automated Python installation script described below one might use the result like:
+
+#+BEGIN_EXAMPLE
+# full path:
+$ /home/bviren/git/worch/pythons/bin/python3.2 waf --version
+waf 1.7.13 (daa91dba4b881d86bc25eec90a3745ebaeece835)
+# or:
+$ python3.2 waf --prefix=... --orch-config=... configure
+# or if you have set your PATH properly then the usual:
+$ ./waf 
+#+END_EXAMPLE
+
+Since Python is needed for waf itself it must obviously be installed outside of worch.  Two methods are mentioned in the remaining sections.
+
+** Manual installation
+
+Install as per [[http://python.org]].
+
+** Automated installation
+
+Worch provides a simple =bash= script which can install a version of Python from source for use by waf and worch.  You do not need to use it but it may simplify installation.  To run it you give the desired Python version string and an installation directory in which to install it.  The script will then give you some guidance on how to use this version of python.  This session gives and example:
+
+#+BEGIN_EXAMPLE
+$ cd worch
+$ ./scripts/install-python 3.2.5 pythons
+ + wget'ing http://python.org/ftp/python/3.2.5/Python-3.2.5.tgz
+ + unpacking Python-3.2.5.tgz
+ + configuring, log to Python-3.2.5/log.configure
+ + building, log to Python-3.2.5/log.make
+ + installing, log to Python-3.2.5/log.install
+
+Python installed into /home/bviren/git/worch/pythons
+You may remove the temporary files:
+
+  $ rm -rf Python-3.2.5.tgz Python-3.2.5
+
+To use this Python set these variables:
+
+  PATH=/home/bviren/git/worch/pythons/bin:$PATH
+#+END_EXAMPLE
+
+Note, re-running the script will not repeat completed steps.
+

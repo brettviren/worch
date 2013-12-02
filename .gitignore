@@ -19,3 +19,4 @@ foo.*
 .waf-*
 old
 .waf3-*
+Python-*

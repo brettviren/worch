@@ -18,7 +18,7 @@ def check_values(cfg, what):
         isec += 1
         for issec, ssec in enumerate(sec['subsections']):
             issec += 1
-            print isec,issec,ssec
+            print (isec,issec,ssec)
             assert ssec['section'] == "sec%d" % isec, (isec, issec, ssec)
             assert ssec['name'] == "sec%d" % isec, (isec, issec, ssec)
 
@@ -27,13 +27,13 @@ def check_values(cfg, what):
             assert ssec['what'] == what
 
 def test_parse_self_contained():
-    if os.environ.has_key('DECONF_INCLUDE_PATH'):
+    if 'DECONF_INCLUDE_PATH' in os.environ:
         os.environ.pop('DECONF_INCLUDE_PATH')
     cfg = deconf.load(os.path.join(example_dir, 'test_deconf.cfg'))
     check_values(cfg, "self contained")
 
 def test_parse_include_cwd():
-    if os.environ.has_key('DECONF_INCLUDE_PATH'):
+    if 'DECONF_INCLUDE_PATH' in os.environ:
         os.environ.pop('DECONF_INCLUDE_PATH')
     cfg = deconf.load(os.path.join(example_dir, 'test_deconf_main.cfg'))
     check_values(cfg, "included from local directory")

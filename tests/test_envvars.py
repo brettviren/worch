@@ -20,7 +20,7 @@ module=() {  eval `/usr/bin/modulecmd bash $*`
     parsed = util.envvars(text)
     assert len(parsed) == 4, 'Lost something'
     for k,v in parsed.items():
-        print 'name="%s" value=[%s]' % (k,v)
+        print ('name="%s" value=[%s]' % (k,v))
         if k == 'module':
             assert v, 'where is my function?'
             assert len(v.split('\n')) == 2, 'lost multilinedness'

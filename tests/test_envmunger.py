@@ -3,10 +3,13 @@
 buildenv_VAR = set:VALUE
 buildenv_00 = command:source setup && setup hello
 '''
+import common
 
 import os
 import subprocess
 import tempfile
+
+from orch.util import check_output
 
 def split_var_munger_command(cmdstr, cmd):
     rest = cmdstr[len(cmd):]
@@ -34,7 +37,7 @@ def cmd_munger(cmd, **environ):
 
     fd, fname = tempfile.mkstemp()
     cmd += ' && env > %s' % fname
-    subprocess.check_output(cmd, shell=True, env=environ)
+    check_output(cmd, shell=True, env=environ)
     os.close(fd)
     envvars = open(fname).read().split('\n')
     ret = dict()
@@ -73,4 +76,4 @@ if '__main__' == __name__:
                     buildenv_00 = 'shell:export BAZ=BAR')
     mungers = produce_mungers('buildenv_', **cfgitems)
     new_environ = apply_mungers(mungers, **environ)
-    print new_environ
+    print (new_environ)

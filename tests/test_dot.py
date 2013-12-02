@@ -1,18 +1,14 @@
 #!/usr/bin/env python
-import os
-import sys
-orch_dir = '/'.join(os.path.realpath(__file__).split('/')[:-2] + ['orch'])
-#print ('Using orch modules from: %s' % orch_dir)
-sys.path.insert(0, orch_dir)
 
-import dot
+import common
+from orch import dot
 
 def test_graph():
     g = dot.Graph('TestGraph')
     g.add_node('m1', shape='box')
     g.add_node('m2', shape='ellipse')
     g.add_edge('m1', 'm2')
-    print g
+    print (g)
 
 def test_sub_graph():
     g = dot.Graph('TestGraph', color='blue', label='maingraph')
@@ -31,7 +27,7 @@ def test_sub_graph():
     g.add_edge('start','s1')
     g.add_edge('m2','end')
     g.add_edge('s2','end')
-    print g
+    print (g)
 
 if '__main__' == __name__:
     #test_graph()

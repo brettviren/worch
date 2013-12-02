@@ -3,6 +3,7 @@
 Test orch.rootsys
 '''
 
+import common
 from orch import rootsys
 
 # arch:chip:release
@@ -22,7 +23,7 @@ def test_arch():
 
 
 def test_my_arch():
-    print 'This hosts ROOT arch:', rootsys.arch()
+    print ('This hosts ROOT arch:', rootsys.arch())
 
 if '__main__' == __name__:
     test_arch()
