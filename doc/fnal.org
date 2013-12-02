@@ -58,3 +58,99 @@ The worch configuration takes the approach to exercise what build scripts Fermil
 ** art 1.0809
 
  - there is a bug in the current Geant4 build scripts such that the Geant4 data files  fail to be downloaded and their associated UPS products are not created.  Reported to Lynn and the  manual fix still needs to be incorporated.  In the mean time the manual running of this download script is handled special by worch.
+
+* Session output
+
+Here are illustrative session commands of an installation:
+
+#+BEGIN_EXAMPLE
+$ ./waf --prefix=/data3/bv/lbne/third/install --orch-config=examples/fnal/suite-art.cfg distclean configure
+'distclean' finished successfully (0.061s)
+Setting top to                           : /data3/bv/lbne/third/worch 
+Setting out to                           : /data3/bv/lbne/third/worch/tmp 
+Orch configuration files                 : "examples/fnal/suite-art.cfg" 
+Orch configure envs                      : "", "sqlite", "cry", "xercesc", "clhep", "libxml2", "mysqlclient", "cetlib", "art", "geant4", "cppunit", "gcc", "cmake", "artsuite", "gccxml", "getopt", "boost", "python", "artext", "lhapdf", "libsigcpp", "xrootd", "pythia", "tbb", "log4cpp", "nuext", "postgresql", "fftw", "upsupd", "root", "ups" 
+'configure' finished successfully (7.997s)
+#+END_EXAMPLE
+
+#+BEGIN_EXAMPLE
+$ ./waf
+Waf: Entering directory `/data3/bv/lbne/third/worch/tmp'
+Supported waf features: "*", "autoconf", "cmake", "command", "dlrun", "download", "dumpenv", "fnalbuilder", "fnalsrcbundle", "makemake", "patch", "prepare", "pypackage", "seq", "subst", "tarball", "vcs"
+[ 3/39] upsupd_seturl:  -> tmp/upsupd-5.0.1.url tmp/controls/upsupd_seturl
+[ 4/39] artext_seturl:  -> tmp/artext-1.00.03.url tmp/controls/artext_seturl
+[ 4/39] artsuite_seturl:  -> tmp/artsuite-1.08.09.url tmp/controls/artsuite_seturl
+[ 4/39] nuext_seturl:  -> tmp/nuext-1.00.03.url tmp/controls/nuext_seturl
+[ 5/39] artsuite_download: tmp/artsuite-1.08.09.url -> tmp/art_suite-1.08.09-source.tar.bz2 tmp/controls/artsuite_download
+[ 6/39] upsupd_download: tmp/upsupd-5.0.1.url -> tmp/ups-upd-5.0.1-source.tar.bz2 tmp/controls/upsupd_download
+[ 7/39] artext_download: tmp/artext-1.00.03.url -> tmp/art_externals-1.00.03-source.tar.bz2 tmp/controls/artext_download
+[ 8/39] nuext_download: tmp/nuext-1.00.03.url -> tmp/nu_extras-1.00.03-source.tar.bz2 tmp/controls/nuext_download
+[ 9/39] upsupd_unpack: tmp/ups-upd-5.0.1-source.tar.bz2 -> ../install/products/setup tmp/controls/upsupd_unpack
+[10/39] artsuite_unpack: tmp/art_suite-1.08.09-source.tar.bz2 -> ../install/products/art_suite/v1_08_09/buildArt.sh tmp/controls/artsuite_unpack
+[11/39] artext_unpack: tmp/art_externals-1.00.03-source.tar.bz2 -> ../install/products/art_externals/v1_00_03/do_this_first.sh tmp/controls/artext_unpack
+[12/39] nuext_unpack: tmp/nu_extras-1.00.03-source.tar.bz2 -> ../install/products/root/v5_34_09b/ups/root.table tmp/controls/nuext_unpack
+[13/39] ups_fnalbuilder:  -> ../install/products/ups/v5_0_1.version/Linux64bit+2.6-2.12_ tmp/controls/ups_fnalbuilder
+[15/39] gcc_fnalbuilder:  -> ../install/products/gcc/v4_8_1/Linux64bit+2.6-2.12/bin/gcc tmp/controls/gcc_fnalbuilder
+[15/39] cmake_fnalbuilder:  -> ../install/products/cmake/v2_8_8/Linux64bit+2.6-2.12/bin/cmake tmp/controls/cmake_fnalbuilder
+[21/39] boost_fnalbuilder:  -> ../install/products/boost/v1_53_0.version/Linux64bit+2.6-2.12_e4_prof tmp/controls/boost_fnalbuilder
+[21/39] fftw_fnalbuilder:  -> ../install/products/fftw/v3_3_3.version/Linux64bit+2.6-2.12_prof tmp/controls/fftw_fnalbuilder
+[21/39] sqlite_fnalbuilder:  -> ../install/products/sqlite/v3_08_00_02.version/Linux64bit+2.6-2.12_ tmp/controls/sqlite_fnalbuilder
+[21/39] cppunit_fnalbuilder:  -> ../install/products/cppunit/v1_12_1.version/Linux64bit+2.6-2.12_e4_prof tmp/controls/cppunit_fnalbuilder
+[22/39] libsigcpp_fnalbuilder:  -> ../install/products/libsigcpp/v2_2_11.version/Linux64bit+2.6-2.12_e4_prof tmp/controls/libsigcpp_fnalbuilder
+[22/39] gccxml_fnalbuilder:  -> ../install/products/gccxml/v0_9_20130621.version/Linux64bit+2.6-2.12_ tmp/controls/gccxml_fnalbuilder
+[23/39] getopt_fnalbuilder:  -> ../install/products/getopt/v1_1_5.version/Linux64bit+2.6-2.12_ tmp/controls/getopt_fnalbuilder
+[24/39] clhep_fnalbuilder:  -> ../install/products/clhep/v2_1_3_1.version/Linux64bit+2.6-2.12_e4_prof tmp/controls/clhep_fnalbuilder
+[27/39] libxml2_fnalbuilder:  -> ../install/products/libxml2/v2_9_1.version/Linux64bit+2.6-2.12_prof tmp/controls/libxml2_fnalbuilder
+[27/39] tbb_fnalbuilder:  -> ../install/products/tbb/v4_1_3.version/Linux64bit+2.6-2.12_e4_prof tmp/controls/tbb_fnalbuilder
+[27/39] xrootd_fnalbuilder:  -> ../install/products/xrootd/v3_3_3.version/Linux64bit+2.6-2.12_e4_prof tmp/controls/xrootd_fnalbuilder
+[29/39] xercesc_fnalbuilder:  -> ../install/products/xerces_c/v3_1_1.version/Linux64bit+2.6-2.12_e4_prof tmp/controls/xercesc_fnalbuilder
+[30/39] cry_fnalbuilder:  -> ../install/products/cry/v1_7.version/Linux64bit+2.6-2.12_e4_prof tmp/controls/cry_fnalbuilder
+[31/39] lhapdf_fnalbuilder:  -> ../install/products/lhapdf/v5_9_1.version/Linux64bit+2.6-2.12_e4_prof tmp/controls/lhapdf_fnalbuilder
+[32/39] pythia_fnalbuilder:  -> ../install/products/pythia/v6_4_28.version/Linux64bit+2.6-2.12_gcc48_prof tmp/controls/pythia_fnalbuilder
+[31/39] log4cpp_fnalbuilder:  -> ../install/products/log4cpp/v1_1.version/Linux64bit+2.6-2.12_e4_prof tmp/controls/log4cpp_fnalbuilder
+[33/39] geant4_command: ../install/products/geant4/v4_9_6_p02/scripts/getG4DataSets.sh -> tmp tmp/controls/geant4_command
+[33/39] mysqlclient_fnalbuilder:  -> ../install/products/mysql_client/v5_5_27.version/Linux64bit+2.6-2.12_e4 tmp/controls/mysqlclient_fnalbuilder
+[34/39] python_fnalbuilder:  -> ../install/products/python/v2_7_5b.version/Linux64bit+2.6-2.12_ tmp/controls/python_fnalbuilder
+[35/39] postgresql_fnalbuilder:  -> ../install/products/postgresql/v9_1_5a.version/Linux64bit+2.6-2.12_ tmp/controls/postgresql_fnalbuilder
+[36/39] geant4_fnalbuilder:  -> ../install/products/geant4/v4_9_6_p02.version/Linux64bit+2.6-2.12_e4_prof tmp/controls/geant4_fnalbuilder
+[37/39] root_fnalbuilder:  -> ../install/products/root/v5_34_09b.version/Linux64bit+2.6-2.12_e4_nu_prof tmp/controls/root_fnalbuilder
+[38/39] cetlib_fnalbuilder:  -> ../install/products/cetlib/v1_03_25.version/Linux64bit+2.6-2.12_e4_prof tmp/controls/cetlib_fnalbuilder
+[39/39] art_fnalbuilder:  -> ../install/products/art/v1_08_09.version/Linux64bit+2.6-2.12_nu_e4_prof tmp/controls/art_fnalbuilder
+Waf: Leaving directory `/data3/bv/lbne/third/worch/tmp'
+'build' finished successfully (3h51m25.938s)
+#+END_EXAMPLE
+
+
+#+BEGIN_EXAMPLE
+$ uname -a
+Linux daya0009.rcf.bnl.gov 2.6.32-358.18.1.el6.x86_64 #1 SMP Tue Aug 27 14:23:09 CDT 2013 x86_64 x86_64 x86_64 GNU/Linux
+#+END_EXAMPLE
+
+#+BEGIN_EXAMPLE
+$ source /data3/bv/lbne/third/install/products/setup
+#+END_EXAMPLE
+
+#+BEGIN_EXAMPLE
+$ ups flavor
+Linux64bit+2.6-2.12
+#+END_EXAMPLE
+
+#+BEGIN_EXAMPLE
+$ ups list -aK+|grep art
+"art" "v1_08_09" "Linux64bit+2.6-2.12" "e4:nu:prof" "" 
+#+END_EXAMPLE
+
+#+BEGIN_EXAMPLE
+$ setup art v1_08_09 -q e4:nu:prof
+#+END_EXAMPLE
+
+#+BEGIN_EXAMPLE
+$ art
+Expected environment variable FHICL_FILE_PATH is missing or empty: using "."
+OptionsHandler caught a cet::exception calling art::BasicOptionsHandler::doCheckOptions()
+---- Configuration BEGIN
+  No configuration file given.
+---- Configuration END
+
+Art has completed and will exit with status 7001.
+#+END_EXAMPLE
