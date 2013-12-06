@@ -134,3 +134,21 @@ Not quite working:
 
  - Mac OS X 10.8 :: ILCRoot compilation error: (FIXME link to issue needed)
 
+* Plans towards next release
+
+** Versions
+
+Will mark version 1.0.0 and a start of formal versioning.
+
+ - pick up geant4vmc 2.14b
+ - circulate full list of versions before hand
+ - take orka-ilcroot from HEAD ca. Oct. 2012 after Vito's slate of commits
+ - tag and label orka-ilcroot with the string =v1-0-0=
+
+** Release management
+
+Start using FNAL Redmine for this release.
+
+** Open release issues
+
+I want to move the worch configuration out of worch, proper and into a FNAL Redmine git.  Global releases will be then based on tagging that configuration.  Then, either have worch download the configuration from this repo based on a tag or construct a waf/worch bundle with that configuration included.  Both require some core-worch development.  I note that Redmine allows up to 400MB file uploads.
