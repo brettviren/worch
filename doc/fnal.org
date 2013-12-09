@@ -53,6 +53,24 @@ In the second phase, the build scripts expose the building of a single package o
 The worch configuration takes the approach to exercise what build scripts Fermilab provides in as fine-grained manner as possible.  To use the example above, the configuration reimplements the functionality of =buildCore.sh=.  This approach is a trade-off.  It allows for the versions and build qualifiers to be exposed to the configuration (and thus allows modification) and it increases the amount of parallel package building that may occur.  It's noted that this granularity is not as fine as it might be.  For example, the [[./orka.org][ORKA configuration]] works at the level of a package's native build system and thus can place more tasks in parallel. On the other hand, exposing these lower-level layers risks that they may change.  When or if they do, the worch configuration must adapt.
 
 
+** Permissions
+
+The installation is meant to be run by a non-privileged user.  Running this as user =root= is not required and strongly discouraged. 
+
+** No Environment Setup
+
+Nominally, the worch build requires absolutely no special setting of environment and any settings may potentially cause problems.  Starting from as clean an environment as possible is best.  Any motivation to set environment variables in a perceived solution to get a build to work is a sign that a bug has been found and should be reported.
+
+*** Exceptions
+
+Some exceptions to the "no environment setup" rule exist.  All known exceptions are listed here:
+
+ - Users needing to install/use a non-system Python to run waf/worch will probably need to set environment variables at least so the =python= executable can be located. See the [[./python.org]] document for more information.
+
+*** Environment setup after installation
+
+After installation has completed, due to the distributed installation layout scheme, there is much environment setup required to make use of the software.  The goal is to have all environment management handled by UPS.  See the section [[Use]] above.
+
 * Outstanding problems:
 
 This section lists some known issues with the build.  Additional issues may be found in [[https://github.com/brettviren/worch/issues][worch's GitHub issue tracker]].
@@ -60,6 +78,19 @@ This section lists some known issues with the build.  Additional issues may be f
 ** the art 1.08.09 build
 
  - there is a bug in the current Geant4 build scripts such that the Geant4 data files  fail to be downloaded and their associated UPS products are not created.  Reported to Lynn and the  manual fix still needs to be incorporated.  In the mean time the manual running of this download script is handled special by worch.
+
+** Missing =dbm= and =gdbm= Python modules 
+
+Python fails to pass tests at end of Fermilab build script with:
+
+#+BEGIN_EXAMPLE
+The Python we are running is at: python is /usr/local/lbne/products/python/v2_7_5b/Linux64bit+2.6-2.12/bin/python
+Preparing to test loading of Python Standard Library modules
+Failed to import dbm
+Failed to import gdbm
+#+END_EXAMPLE
+
+Likely due to missing =gdbm-devel= package.
 
 * Status and Plans
 
