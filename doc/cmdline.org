@@ -1,0 +1,93 @@
+#+TITLE: Worch command line interface
+
+Note: the features described here are a work in progress.  Their development is guided by this documentation.
+
+* Bundling methods
+
+Worch can be run from the command line in several ways.  Which is best depends on how much detail the user wishes to be exposed to.  This document describes these ways of interacting with worch.  Each section describes an interaction method which provides progressively more detail.
+
+
+** Worch Configured Bundle
+
+The simplest interface from the user's point of view is if "everything" is bundled together:
+
+ - waf code
+ - worch's =orch= Python module
+ - additional extra/external waf tools and/or worch features
+ - configuration files
+
+Such a bundle is used like:
+
+#+BEGIN_EXAMPLE
+$ ./worch-config-bundle --prefix=/path/to/install configure build
+#+END_EXAMPLE
+
+*** Producing Worch Configured Bundles
+
+This method builds on the example below but in addition to including all worch code it includes worch configuration files and sets the =--orch-config= command line.  It relies on a feature of worch where an =orch.cfg= file will be assumed if non is specified.  The idea here is then to include a main configuration file in the bundle at that name.  When worch tries to resolve configuration files it will first check an immediate absolute or relative path, followed by looking at =WORCH_CONFIG_PATH= and finally in the unpacked waf directory (ie =.waf*=).
+
+The test script [[../tests/cmdline/bundle-configured.sh][bundle-configured.sh]] will exercise this method.
+
+
+** Worch Code Bundle
+
+The configuration files can be left external leaving the bundling to consist of:
+
+ - waf code
+ - worch's =orch= Python module
+ - additional extra/external waf tools and/or worch features
+
+Such a bundle is used like:
+
+#+BEGIN_EXAMPLE
+$ ./worch-code-bundle --prefix=/path/to/install \
+    --orch-config=/path/to/config.cfg \
+    configure build
+#+END_EXAMPLE
+
+*** Producing Worch Code Bundles
+
+Producing a bundle that contains all worch code is an evolution on the "noscript" bundle below.   
+As of waf-1.7.13, producing a bundle of this type requires a patch to be applied to the =waf/wscript= as there is currently no support for including Python modules hierarchies.  
+
+The test script [[../tests/cmdline/bundle-code.sh][bundle-code.sh]] will exercise this method.
+
+
+** Worch noscript bundle
+
+A bundle of waf and worch's wscript file can be made to allow it to run outside of the =worch/= directory.  The =orch= and any other Python modules must still be found by Python through the user's environment.  It might be used like:
+
+#+BEGIN_EXAMPLE
+$ export PYTHONPATH=/path/to/worch
+$ ./worch-noscript-bundle --version  # initial unpacking
+$ ./worch-noscript-bundle --prefix=/path/to/install \
+    --orch-config=/path/to/config.cfg \
+    configure build
+#+END_EXAMPLE
+
+*** Producing a noscript bundle
+
+This is done in a standard waf way from inside a waf code distribution:
+
+#+BEGIN_EXAMPLE
+$ python ./waf-light configure build \
+  --tools=compat15,/abspath/to/orchlib.py \
+  --prelude=$'\tfrom waflib.extras import orchlib\n\torchlib.start(cwd, VERSION, wafdir)\n\tsys.exit(0)'
+$ mv waf /path/to/somewhere/worch-noscript-bundle
+#+END_EXAMPLE
+
+The test script [[../tests/cmdline/bundle-noscript.sh][bundle-noscript.sh]] will exercise this method.
+
+
+* In-source running
+
+Finally, one can run directly in a worch distribution directory so that all of its parts are available and no bundling is used.
+
+#+BEGIN_EXAMPLE
+$ cd worch/
+$ ./waf --prefix=/path/to/install \
+    --orch-config=/path/to/config.cfg \
+    configure build
+#+END_EXAMPLE
+
+This makes use of the minimal [[../wscript][worch/wscript]] file to load the =orchlib.py= tool.
