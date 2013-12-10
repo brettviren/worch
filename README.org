@@ -27,7 +27,7 @@ Some features of worch:
 
 * Limitations
 
-While waf supports all the way back to Python 2.3, worch requires at least Python 2.6 (eg, Sci. Linux 6).  A script is provided to build a modern version of python from source.
+While waf supports all the way back to Python 2.3, worch requires at least Python 2.6 (eg, Sci. Linux 6).  A [[./scripts/install-python][script]] is provided to help build a modern version of python from source.  See [[./doc/python.org][this doc]] for more info.
 
 * Concepts
 
@@ -40,6 +40,7 @@ Some of the terms and concepts used by Worch.
  - feature :: one or more steps collected together in a named and reusable manner ("feature" is in the waf sense of the word)
  - tool :: a mechanism to load external Python code largely to provide new features
  - dependencies :: before a step can run it may require another step to run either in an absolute way or by depending on the production of some file by that other step.
+
 
 * Getting started with Worch
 
