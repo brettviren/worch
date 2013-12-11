@@ -20,3 +20,9 @@ foo.*
 old
 .waf3-*
 Python-*
+waf-*
+waf.git
+worch-code-bundle
+worch-configured-bundle
+worch-noscript-bundle
+pythons

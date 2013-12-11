@@ -59,7 +59,7 @@ def start(cwd, version, wafdir):
     print ("wafdir: %s" % wafdir)
     Logs.init_log()
     Context.waf_dir = wafdir
-    Context.out_dir = Context.top_dir = Context.run_dir = cwd
+    Context.launch_dir = Context.out_dir = Context.top_dir = Context.run_dir = cwd
     Context.g_module = imp.new_module('wscript')
     Context.g_module.root_path = cwd
     Context.Context.recurse = recurse_rep
