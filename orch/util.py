@@ -121,7 +121,7 @@ def get_unpacker(filename, dirname = '.'):
     if filename.endswith('.zip'): 
         return 'unzip -d %s %s' % (dirname, filename)
     
-    text2flags = {'.tar.gz':'xzf', '.tgz':'xzf', '.tar.bz2':'xjf', '.tar':'xf' }
+    text2flags = {'.tar.gz':'xzf', '.tgz':'xzf', '.tar.bz2':'xjf', 'tbz2':'xjf', '.tar':'xf' }
     for ext, flags in text2flags.items():
         if filename.endswith(ext):
             return 'tar -C %s -%s %s' % (dirname, flags, filename)
