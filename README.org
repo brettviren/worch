@@ -78,9 +78,6 @@ Setting out to  : /home/bviren/work/lbne/waffle/worch/tmp
 
 $ ls ./tmp
 c4che  config.log
-
-$ ls /tmp/worch-simple-example/
-bc  cmake  hello
 #+END_EXAMPLE
 
 Notes:
