@@ -9,7 +9,6 @@ import os.path as osp
 from waflib.TaskGen import feature
 import waflib.Logs as msg
 
-from orch.util import urlopen, get_unpacker
 from orch.wafutil import exec_command
 
 import orch.features

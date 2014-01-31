@@ -17,7 +17,7 @@ from . import util, wafutil
 def assert_features(pkgcfg):
     features = util.string2list(pkgcfg['features'])
     for feat in features:
-        assert feat in available_features.keys(), 'Unknown feature "%s" for package "%s"' % (feat, pkgcfg['package'])
+        assert feat in available_features.keys(), 'Unknown feature "%s" for package "%s" (out of %s)' % (feat, pkgcfg['package'], ', '.join(available_features))
         
 
 def build(bld):
