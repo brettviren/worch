@@ -14,7 +14,7 @@ log
 *.vrb
 tmp*
 blah*
-install*
+install*/
 foo.*
 .waf-*
 old

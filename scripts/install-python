@@ -1,0 +1,96 @@
+#!/bin/bash
+
+usage () {
+    echo "install-python <version> /install/directory/prefix"
+    echo "Likely versions listed at http://python.org/download/releases/"
+    exit 1
+}
+version=$1 ; shift
+if [ -z "$1" ] ; then
+    usage
+fi
+prefix="$(readlink -f $1)"
+
+# derived
+srcdir="Python-$version"
+tarball="$srcdir.tgz"
+url="http://python.org/ftp/python/$version/$tarball"
+# a better way to get just the first two digits?
+version_2digit="$(echo $version | tr '.' ' ' | awk '{print $1"."$2}')"
+executable="$prefix/bin/python${version_2digit}"
+
+download () {
+    if [ -f "$tarball" ] ; then
+	echo " - file already exists: $tarball"
+	return
+    fi
+    if [ -n "$(which wget)" ] ; then
+	echo " + wget'ing $url"
+	wget -q $url
+	return
+    fi
+    if [ -n "$(which curl)" ] ; then
+	echo " + curl'ing $url"
+	curl -s $url
+	return
+    fi
+    echo "** Error: no download method **"
+    exit 1
+}
+
+unpack () {
+    if [ -d "$srcdir" ] ; then
+	echo " - directory already exists: $srcdir"
+	return
+    fi
+    echo " + unpacking $tarball"
+    tar -xzf $tarball
+}
+
+install () {
+    pushd $srcdir > /dev/null 2>&1
+
+    if [ -f "config.status" ] ; then
+	echo " - source already configured: $(pwd)"
+    else
+	local log="log.configure"
+	echo " + configuring, log to $srcdir/$log"
+	./configure --prefix=$prefix --disable-shared > $log 2>&1
+    fi
+
+    if [ -f "python" ] ; then
+	echo " - already built: $(pwd)"
+    else
+	local log="log.make"
+	echo " + building, log to $srcdir/$log"
+	make > $log 2>&1
+    fi
+
+    if [ -f "$executable" ] ; then
+	echo " - already installed: $executable"
+    else
+	local log="log.install"
+	echo " + installing, log to $srcdir/$log"
+	make install > $log 2>&1
+    fi
+
+    popd > /dev/null 2>&1
+}
+
+blurb () {
+    echo
+    echo "Python installed into $prefix"
+    echo "You may remove the temporary files:"
+    echo 
+    echo "  \$ rm -rf $tarball $srcdir"
+    echo
+    echo "To use this Python set these variables:"
+    echo
+    echo "  PATH=$prefix/bin:\$PATH"
+    echo
+}
+
+download
+unpack
+install
+blurb
