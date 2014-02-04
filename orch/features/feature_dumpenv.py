@@ -4,7 +4,9 @@ from waflib.TaskGen import feature
 import waflib.Logs as msg
 
 import orch.features
-orch.features.register_defaults('dumpenv', dumpenv_cmd = 'env')
+orch.features.register_defaults('dumpenv', 
+                                dumpenv_need = None,
+                                dumpenv_cmd = 'env')
 
 @feature('dumpenv')
 def feature_dumpenv(tgen):
