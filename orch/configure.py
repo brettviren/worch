@@ -10,8 +10,9 @@ from glob import glob
 import waflib.Logs as msg
 from waflib import Context
 
-from . import util
-from . import pkgconf
+from .util import string2list
+#from . import pkgconf
+from . import pkgconf2 as pkgconf
 from . import envmunge
 
 def locate_config_files(pat):
@@ -33,7 +34,7 @@ def get_orch_config_files(cfg):
         raise RuntimeError('No Orchestration configuration file given (--orch-config)')
     orch_config = [] 
     okay = True
-    for pat in util.string2list(cfg.options.orch_config):
+    for pat in string2list(cfg.options.orch_config):
         got = locate_config_files(pat)
         if got:
             orch_config += got
@@ -59,28 +60,43 @@ def configure(cfg):
     assert out, 'No out dir defined'
     extra['out'] = out
     extra['DESTDIR'] = getattr(cfg.options, 'destdir', '')
-    msg.debug('top="{top}" out="{out}" DESTDIR="{DESTDIR}"'.format(**extra))
+    msg.debug('orch: top="{top}" out="{out}" DESTDIR="{DESTDIR}"'.format(**extra))
 
-    suite = pkgconf.load(orch_config, start = cfg.options.orch_start, **extra)
+    top = pkgconf.load(orch_config, start = cfg.options.orch_start, **extra)
 
     # load in any external tools in this configuration context that
     # may be referenced in the configuration
-    for group in suite['groups']:
-        for package in group['packages']:
-            tools = package.get('tools')
-            if not tools: continue
-            for tool in util.string2list(tools):
-                msg.debug('orch: loading tool: "%s" for package "%s"'  % (tool, package['package']))
-                cfg.load(tool)
+    for node in  top.owner().oftype('package'):
+        tools = node.get('tools')
+        if not tools: continue
+        for tool in string2list(tools):
+            msg.debug('orch: loading tool: "%s" for package "%s"'  % (tool, package['package']))
+            cfg.load(tool)
 
-    suite = pkgconf.fold_in(suite, **extra)    
-    #pkgconf.dump_suite(suite)
+    cfg.env.orch_group_list = string2list(top['groups'])
+    cfg.env.orch_suite = top
 
+    envmunge.decompose(cfg, top)
 
-    # decompose the hierarchy of dicts into waf data
-    envmunge.decompose(cfg, suite)
+    check_suite(top)
+
+    #dump_suite(top)
 
     cfg.msg('Orch configure envs', '"%s"' % '", "'.join(cfg.all_envs.keys()))
     msg.debug('orch: CONFIG CALLED [done]')
+
     return
 
+def check_suite(top):
+    for node in top.owner().oftype('package'):
+        for key, val in node.items():
+            assert '{' not in val, 'Unresolved item in %s: %s = %s' % (node._name, key, val)
+
+
+def dump_suite(top):
+    for name, node in top.owner().nodes().items():
+        print '[%s]' % node.secname()
+        for k,v in node.local_items():
+            print '#%s = %s' % (k,v)
+            print '%s = %s' % (k,node[k])
+        print

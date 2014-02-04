@@ -30,7 +30,7 @@ def dot(ctx):
 
 def dump(ctx):
     bld = ctx.exec_dict['bld']
-    suite = bld.env.orch_package_dict
+    suite = bld.env.orch_suite
     from pprint import PrettyPrinter
     pp = PrettyPrinter(indent=2)
     pp.pprint(suite)

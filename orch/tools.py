@@ -112,10 +112,13 @@ def worch_hello(self):
     print ('My bld.env: %s' % (self.bld.env.keys(),))
     print ('My all_envs: %s' % (sorted(self.bld.all_envs.keys()),))
     print ('My env: %s' % (self.env.keys(),))
-    print ('My groups: %s' % (self.env['orch_group_dict'].keys(),))
-    print ('My packages: %s' % (self.env['orch_package_list'],))
-#    print ('My package dict: %s' % '\n'.join(['%s=%s' %kv for kv in sorted(self.bld.env['orch_package_dict'][self.worch.package].items())]))
 
+    suite = self.env['orch_suite']
+    print ('My groups: %s' % suite['groups'])
+
+    pnames = [p._name for p in suite.owner().oftype('package')]
+    pnames.sort()
+    print ('My packages: %s' % (', '.join(pnames)))
 
 
 @taskgen_method

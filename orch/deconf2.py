@@ -138,6 +138,8 @@ def interpret(cfg, start = 'start', **kwds):
     interpretation.  Any additional keywords are override or otherwise
     added to the initial section.
     '''
+        
+
     owner = NodeGroup(keytype = dict(cfg.items('keytype')))
     top = resolve(owner, cfg, start, None, **kwds)
     return top
@@ -160,8 +162,8 @@ def resolve(owner, cfg, secname, parent_node, **kwds):
     children_sections = []
     for k,v in secitems.items():
         typ = keytype.get(k)
+        items[k] = v
         if not typ:
-            items[k] = v
             continue
 
         for name in to_list(v):
@@ -175,7 +177,5 @@ def resolve(owner, cfg, secname, parent_node, **kwds):
     for secname in children_sections:
         resolve(owner, cfg, secname, node, **kwds)
     return node
-    # fixme: I'm ignoring kwds!  these will contain stuff needed for formatting
-    # explicitly call these "format keywords" to distinguish them.
 
 

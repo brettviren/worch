@@ -111,11 +111,13 @@ class Node(UserDict.DictMixin):
         except KeyError:
             pass
 
-        val = self._owner.typed(key)
-        if val:
-            return val
+        # val = self._owner.typed(key)
+        # if val:
+        #     return val
 
         val = self.raw(key)
+        if val is None:
+            return None
         val = self.format(val, **self._extra)
         self._formatted[key] = val
         return val
@@ -171,6 +173,7 @@ class NodeGroup(UserDict.DictMixin):
 
     def __call__(self, name, type = None, parent = None, extra=None, **items):
         if self._nodes.has_key(name):
+            print ('Warning: attempted creation of already existing node: "%s" (%s)' % (name, type))
             return self._nodes[name]
         node = Node(self, name, type, parent, extra, **items)
         self._nodes[name] = node
@@ -181,6 +184,13 @@ class NodeGroup(UserDict.DictMixin):
     def node(self, name):
         return self._nodes[name]
         
+    def oftype(self, type):
+        ret = list()
+        for node in self.nodes().values():
+            if node._type == type:
+                ret.append(node)
+        return ret
+
     def typed(self, key):
         # check if it's a keytype node
         try:

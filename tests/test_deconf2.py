@@ -83,6 +83,9 @@ def test_nodes_interp():
     top = Node('start', a = "one", b = "two", c = "{a}_{b}_{d}")
     g1 = Node('g1', 'group', top, a="ten_{b}_{start_a}", d='g1', e='{a}_{start_undef}')
 
+    g1._items.setdefault('xxx', 'some new value')
+    assert g1['xxx'] == 'some new value'
+
     assert 'one' == g1.raw('start_a')
     assert 'one' == g1.format('{start_a}')
     assert 'one' == g1['start_a']
@@ -232,7 +235,7 @@ def test_load_config_file():
                 npackages += 1
 
     t3 = time.time()
-    print 'Iterated in %.3f (#g=%d, #p=%d' % (t3-t2, ngroups, npackages)
+    print 'Iterated in %.3f (#g=%d, #p=%d)' % (t3-t2, ngroups, npackages)
 
     ngroups = 0
     npackages = 0
@@ -245,7 +248,7 @@ def test_load_config_file():
                 npackages += 1
 
     t4 = time.time()
-    print 'Iterated again in %.3f (#g=%d, #p=%d' % (t4-t3, ngroups, npackages)
+    print 'Iterated again in %.3f (#g=%d, #p=%d)' % (t4-t3, ngroups, npackages)
 
 
 def test_load_config_file_old():
@@ -273,18 +276,18 @@ def test_load_config_file_old():
                 npackages += 1
 
     t4 = time.time()
-    print 'Iterated in %.3f (#g=%d, #p=%d' % (t4-t3, ngroups, npackages)
+    print 'Iterated in %.3f (#g=%d, #p=%d)' % (t4-t3, ngroups, npackages)
 
 
 if '__main__' == __name__:
-    # test_to_list()
-    # test_get_deconf_include_paths()
-    # test_find_file()
-    # test_parse_incs()
-    # test_nodes_simple()
-    # test_nodes_interp()
-    # test_chain()
-    # test_iterate()
-    # test_stress()
+    test_to_list()
+    test_get_deconf_include_paths()
+    test_find_file()
+    test_parse_incs()
+    test_nodes_simple()
+    test_nodes_interp()
+    test_chain()
+    test_iterate()
+    test_stress()
     test_load_config_file()
     #test_load_config_file_old()
