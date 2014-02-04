@@ -69,6 +69,7 @@ def make_envmungers(node):
     all_groups = node.owner().oftype('group')
 
     for dep in deps:
+        print 'DEP "%s"' % dep
         _, step = dep.split(':')
         what = step.split('_')[0]
         if what in all_packages:

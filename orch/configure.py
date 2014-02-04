@@ -62,16 +62,8 @@ def configure(cfg):
     extra['DESTDIR'] = getattr(cfg.options, 'destdir', '')
     msg.debug('orch: top="{top}" out="{out}" DESTDIR="{DESTDIR}"'.format(**extra))
 
-    top = pkgconf.load(orch_config, start = cfg.options.orch_start, **extra)
+    top = pkgconf.load(cfg, orch_config, start = cfg.options.orch_start, **extra)
 
-    # load in any external tools in this configuration context that
-    # may be referenced in the configuration
-    for node in  top.owner().oftype('package'):
-        tools = node.get('tools')
-        if not tools: continue
-        for tool in string2list(tools):
-            msg.debug('orch: loading tool: "%s" for package "%s"'  % (tool, package['package']))
-            cfg.load(tool)
 
     cfg.env.orch_group_list = string2list(top['groups'])
     cfg.env.orch_suite = top
@@ -88,10 +80,17 @@ def configure(cfg):
     return
 
 def check_suite(top):
+    errors = 0
     for node in top.owner().oftype('package'):
-        for key, val in node.items():
-            assert '{' not in val, 'Unresolved item in %s: %s = %s' % (node._name, key, val)
-
+        for key, val in node.local_items():
+            if val is None:
+                msg.error('Unset configuration item for %s: %s' % (node._name, key))
+                errors += 1
+                continue
+            if '{' in val:
+                msg.error('Unresolved item in %s: %s = %s' % (node._name, key, val))
+                errors += 1
+    assert errors == 0, 'Errors found in suite configuration'
 
 def dump_suite(top):
     for name, node in top.owner().nodes().items():

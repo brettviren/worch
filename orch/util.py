@@ -12,7 +12,7 @@ else:   urlopen = request.urlopen
 def string2list(string, delims=', '):
     if not isinstance(string, type('')):
         return string
-    return re.split('[%s]+'%delims, string)
+    return [x.strip() for x in re.split('[%s]+'%delims, string) if x.strip()]
 
 def update_if(d, p, **kwds):
     '''Return a copy of d updated with kwds.
