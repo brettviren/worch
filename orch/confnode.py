@@ -125,6 +125,11 @@ class Node(UserDict.DictMixin):
     def __setitem__(self, key, val):
         raise KeyError('can not set key "%s"' % (key, ))
 
+    def setdefault(self, key, val):
+        if key in self.local_keys():
+            return
+        self._items[key] = val
+
     def local_keys(self):
         'Get the keys that this node holds directly.'
         ret = set()
@@ -172,9 +177,10 @@ class NodeGroup(UserDict.DictMixin):
         self._keytype = keytype or dict()
 
     def __call__(self, name, type = None, parent = None, extra=None, **items):
-        if self._nodes.has_key(name):
-            print ('Warning: attempted creation of already existing node: "%s" (%s)' % (name, type))
-            return self._nodes[name]
+        node = self._nodes.get(name, None)
+        if node:
+            print ('Warning: attempted creation of already existing node: "%s" (want type %s, have %s)' % (name, type, node._type))
+            return node
         node = Node(self, name, type, parent, extra, **items)
         self._nodes[name] = node
         return node
