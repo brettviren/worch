@@ -1,0 +1,13 @@
+#!+TITLE: deconf - descending configuration
+
+At the heart of worch is a configuration language parsed by Python's =ConfigParser= and interpreted by =orch.deconf=.
+
+The interpreter produces a hierarchical data structure with nodes defined following the schema of the special =keytypes= configuration section.  A Configuration item defined at a particular node of the hierarchy is logically considered to be defined by each of the daughter nodes except where a  daughter explicitly sets (overrides) the item. 
+
+The value of a configuration item may include reference to variables identified as ={variable}=.  These variables are resolved in the following manner:
+
+- if the referenced variable is defined by the node holding the configuration item its value is taken
+- if the variable name is prepended by another node name (joined with "=_=") and that node contains a configuration item of that name its value is used
+- the variable is found in the external dictionary passed into the interpreter
+
+During initial interpretation the parsing is augmented in order to provide for the =includes= feature if this configuration item is found in the top level of the hierarchy (default is node =[start]=).
