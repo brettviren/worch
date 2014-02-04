@@ -8,7 +8,7 @@ def mgetter(callable):
         return val
     return f
 
-subn_reobj = re.compile('{(\w)}')
+subn_reobj = re.compile(r'{(\w+)}')
 
 class Node(UserDict.DictMixin):
     'A dict-like object representing a node in the deconf hiearchy'

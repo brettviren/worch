@@ -83,6 +83,9 @@ def test_nodes_interp():
     top = Node('start', a = "one", b = "two", c = "{a}_{b}_{d}")
     g1 = Node('g1', 'group', top, a="ten_{b}_{start_a}", d='g1', e='{a}_{start_undef}')
 
+    assert 'one' == g1.raw('start_a')
+    assert 'one' == g1.format('{start_a}')
+    assert 'one' == g1['start_a']
     assert top['c'] == "one_two_{d}", top['c']
     assert 'ten_two_one_two_g1' == g1['c'], g1['c']
     assert 'ten_two_one_{start_undef}' == g1['e'], g1['e']
@@ -283,5 +286,5 @@ if '__main__' == __name__:
     # test_chain()
     # test_iterate()
     # test_stress()
-    #test_load_config_file()
-    test_load_config_file_old()
+    test_load_config_file()
+    #test_load_config_file_old()

@@ -11,26 +11,7 @@ pp = PrettyPrinter(indent=2)
 
 example_dir = '/'.join(os.path.realpath(__file__).split('/')[:-2] + ['examples'])
 
-
-class FakeEnv:
-    def __init__(self, **kwds):
-        self.__dict__.update(**kwds)
-    def __setattr__(self, name, value):
-        self.__dict__[name] = value
-    def derive(self):
-        return FakeEnv(**self.__dict__)
-    def __str__(self):
-        return str(self.__dict__)
-    def __repr__(self):
-        return str(self.__dict__)
-
-class FakeCfg:
-    def __init__(self):
-        self.env = FakeEnv()
-    def setenv(self, name, value):
-        self.__dict__[name] = value
-    def __str__(self):
-        return (self.__dict__)
+from common import FakeEnv, FakeCfg
 
 def test_envmunge():
     cfgs = glob('%s/*.cfg'%example_dir)

@@ -71,7 +71,7 @@ install () {
     else
 	local log="log.install"
 	echo " + installing, log to $srcdir/$log"
-	make install > $log 2>&1
+	make prefix=$prefix install > $log 2>&1
     fi
 
     popd > /dev/null 2>&1
