@@ -64,10 +64,6 @@ def configure(cfg):
 
     top = pkgconf.load(cfg, orch_config, start = cfg.options.orch_start, **extra)
 
-
-    cfg.env.orch_group_list = string2list(top['groups'])
-    cfg.env.orch_suite = top
-
     envmunge.decompose(cfg, top)
 
     check_suite(top)

@@ -13,6 +13,8 @@ def options(opt):
 
 def configure(cfg):
     t1 = time.time()
+    # import cProfile
+    # cProfile.runctx("cfg.load('orchlib', tooldir='.')", globals(), locals())
     cfg.load('orchlib', tooldir='.')
     print 'Load orchlib configure in %.03f seconds' % (time.time()-t1)
 

@@ -141,7 +141,13 @@ class Node(UserDict.DictMixin):
     def local_items(self):
         # fixme: should be a generator
         return [(k,self[k]) for k in self.local_keys()]
-
+    def local_dict(self):
+        'Return a dictionary of just local items'
+        ret = dict()
+        for k in self.local_keys():
+            ret[k] = self[k]
+        return ret
+            
 
     def keys(self):
         'Return all keys as seen by this node.'
@@ -184,6 +190,11 @@ class NodeGroup(UserDict.DictMixin):
         node = Node(self, name, type, parent, extra, **items)
         self._nodes[name] = node
         return node
+
+    def keys(self): 
+        return self._nodes.keys()
+    def __getitem__(self, key):
+        return self._nodes[key]
 
     def nodes(self):
         return self._nodes

@@ -65,8 +65,8 @@ def make_envmungers(node):
         deps = string2list(deps)
     
     # cmp() on nodes may be slower than using names
-    all_packages = node.owner().oftype('package')
-    all_groups = node.owner().oftype('group')
+    all_packages = [n._name for n in node.owner().oftype('package')]
+    all_groups = [n._name for n in node.owner().oftype('group')]
 
     for dep in deps:
         print 'DEP "%s"' % dep
@@ -93,7 +93,7 @@ def make_envmungers(node):
 
     return ret
 
-def decompose(cfg, suite):
+def decompose(cfg, top):
     '''Decompose suite into packages and groups of packages.  
 
     For every group in the suite there is one added to the waf <cfg> context.  
@@ -107,9 +107,24 @@ def decompose(cfg, suite):
     of any environment munging applied to the current process
     environment (os.environ).
     '''
+    suite = top.owner()
+
     base_env = cfg.env
 
-    for node in suite.owner().oftype('package'):
+    tobuild = []
+    for grpname in string2list(top['groups']):
+        grpnode = suite.node(grpname)
+        pkgnames = string2list(grpnode['packages'])
+        tobuild.append((grpnode._name, pkgnames))
+    cfg.env.orch_group_packages = tobuild
+
+    extra_tools = []
+    for node in suite.oftype('package'):
+        tools = node.get('tools') or ""
+        extra_tools += string2list(tools)
+    cfg.env.orch_extra_tools = extra_tools
+
+    for node in suite.oftype('package'):
 
         mlist = make_envmungers(node)
         environ = cfg.env.env or dict()
@@ -117,6 +132,7 @@ def decompose(cfg, suite):
 
         new_env = base_env.derive()
         new_env.munged_env = menv
+        new_env.orch_package = node.local_dict()
         cfg.setenv(node._name, new_env)
         
         msg.debug("orchenv: Set waf env for %s" % node._name)

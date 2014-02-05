@@ -114,9 +114,9 @@ def worch_hello(self):
     print ('My env: %s' % (self.env.keys(),))
 
     suite = self.env['orch_suite']
-    print ('My groups: %s' % suite['groups'])
+    print ('My groups: %s' % suite.node('start')['groups'])
 
-    pnames = [p._name for p in suite.owner().oftype('package')]
+    pnames = [p._name for p in suite.oftype('package')]
     pnames.sort()
     print ('My packages: %s' % (', '.join(pnames)))
 
@@ -202,19 +202,30 @@ def make_node(self, path, parent_node=None):
     return parent_node.make_node(path)
 
 
+from waflib.TaskGen import feats as available_features
+def assert_features(pkgcfg):
+    features = string2list(pkgcfg['features'])
+    for feat in features:
+        assert feat in available_features.keys(), 'Unknown feature "%s" for package "%s" (out of %s)' % (feat, pkgcfg['package'], ', '.join(available_features))
+        
+
 import waflib.Logs as msg
 from waflib.Build import BuildContext
-def worch_package(ctx, worch_config, *args, **kw):
+def worch_package(ctx, pkgname, *args, **kw):
+
+    wenv = ctx.all_envs[pkgname]
+    pkgcfg = wenv.orch_package
+    assert_features(pkgcfg)
 
     # transfer waf-specific keywords explicitly
-    kw['name'] = worch_config['package']
-    kw['features'] = ' '.join(string2list(worch_config['features']))
-    kw['use'] = worch_config.get('use')
+    kw['name'] = pkgcfg['package']
+    kw['use']  = pkgcfg.get('use')
+    kw['features'] = ' '.join(string2list(pkgcfg['features']))
 
     # make the TaskGen object for the package
-    worch=WorchConfig(**worch_config)
+    worch=WorchConfig(**pkgcfg)
     tgen = ctx(*args, worch=worch, **kw)
-    tgen.env = ctx.all_envs[worch.package]
+    tgen.env = wenv
     tgen.env.env = tgen.env.munged_env
     msg.debug('orch: package "%s" with features: %s' % \
               (kw['name'], ', '.join(kw['features'].split())))
