@@ -2,27 +2,38 @@
 
 
 import common
-from orch import deconf2 as deconf
-import re 
-
-def myformat(string, **items):
-    res = re.subn(r'{(\w+)}', lambda match: items.get(match.group(1), ''), string)
-    return res[0]
+from orch import confnode
+from orch.util import format, format_get
 
 def test_format():
-    s = '{a}_{b}'
-    d1 = dict(a='one', b='two')
+    kwds = dict(a='one', b='two')
+    
+    trials = [
+        ('{a}_{b}', 'one_two'),
+    ]
+    
+    for give, want in trials:
+        got = format(give, **kwds)
+        assert want == got, 'Want: "%s", got: "%s"' % (want, got)
+        got = format_get(give, kwds.get)
+        assert want == got, 'Want: "%s", got: "%s"' % (want, got)
 
-    assert 'one_two' == myformat(s, **d1)
 
 def test_simple_node_format():
-    Node = deconf.NodeGroup()
+    Node = confnode.NodeGroup()
     top = Node('start', version='0', label='{a}-{b}-{c}', a='aye',b='bee',c='sea')
-    assert '{x}_{y}' == top.format('{x}_{y}')
-    assert 'aye_{y}' == top.format('{a}_{y}')
-    assert '{x}_bee' == top.format('{x}_{b}')
-    assert 'aye_bee' == top.format('{a}_{b}')
-    assert 'what_bee_sea' == top.format('{a}_{b}_{c}', a='what')
+
+    trials = [
+        ('{x}_{y}', '{x}_{y}', {}),
+        ('{a}_{y}', 'aye_{y}', {}),
+        ('{x}_{b}', '{x}_bee', {}),
+        ('{a}_{b}', 'aye_bee', {}),
+        ('{a}_{b}_{c}', 'what_bee_sea', dict(a='what')),
+        ('{a}_{undef}', 'aye_{undef}', {}),
+        ]
+    for give, want, extra in trials:
+        got = top.format(give, **extra)
+        assert want == got, 'Want: "%s", got: "%s"' % (want, got)
 
 
 if '__main__' == __name__:

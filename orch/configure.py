@@ -11,8 +11,7 @@ import waflib.Logs as msg
 from waflib import Context
 
 from .util import string2list
-#from . import pkgconf
-from . import pkgconf2 as pkgconf
+from . import pkgconf
 from . import envmunge
 
 def locate_config_files(pat):

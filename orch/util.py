@@ -9,6 +9,28 @@ except: from urllib import urlopen
 else:   urlopen = request.urlopen
 
 
+
+def mgetter(callable):
+    def f(match):
+        key = match.group(1)
+        val = callable(key,'{'+key+'}')
+        return val
+    return f
+
+subn_reobj = re.compile(r'{(\w+)}')
+def format_get(string, getter):
+    '''Format <string> using the function <getter(key, default)> which
+    returns the value for the <key> or <default> if not found.
+    '''
+    ret = re.subn(subn_reobj, mgetter(getter), string)
+    return ret[0]
+
+def format(string, **items):
+    '''Format <string> using <items>'''
+    return format_get(string, items.get)
+
+
+
 def string2list(string, delims=', '):
     if not isinstance(string, type('')):
         return string

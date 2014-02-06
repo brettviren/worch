@@ -44,7 +44,7 @@ def description():
     uname = os.uname()
     for k,v in zip(uname_fields, uname):
         ret[k] = v
-    platform = '{kernelname}-{machine}'.format(**ret)
+    platform = '%(kernelname)s-%(machine)s' % ret
     ret['platform'] = platform
     ret['ups_flavor'] = ups.flavor()
     ret['root_config_arch'] = rootsys.arch()

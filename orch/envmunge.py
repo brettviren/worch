@@ -69,7 +69,7 @@ def make_envmungers(node):
     all_groups = [n._name for n in node.owner().oftype('group')]
 
     for dep in deps:
-        print 'DEP "%s"' % dep
+        #print 'DEP "%s"' % dep
         _, step = dep.split(':')
         what = step.split('_')[0]
         if what in all_packages:
@@ -133,6 +133,7 @@ def decompose(cfg, top):
         new_env = base_env.derive()
         new_env.munged_env = menv
         new_env.orch_package = node.local_dict()
+        #print '%s:\n\t%s' % (node._name.upper(), '\n\t'.join(['%s = %s'%(k,v) for k,v in sorted(new_env.orch_package.items())]))
         cfg.setenv(node._name, new_env)
         
         msg.debug("orchenv: Set waf env for %s" % node._name)

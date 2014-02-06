@@ -27,7 +27,7 @@ def build(bld):
 
 import time
 from orch.wafutil import exec_command
-from orch.util import string2list
+from orch.util import string2list, format
 
 default_step_cwd = dict(
     download = '{download_dir}',
@@ -53,7 +53,7 @@ class WorchConfig(object):
         Return a string formatted with kwds and configuration items
         '''
         d = dict(self._config, **kwds)
-        return string.format(**d)
+        return format(string, **d)
 
     def depends_step(self, step):
         '''

@@ -1,14 +1,7 @@
 import UserDict
 import re 
 
-def mgetter(callable):
-    def f(match):
-        key = match.group(1)
-        val = callable(key,'{'+key+'}')
-        return val
-    return f
-
-subn_reobj = re.compile(r'{(\w+)}')
+from .util import format_get
 
 class Node(UserDict.DictMixin):
     'A dict-like object representing a node in the deconf hiearchy'
@@ -52,32 +45,23 @@ class Node(UserDict.DictMixin):
         if not isinstance(string, type("")):
             raise TypeError("Node.format requires a string, got %s" % type(string))
 
-        while True:
-            new_string = string
-
-            if extra:
-                try:
-                    #res = re.subn(r'{(\w+)}', mgetter(extra.get), new_string)
-                    res = re.subn(subn_reobj, mgetter(extra.get), new_string)
-                except KeyError:
-                    pass
-                else:
-                    new_string = res[0]
-
+        def getter(key, default = None):
             try:
-                #res = re.subn(r'{(\w+)}', mgetter(self.raw), new_string)
-                res = re.subn(subn_reobj, mgetter(self.raw), new_string)
+                return extra[key]
             except KeyError:
                 pass
-            else:
-                new_string = res[0]
+            return self.raw(key, default)
 
+        while True:             # spin until unchanged
+            new_string = format_get(string, getter)
+            #print 'GET: new="%s" old="%s"' % (new_string, string)
             if new_string == string:
                 return new_string
             string = new_string
 
     def raw(self, key, default = None):
         'Return the raw value associated with the key in the hierarchy.'
+        #print 'RAW: (%s) key="%s" default="%s"' % (self._name, key, default)
         try:                    # check if it's a direct key
             return self._items[key]
         except KeyError:
@@ -96,7 +80,7 @@ class Node(UserDict.DictMixin):
         else:
             try:
                 other = self._owner.node(name)
-                return other.raw(okey, default)
+                return other.get(okey, default)
             except KeyError:
                 pass
 
@@ -106,18 +90,16 @@ class Node(UserDict.DictMixin):
         '''Return the value associated with the key performing as much
         formatting as possible.
         '''
+        #print 'KEY: %s (%s)' % (key, self._name)
         try:                    # check if we have formatted it already
             return self._formatted[key]
         except KeyError:
             pass
 
-        # val = self._owner.typed(key)
-        # if val:
-        #     return val
-
         val = self.raw(key)
         if val is None:
-            return None
+            raise KeyError('No such key %s' % key)
+
         val = self.format(val, **self._extra)
         self._formatted[key] = val
         return val

@@ -65,20 +65,21 @@ def simple_setup_table_file(**cfg):
         if k.startswith('export_'):
             commands.append(worch_export_to_ups_command(k,v))
 
+    cfg['commands'] = '    \n'.join(commands)
     stf = '''\
 File = Table
-Product = {package}
+Product = %(package)s
 
 Group:
   Flavor = {ups_flavor}
-  Qualifiers = "{ups_qualifiers}"
+  Qualifiers = "%(ups_qualifiers)s"
 Common:
   Action = SETUP
     setupEnv()
     prodDir()
-    {commands}
+    %(commands)s
 End:
-'''.format(commands = '    \n'.join(commands), **cfg)
+''' % cfg
     return stf
 
 def simple_setup_version_file(**cfg):
@@ -87,6 +88,10 @@ def simple_setup_version_file(**cfg):
 
     FIXME: it makes some assumptions as to UPS directory structure.
     '''
+
+    cfg['user'] = os.environ.get('USER','unknown')
+    cfg['date'] = time.strftime('%Y-%m-%d %H.%M.%S GMT', time.gmtime(time.time()))
+
     content = '''\
 FILE = version
 PRODUCT = {package}
@@ -94,18 +99,16 @@ VERSION = {ups_version_string}
 
 #*************************************************
 #
-FLAVOR = {ups_flavor}
-QUALIFIERS = "{ups_qualifiers}"
-  DECLARER = {user}
-  DECLARED = {date}
-  MODIFIER = {user}
-  MODIFIER = {date}
-  PROD_DIR = {ups_prod_subdir}
+FLAVOR = %(ups_flavor)s
+QUALIFIERS = "%(ups_qualifiers)s"
+  DECLARER = %(user)s
+  DECLARED = %(date)s
+  MODIFIER = %(user)s
+  MODIFIER = %(date)s
+  PROD_DIR = %(ups_prod_subdir)s
   UPS_DIR = ups
-  TABLE_FILE = {package}.table
-'''.format(user = os.environ.get('USER','unknown'),
-           date = time.strftime('%Y-%m-%d %H.%M.%S GMT', time.gmtime(time.time())),
-           **cfg)
+  TABLE_FILE = %(package)s.table
+''' % cfg
     return content
 
 def simple_setup_chain_file(**cfg):
@@ -114,21 +117,21 @@ def simple_setup_chain_file(**cfg):
 
     FIXME: it only make "current chain".
     '''
+    cfg['user'] = os.environ.get('USER','unknown')
+    cfg['date'] = time.strftime('%Y-%m-%d %H.%M.%S GMT', time.gmtime(time.time()))
     content = '''\
 FILE = chain
-PRODUCT = {package}
+PRODUCT = %(package)s
 CHAIN = current
 
 #*************************************************
 #
-FLAVOR = {ups_flavor}
-VERSION = {ups_version_string}
-QUALIFIERS = "{ups_qualifiers}"
-  DECLARER = {user}
-  DECLARED = {date}
-  MODIFIER = {user}
-  MODIFIER = {date}
-'''.format(user = os.environ.get('USER','unknown'),
-           date = time.strftime('%Y-%m-%d %H.%M.%S GMT', time.gmtime(time.time())),
-           **cfg)
+FLAVOR = %(ups_flavor)s
+VERSION = %(ups_version_string)s
+QUALIFIERS = "%(ups_qualifiers)s"
+  DECLARER = %(user)s
+  DECLARED = %(date)s
+  MODIFIER = %(user)s
+  MODIFIER = %(date)s
+''' % cfg
     return content
