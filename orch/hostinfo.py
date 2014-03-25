@@ -44,6 +44,8 @@ def description():
     uname = os.uname()
     for k,v in zip(uname_fields, uname):
         ret[k] = v
+    ret['kernelversion2'] = '.'.join(ret['kernelversion'].split('.',2)[:2])
+
     platform = '%(kernelname)s-%(machine)s' % ret
     ret['platform'] = platform
     ret['ups_flavor'] = ups.flavor()
