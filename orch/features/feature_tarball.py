@@ -8,7 +8,7 @@ It requires no previous steps.  It provides the 'seturl', 'download' and 'unpack
 from waflib.TaskGen import feature
 import waflib.Logs as msg
 
-from orch.util import urlopen, get_unpacker
+from orch.util import urlopen, get_unpacker, download
 from orch.wafutil import exec_command
 
 import orch.features
@@ -41,32 +41,7 @@ def feature_tarball(tgen):
         src = task.inputs[0]
         tgt = task.outputs[0]
         url = src.read().strip()
-        try:
-            web = urlopen(url)
-            tgt.write(web.read(),'wb')
-        except Exception:
-            import traceback
-            traceback.print_exc()
-            msg.error(tgen.worch.format("[{package}_download] problem downloading [{source_url}]"))
-            raise
-
-        checksum = tgen.worch.source_archive_checksum
-        if not checksum:
-            return
-        hasher_name, ref = checksum.split(":")
-        import hashlib, os
-        # FIXME: check the hasher method exists. check for typos.
-        hasher = getattr(hashlib, hasher_name)()
-        hasher.update(tgt.read('rb'))
-        data= hasher.hexdigest()
-        if data != ref:
-            msg.error(tgen.worch.format("[{package}_download] invalid checksum:\nref: %s\nnew: %s" %\
-                                        (ref, data)))
-            try:
-                os.remove(tgt.abspath())
-            except IOError: 
-                pass
-            return 1
+        download(url, tgt.abspath(), tgen.worch.source_archive_checksum)
         return
 
     tgen.step('download',

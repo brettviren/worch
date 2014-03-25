@@ -3,6 +3,8 @@
 Utility functions
 '''
 import re
+import os
+import hashlib
 
 try:    from urllib import request
 except: from urllib import urlopen
@@ -148,4 +150,95 @@ def get_unpacker(filename, dirname = '.'):
         if filename.endswith(ext):
             return 'tar -C %s -%s %s' % (dirname, flags, filename)
     return 'tar -C %s -xf %s' % (dirname, filename)
+
+def nuke_file(path):
+    'Delete the given file'
+    if os.path.exists(path):
+        os.remove(path)
+
+
+def download_urllib(url, target):
+    '''Download a file from URL to target using urllib, return URL
+    actually downloaded.  An IOError is raised on any failure and the
+    target will not exist.
+    '''
+    try:
+        web = urlopen(url)
+    except Exception:
+        import traceback
+        traceback.print_exc()
+        err = "download: urllib failed to open %s"% url
+        raise IOError(err)
+
+    http_code = web.getcode()
+
+    if http_code == 301:
+        return download_urllib(web.geturl(), target)
+
+    if http_code != 200:
+        err = 'download: urllib failed to download (%s) %s' % (http_code, url)
+        raise IOError(err)
+
+    fp = open(target, "wb")
+    fp.write(web.read())
+    return web.geturl()
+
+def download_wget(url, target):
+    try:
+        check_output(['wget','--quiet', '--no-check-certificate','-O',target,url])
+    except Exception,err:
+        nuke_file(target)
+        raise IOError,err
+    return url                  # in general, this is a small lie
+
+def download_curl(url, target):
+    try:
+        check_output(['curl','--silent', '--insecure','-o',target,url])
+    except Exception,err:
+        nuke_file(target)
+        raise IOError,err
+    return url                  # in general, this is a small lie
+
+def download_any(url, target):
+
+    for maybe in download_urllib, download_wget, download_curl:
+        try:
+            return maybe(url, target)
+        except IOError, err:
+            nuke_file(target)
+            print (err)
+            if maybe != download_curl:
+                print ('...still trying') 
+            pass
+
+    raise IOError('unable to download %s to %s' % (url, target))
+
+def download(url, target, checksum=None):
+    '''Download <url> to <target>, return actual URL downloaded.
+
+    If checksum is given compare it to the one formed from the
+    downloaded file.  The checksum is of the form <type>:<hash> where
+    <type> names a hash function in hashlib.
+
+    An IOError is raised on any failure.
+    '''
+    try:
+        goturl = download_any(url, target)
+    except IOError:
+        nuke_file(target)
+        raise
+
+    if not checksum:
+        return goturl
+
+    hasher_name, ref = checksum.split(":")
+    # FIXME: check the hasher method exists. check for typos.
+    hasher = getattr(hashlib, hasher_name)()
+    hasher.update(open(target,"rb").read())
+    data = hasher.hexdigest()
+    if data != ref:
+        nuke_file(target)
+        raise IOError("download: checksum mismatch: %s != %s" % (data, ref))
+
+    return goturl
 
