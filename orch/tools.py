@@ -40,8 +40,12 @@ default_step_cwd = dict(
 
 # Main interface to worch configuration items
 class WorchConfig(object):
+    others = dict()
+
     def __init__(self, **pkgcfg):
         self._config = pkgcfg
+        self.others[pkgcfg['package']] = self
+
     def __getattr__(self, name):
         return self._config[name]
 
@@ -223,8 +227,8 @@ def worch_package(ctx, pkgname, *args, **kw):
     kw['features'] = ' '.join(string2list(pkgcfg['features']))
 
     # make the TaskGen object for the package
-    worch=WorchConfig(**pkgcfg)
-    tgen = ctx(*args, worch=worch, **kw)
+    worch = WorchConfig(**pkgcfg)
+    tgen = ctx(*args, worch = worch, **kw)
     tgen.env = wenv
     tgen.env.env = tgen.env.munged_env
     msg.debug('orch: package "%s" with features: %s' % \

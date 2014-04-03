@@ -24,14 +24,17 @@ def build(bld):
     @feature('modulesfile')
     def feature_modulesfile(tgen):
 
+        w = tgen.worch
+
         def gen_modulefile(task):
-            mfname = tgen.worch.modulesfile_path
+            mfname = w.modulesfile_path
             with open(mfname, 'w') as fp:
                 fp.write('#%Module1.0 #-*-tcl-*-#\n')
 
-                for mystep, deppkg, deppkgstep in tgen.worch.dependencies():
-                    load = 'module load %s/{%s_version}' % (deppkg, deppkg)
-                    load = tgen.worch.format(load)
+                for mystep, deppkg, deppkgstep in w.dependencies():
+                    o = w.others[deppkg]
+                    load = 'module load %s/%s' % (deppkg, o.version)
+                    load = w.format(load)
                     fp.write(load + '\n')
 
                 for var, val, oper in tgen.worch.exports():

@@ -262,6 +262,27 @@ def test_load_config_file():
     print 'Iterated again in %.3f (#g=%d, #p=%d)' % (t4-t3, ngroups, npackages)
 
 
+def test_other():
+    '''
+    Test that one package can reference another's variable
+    '''
+    cfg = deconf.load('other.cfg')
+    top = cfg.owner()
+    print top.keys()
+    for g in [1, 2]:
+        grp = 'g%d' % (g,)
+        assert top.node(grp), 'no section [group %s] have: %s' % (grp, ', '.join(top.keys()))
+        for p in [1, 2]:
+            pkg = 'g%dp%d' % (g,p)
+            assert top.node(pkg), 'no section [package %s]' % pkg
+    g2p1 = top.node('g2p1')
+    g2p2 = top.node('g2p2')
+    assert g2p1['g1p1_version'] == '11', 'Can not get version for g1p1'
+    assert g2p1['other_version1'] == '11', 'Can not get other_version1 from g2p1'
+    assert g2p1['other_version2'] == '22', 'Can not get other_version2 from g2p1'
+    print g2p1['g1p1_version'], g2p2['g1p2_version'], 
+    print g2p1['other_version1'], g2p1['other_version2']
+
 def test_load_config_file_old():
     from common import FakeCfg
     from orch import deconf as deconf_old
@@ -291,6 +312,7 @@ def test_load_config_file_old():
 
 
 if '__main__' == __name__:
+    test_other()
     test_get_deconf_include_paths()
     test_find_file()
     test_parse_incs()
@@ -300,4 +322,5 @@ if '__main__' == __name__:
     test_iterate()
     test_stress()
     test_load_config_file()
+
     #test_load_config_file_old()
