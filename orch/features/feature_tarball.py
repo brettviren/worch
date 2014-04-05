@@ -6,9 +6,8 @@ It requires no previous steps.  It provides the 'seturl', 'download' and 'unpack
 '''
 
 from waflib.TaskGen import feature
-import waflib.Logs as msg
 
-from orch.util import urlopen, get_unpacker, download
+from orch.util import get_unpacker, download
 from orch.wafutil import exec_command
 
 import orch.features
