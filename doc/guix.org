@@ -1,0 +1,46 @@
+* Guix
+
+When I started worch I had heard about [[https://www.gnu.org/software/guix/manual/guix.html][guix]]. My somewhat brief evaluation left me concluding that it was not suitable for exploitation.  I've recent reacquainted myself with it and am very impressed with its progress.  On the whole, I think guix could make a suitable replacement for worch but at a cost of radically changing how the some are used to managing packages built from source.  After accepting these changes there are also some perceived deficiencies that would need to be addressed in guix before it would be suitable.  As different as the two are, they also share a lot of commonalities.  This document compares the two.
+
+** Similarities
+
+- they both have goofy names
+- they both are "meta build systems" operating on packages' native build systems
+- they abstract the installation into steps (or "phases" in guix terms)
+- they parameterize the build to separate description and actions (guix allows some blurring)
+- guix's functional approach is similar to worch's idempotency
+
+** Good, but unwanted features of guix
+
+Some of the features in guix are good and even preferable in some metrics but are considered unwanted in worch.  This list doesn't imply that guix is not suitable (even as a worch replacement) but that these features will not be considered for adoption into worch, per se.
+
+- configuration language :: Guix uses Scheme.  It's debatable if a full-fledged language is better or worse than a declarative description.  Also, as much as I like Scheme and LISP in principle and have been trying to learn it for years, I find it very difficult to grok.  The ConfigParse language used for configuring worch is, I think, unarguably easier for the majority of people to work with.
+
+- layout :: The installation layout is predefined and not under user control.  This is somewhat mitigated by the fact that it's a rather smart layout.  It does not seem suitable for users that want to maintain multiple installations at the same time.  It's unsuitable for emulating some existing installation infrastructure (eg UPS products area) although one could imagine emulating this with yet more symlink redirection.
+
+- comprehensiveness :: With guix you can bootstrap an entire OS.  This is pretty amazing but not something worch needs to do.  It would result in building/installing many packages that people "feel like" the OS should supply.  It's possible to make guix suites that leave unmentioned OS-level packages in the "inputs" field and thus one could develop a worch replacement based on guix and then this feature can simply be ignored so it's not a fatal strike against using guix as a worch replacement.  That said, I think building full OS distributions is something that is very attractive as a means to capture all that went into an Experiment's results.  I feel this feature is ahead of its time.  To shun this approach already comes at a cost of an otherwise unnecessary inflation in the number of "platforms".  With guix the kernel+machine is all that really needs to be distinguished.  By "saving" time to reuse OS-level packages means we must inflate the platform definitions to accommodate any differences in what is provided.  More platforms mean more time rebuilding the higher-level software.  Consider the differences between the same machine running Debian or Sci. Linux.  There are significant differences due to Debian's multi-arch support and SL's biarch.  If both installed down to =libc= with guix (which is what is done) then there is no practical difference in the binaries needed to support these two native distributions.  It also allows VMs or other vitalization to be significantly smaller.  Given the work on booting to guix (or rather =dmd=) the VM container can be very tiny indeed.  Again, ahead of its time.  I won't be surprised if this type of thing becomes the norm in 5 years.
+
+- hashes :: The "real" installation areas are named after a hash of their contents and their "inputs" (source).  This is an incredibly powerful tool to assure assert provenance but not something that worch will consider at this time.  Again, I think this feature is a head of its time and will become something of importance in the future.
+
+- build daemon :: This provides a gate keeper on populating the package binary storage area so that multiple users can initiate package builds and share the results.  For better or worse, worch assumes a site has a centrally managed package area.
+
+- offload :: Guix can send build jobs to other computers.  This is great for building a full distribution but the dependencies in even the largest jobs worch is build are such that a single 32 core node normally used for testing does not exhaust its CPUs.
+
+** Perceived deficiencies
+
+Guix is targeting a different use case than worch but it's close.  If guix were to replace worch some additional features are needed:
+
+- variants :: On a given platform a system may used a shared installation (/gnu/store) with the same packages having some variation.  Debug/opt is one, which guix [[https://www.gnu.org/software/guix/manual/guix.html#Installing-Debugging-Files][does address]] at lease for GDB's use of a =lib/debug/= directory.  Other variants include different build options for ROOT (include xrootd, or don't) but these can maybe be handled by finer-grained packaging ("multiple outputs" in guix terms).
+
+- multiple platforms :: I didn't see how one could (or should) use a common guix store to support multiple platforms.  This is often done for sites with a heterogeneous collection of hardware.  I think it is somewhat suspect to combine the binaries for these diverse platforms into one area, but it's done.  This is probably not an important deficiency.
+
+- multiple installations :: I don't see how I can maintain multiple, independent and concurrent installations.  Everything is all together under =~/.guix-profile/=.  I suspect I'm missing a way to have multiple instances of this profile directory.  This is very important as everyone multitasks on different experiments and even w/in one experiment, multiple versions are needed. 
+
+** Desired for adoption
+
+Some of the ideas of guix are ripe for incorporation into worch, or at least for contemplation.
+
+- layout :: The symlink-based flat-hierarchy layout is nice as it allows trivial user environment setup and avoids wholesale environment variable pollution.  If such a feature is developed for worch installs I see it as a separate layer and not part of worch itself.
+
+- garbage collection ::  The ability to prune unwanted installations is missing from worch and is a strongly needed feature. (AFS space holding central installations is expensive).  This has obvious connections with the symlink-based layout feature.
+

@@ -461,3 +461,10 @@ $ ./worch-test-bundle --prefix=install --orch-config=examples/simple-with-patch/
 $ waf
 #+END_EXAMPLE
 
+
+* Others in this space
+
+A truly unique project is rare and worch is no exception.  This section lists some projects that are similar to worch that I've come across.
+
+ - [[https://www.gnu.org/software/guix/][guix]] :: The GNU package manager
+
