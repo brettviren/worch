@@ -466,5 +466,5 @@ $ waf
 
 A truly unique project is rare and worch is no exception.  This section lists some projects that are similar to worch that I've come across.
 
- - [[https://www.gnu.org/software/guix/][guix]] :: The GNU package manager
+ - [[https://www.gnu.org/software/guix/][guix]] :: The GNU package manager (more details in [[./doc/guix.org]])
 
