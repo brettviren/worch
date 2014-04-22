@@ -1,6 +1,6 @@
 #!/bin/bash
 
-set -x
+# set -x
 
 function error_exit {
     echo 
@@ -18,7 +18,10 @@ version=$1 ; shift
 if [ -z "$1" ] ; then
     usage
 fi
-prefix="$(readlink -f $1)"
+prefix="$(readlink -m $1)"
+if [ ! -f "$prefix" ] ; then
+    mkdir -p $prefix
+fi
 
 # derived
 srcdir="Python-$version"
@@ -81,6 +84,12 @@ install () {
 	local log="log.install"
 	echo " + installing, log to $srcdir/$log"
 	make prefix=$prefix install > $log 2>&1
+    fi
+
+    if [ ! -x "$executable" ] ; then
+	echo "Nothing at $executable"
+	echo "Something's broken."
+	exit 1
     fi
 
     popd > /dev/null 2>&1
