@@ -1,5 +1,14 @@
 #!/bin/bash
 
+set -x
+
+function error_exit {
+    echo 
+    echo "Error on line $@"
+    exit 1
+}
+trap 'error_exit ${LINENO}' ERR
+
 usage () {
     echo "install-python <version> /install/directory/prefix"
     echo "Likely versions listed at http://python.org/download/releases/"
@@ -26,7 +35,7 @@ download () {
     fi
     if [ -n "$(which wget)" ] ; then
 	echo " + wget'ing $url"
-	wget -q $url
+	wget --no-check-certificate -q $url
 	return
     fi
     if [ -n "$(which curl)" ] ; then
