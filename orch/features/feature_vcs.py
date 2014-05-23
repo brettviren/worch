@@ -49,12 +49,11 @@ def do_cvs(tgen):
 
 @single_cmd_rule
 def do_svn(tgen):
-    if tgen.worch.get('vcs_tag'):
-        err = tgen.worch.format('SVN has no concept of tags, can not honor: "{vcs_tag}"')
-        msg.error(err)
-        raise ValueError(err)
-    pat = "svn checkout {source_url} {source_unpacked}"
-    return tgen.worch.format(pat)
+    tag = tgen.worch.get('vcs_tag', '')
+    if tag:
+        tag = '-r ' + tag
+    pat = "svn checkout {vcs_tag_opt} {source_url} {source_unpacked}"
+    return tgen.worch.format(pat, vcs_tag_opt = tag)
 
 
 @single_cmd_rule
