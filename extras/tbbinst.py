@@ -31,10 +31,17 @@ def feature_tbbinst(tgen):
               source = tgen.control_node('unpack'),
               target = flag)
 
-    instarg = tgen.make_node(tgen.worch.install_target)
-    libdir = instarg.parent.abspath()
-    install_rule = 'mkdir -p %s && cp build/*_release/libtbb* %s/'
-    install_rule = install_rule % (libdir,libdir)
+    instdir = tgen.make_node(tgen.worch.install_dir)
+    #libdir = tgen.make_node(instdir.abspath() + '/lib')
+    instarg = instdir.make_node(tgen.worch.install_target)
+    libpath = instarg.parent.abspath()
+    #instarg = instdir.find_or_declare(tgen.worch.install_target)
+    print 'INSTDIR:', instdir.abspath()
+    #print 'LIBDIR:',libdir.abspath()
+    print 'INSTARG:', instarg.abspath()
+    #libdir = instarg.parent.abspath()
+    install_rule = 'mkdir -p %s && cp build/*_release/libtbb* %s/ && cp -a include %s'
+    install_rule = install_rule % (libpath, libpath, instdir.abspath())
     tgen.step('install',
               rule = install_rule,
               source = flag,
