@@ -26,3 +26,6 @@ worch-code-bundle
 worch-configured-bundle
 worch-noscript-bundle
 pythons
+build
+dist
+*.egg-info

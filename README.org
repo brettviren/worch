@@ -52,15 +52,48 @@ Worch comes with example configuration files that build a few simple Free Softwa
 
 Worch includes a copy of waf program in the top level directory but see the [[http://docs.waf.googlecode.com/git/book_17/single.html#_download_and_installation][waf book]] for if you wish to explicitly install.
 
-** Get Worch
+** Install Worch
+
+Worch installs in the usual manner for Python packages.  
+
+*** Recommended installation method
+
+For ease of use and compartmentalizing, it is recommended to install it in a [[http://virtualenv.readthedocs.org][Virtual Environment]] by first doing:
 
 #+BEGIN_EXAMPLE
-$ git clone https://github.com/brettviren/worch.git
-$ cd worch
-$ alias waf=`pwd`/waf
+  $ virtualenv venv
+  $ source venv/bin/activate
 #+END_EXAMPLE
 
-The alias is just for conveniences.  You may also place it in your execution =PATH= or execute it by giving it's absolute path.  On first run it will unpack itself in a =.waf*= directory so needs to be place where you have write access.
+If you do not have the =virtualenv= script, see [[http://virtualenv.readthedocs.org/en/latest/virtualenv.html#installation][this link]] for downloading it.
+
+Regardless, installing Worch itself is done like:
+
+#+BEGIN_EXAMPLE
+  $ pip install git+git://github.com/brettviren/worch.git
+#+END_EXAMPLE
+
+This will give you the =HEAD= of the =master= branch which strives to always be in a working condition.  If you want a particular release of Worch indicate it by adding =@TAG= where =TAG= is the release tag.
+
+*** Development installation
+
+To develop Worch itself, first set up a Virtual Environment as above and then:
+
+#+BEGIN_EXAMPLE
+  $ git clone git://github.com/brettviren/worch.git
+  $ cd worch
+  $ python setup.py develop
+#+END_EXAMPLE
+
+This will allow changes in Worch files to be immediately available when running.  Note, this will "install" waf itself, but not in a way that makes it actually usable so for development, run it explicitly.
+
+*** First run
+
+Regardless of the installation method (and of Worch itself) the first time waf is run by you it will unpack itself.  This means it needs to reside in a location that is writable by the user.  To trigger an unpacking one may run:
+
+#+BEGIN_EXAMPLE
+  $ waf --version
+#+END_EXAMPLE
 
 ** Run waf on the worch configuration files
 
