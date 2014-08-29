@@ -145,6 +145,8 @@ Some notes on including configuration or other auxiliary files:
 
  - See the discussion on locating configuration files in the [[../README.org][main README]].
 
+ - You will also need to make a =MANIFEST.in= that lists the same things that are in =data_files= with lines like =include config/*.cfg=.
+
 *** Creating the package
 
 The usual:
