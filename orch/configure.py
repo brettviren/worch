@@ -25,9 +25,9 @@ def locate_config_files(pat):
     wcpath = os.environ.get('WORCH_CONFIG_PATH','')
     if wcpath:
         path += wcpath.split(':')
-    wcpath.append(Context.waf_dir)
-    wcpath += [sys.prefix, sys.prefix + '/share/worch/config']
-    for cdir in wcpath:
+    path.append(Context.waf_dir)
+    path += [sys.prefix, sys.prefix + '/share/worch/config']
+    for cdir in path:
         maybe = os.path.join(cdir,pat)
         got = glob(maybe)
         if got: return got
