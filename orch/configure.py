@@ -5,6 +5,7 @@ Configure waf for worch.
 It is expected that any external tools that add worch features have already been loaded.
 '''
 import os
+import sys
 from glob import glob
 
 import waflib.Logs as msg
@@ -20,7 +21,13 @@ def locate_config_files(pat):
     if pat.startswith('/'):
         return glob(pat)
 
-    for cdir in os.environ.get('WORCH_CONFIG_PATH','').split(':') + [Context.waf_dir]:
+    path = ['.']
+    wcpath = os.environ.get('WORCH_CONFIG_PATH','')
+    if wcpath:
+        path += wcpath.split(':')
+    wcpath.append(Context.waf_dir)
+    wcpath += [sys.prefix, sys.prefix + '/share/worch/config']
+    for cdir in wcpath:
         maybe = os.path.join(cdir,pat)
         got = glob(maybe)
         if got: return got

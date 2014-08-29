@@ -86,10 +86,11 @@ Place tests in
 
 *** Configuration
 
-If the package does double-duty as holding worch configuration that relies on the tools it can be placed in:
+If the package does double-duty as holding worch configuration files and/or patches they should be placed in specific sub directories or otherwise made distinguishable for registering them below in =setup.py=.
 
 #+BEGIN_EXAMPLE
-  mytool/config/
+  mytool/config/*.cfg
+  mytool/patches/*.patch
 #+END_EXAMPLE
 
 
@@ -102,8 +103,12 @@ Make your tool code into a Python package to make it easy for your users to inst
 To produce a package, make the usual =setuptools= =setup.py= file.
 
 #+BEGIN_SRC python
+  from glob import glob
   from setuptools import setup
-  setup(name = 'mytool',
+
+  toolname = 'mytool'                           # (1)
+
+  setup(name = toolname,
         version = 'X.Y.Z',
         description = 'A tool to do incredible things with Worch.',
         author = 'My Name',
@@ -111,21 +116,34 @@ To produce a package, make the usual =setuptools= =setup.py= file.
         license = 'GPLv2',
         url = 'http://github.com/me/mytool',
         namespace_packages = ['worch'],
-        packages = ['worch','worch.mytool'],   # (1)
-        install_requires = [                   # (2)
-            'worch',
+        packages = ['worch','worch.'+toolname], # (2)
+        install_requires = [
+            'worch >= 1.0',                     # (3)
         ],
-        dependency_links = [                   # (3)
-            'http://github.com/brettviren/worch/tarball/proper-install#egg=worch',
-        ]
+        dependency_links = [                    # (4)
+            'https://github.com/brettviren/worch/archive/1.0.tar.gz#egg=worch-1.0',
+        ],
+        data_files = [('share/worch/config/'+toolname, glob('config/*.cfg')),
+                      ('share/worch/patches/'+toolname, glob('patches/*.patch'))],
+                                                # (5)
   )
 #+END_SRC
 
 Some things to note:
 
- 1) if you have additional Python modules as part of your tool code add them to the =packages= list.
- 2) if other packages besides worch are needed, add them here
- 3) if =pip= needs "help" to find these packages (ie, they are not in PyPI) add a dependency link
+ 1) Save your tool name into a variable to enforce consistency
+ 2) if you have additional Python modules as part of your tool code add them to the =packages= list.
+ 3) if other packages besides worch are needed, add them here
+ 4) if =pip= needs "help" to find these packages (ie, they are not in PyPI) add a dependency link
+ 5) Add any auxiliary files to sub directories of the tool-specific =share/worch/<type>/mytool/= sub-directory.  
+
+Some notes on including configuration or other auxiliary files:
+
+ - A "=python setup.py install=" will not install them but a "=pip install dist/mytool-X.Y.tar.gz=" will.
+
+ - Python does not preserve any substructure that happens to be exist in the source repository (eg, what the =glob()= calls return).
+
+ - See the discussion on locating configuration files in the [[../README.org][main README]].
 
 *** Creating the package
 

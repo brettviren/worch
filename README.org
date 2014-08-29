@@ -126,6 +126,16 @@ Notes:
  - if the =configure= step is repeated it requires repetition of the options as well.
  - =--zones=orch= can be passed (to =configure= and =build=) to get more verbose output from =waf=.
 
+**** Configuration file location
+
+Worch will try to find configuration files specified by =--orch-config= following these rules in order:
+
+1) If absolute path, find the file absolutely, otherwise
+2) first check assuming relative to current working directory
+3) relative to any paths listed as elements of the environment variable =WORCH_CONFIG_PATH=
+4) relative to =sys.prefix=
+5) relative to =sys.prefix + '/share/worch'
+
 *** Build
 
 The =build= command is default and need not be explicitly stated.
