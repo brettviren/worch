@@ -2,7 +2,7 @@
 
 import common
 
-from orch.pkgconf import host_description
+from orch.hostinfo import description as host_description
 
 def test_pkgconf_host_description():
     hd = host_description()

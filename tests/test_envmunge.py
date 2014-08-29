@@ -16,8 +16,7 @@ from common import FakeEnv, FakeCfg
 def test_envmunge():
     cfgs = glob('%s/*.cfg'%example_dir)
     print ('Using config files: %s' % str(cfgs))
-    suite = deconf.load(cfgs,
-                        formatter = deconf.example_formatter)
+    suite = deconf.load(cfgs)
     pp.pprint(suite)
 
     cfg = FakeCfg()
@@ -27,8 +26,7 @@ def test_envmunge():
 def test_envmunger():
     cfgs = glob('%s/test_envmunge.cfg'%example_dir)
     print ('Using config files: %s' % str(cfgs))
-    suite = deconf.load(cfgs,
-                        formatter = deconf.example_formatter)
+    suite = deconf.load(cfgs)
     pp.pprint(suite)
 
     cfg = FakeCfg()
@@ -43,8 +41,8 @@ def test_envmunger():
 
 def test_export():
     'Test the export_ mechanism'
-    suite = deconf.load(os.path.join(example_dir, 'test_envmunge.cfg'),
-                        formatter = deconf.example_formatter)
+    suite = deconf.load(os.path.join(example_dir, 'test_envmunge.cfg'))
+
     cfg = FakeCfg()
     envmunge.decompose(cfg, suite)
     for pkg,env in cfg.__dict__.items():
