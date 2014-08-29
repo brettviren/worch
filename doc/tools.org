@@ -18,7 +18,7 @@ A tool is a Python module which implements the waf =configure(cfg)= function.  I
 #+END_SRC
 
 
-The first argument is the feature name (here ='name'=) which may be added to a package's "=features=" list in the configuration.  The following arguments give all keyword arguments that the feature code will expect as well as default values.  If any values can not be given sane defaults then leave them as a false value and assert on them in the feature code.
+The first argument is the feature name (here "=name=") which may be added to a package's "=features=" list in the configuration.  The following arguments give all keyword arguments that the feature code will expect as well as default values.  If any values can not be given sane defaults then leave them as a false value and assert on them in the feature code.
 
 * Feature function
 
