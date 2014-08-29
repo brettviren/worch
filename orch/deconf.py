@@ -85,7 +85,7 @@ def add_includes(cfg, sec = 'start', key = 'includes'):
         fpath = find_file(fname, paths)
         if not fpath:
             raise ValueError( 'Failed to locate file: %s (%s)' % 
-                              (fname, ':'.join(to_check)) )
+                              (fname, ':'.join(paths)) )
         read(cfg, fpath)
         cfg.files.append(fpath)
     return
