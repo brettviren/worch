@@ -1,0 +1,168 @@
+Writing your own worch/waf tools to provide worch/waf features.
+
+* Overview
+
+Worch tools and features are extensions of those of waf.  This document focuses on how they differ.
+
+* Required function: =configure()=
+
+A tool is a Python module which implements the waf =configure(cfg)= function.  It is in this function where the tool registers worch features (which are extensions to waf features).  An example:
+
+#+BEGIN_SRC python
+  def configure(cfg):
+      orch.features.register_default(
+          'name'
+          parm1 = 'value1',
+          parm2 = 'value2',
+      )
+#+END_SRC
+
+
+The first argument is the feature name (here ='name'=) which may be added to a package's "=features=" list in the configuration.  The following arguments give all keyword arguments that the feature code will expect as well as default values.  If any values can not be given sane defaults then leave them as a false value and assert on them in the feature code.
+
+* Feature function
+
+A feature is implemented as a decorated function:
+
+#+BEGIN_SRC python
+  @feature('name')
+  def feature_name(tgen):
+      '''
+      The feature named "name" will blah blah a flerg.
+      '''
+      ...
+      return
+#+END_SRC
+
+The function is passed a waf task generator, =tgen=, which has been augmented with a few Worch-aware methods and a data structure holding the Worch configuration information for the current package.
+
+ - =.step(stepname, ...)= :: this can be thought of as an augmented version of the waf =bld()= call.  In addition to what that does, =step= handles things like adding control files to the task's targets, sets a default cwd for known step names, handles non-file-based dependencies, handle grouping and logging.
+
+ - =.control_node(stepname,[packagename])= :: this returns a waf node object for the control file for the given step for the current package.  If =packagename= is given explicitly, then the given control node for that package is returned.  This can be used by feature code to explicitly set dependencies.
+
+ - =.make_node(path, [parentnode])= :: this will simply create a waf node from a path while properly handling absolute and relative paths.
+
+ - =.worch= :: this holds the parameters for the current package as data members.  Eg, =tgen.worch.parm1= from the example above would hold "value1" unless the configuration set something else.  
+
+ - =worch.format(string, **kwds)= :: this is like =str.format= in recent Pythons.  It will format any "={key}=" type strings using the parameters held by the =worch= data structure and augmented by any =kwds= passed.  Feature code can use this for various types of templated string formatting.
+
+* Distributing Worch tools
+
+Worch itself is distributed as a Python package and it is recommended that any tool code do likewise.  This section gives recommendations on how to do this.   It assumes a tool named '=mytool='.
+
+** Package file layout:
+
+Here outlines how to layout the package files
+
+*** Payload Code
+
+Put the top level tool/feature code into the file:
+
+#+BEGIN_EXAMPLE
+  mytool/worch/mytool/__init__.py
+#+END_EXAMPLE
+
+Place necessary Python namespace boilerplate:
+
+#+BEGIN_SRC python
+  __import__('pkg_resources').declare_namespace(__name__)
+#+END_SRC
+
+into:
+
+#+BEGIN_EXAMPLE
+  worch/__init__.py
+#+END_EXAMPLE
+
+No other code may be in this file.
+
+*** Testing code
+
+Place tests in 
+
+#+BEGIN_EXAMPLE
+  mytool/tests/
+#+END_EXAMPLE
+
+*** Configuration
+
+If the package does double-duty as holding worch configuration that relies on the tools it can be placed in:
+
+#+BEGIN_EXAMPLE
+  mytool/config/
+#+END_EXAMPLE
+
+
+** Python packaging
+
+Make your tool code into a Python package to make it easy for your users to install.
+
+*** The =setup.py= file
+
+To produce a package, make the usual =setuptools= =setup.py= file.
+
+#+BEGIN_SRC python
+  from setuptools import setup
+  setup(name = 'mytool',
+        version = 'X.Y.Z',
+        description = 'A tool to do incredible things with Worch.',
+        author = 'My Name',
+        author_email = 'me@example.com',
+        license = 'GPLv2',
+        url = 'http://github.com/me/mytool',
+        namespace_packages = ['worch'],
+        packages = ['worch','worch.mytool'],   # (1)
+        install_requires = [                   # (2)
+            'worch',
+        ],
+        dependency_links = [                   # (3)
+            'http://github.com/brettviren/worch/tarball/proper-install#egg=worch',
+        ]
+  )
+#+END_SRC
+
+Some things to note:
+
+ 1) if you have additional Python modules as part of your tool code add them to the =packages= list.
+ 2) if other packages besides worch are needed, add them here
+ 3) if =pip= needs "help" to find these packages (ie, they are not in PyPI) add a dependency link
+
+*** Creating the package
+
+The usual:
+
+#+BEGIN_EXAMPLE
+  $ python setup.py sdist
+  $ ls dist/
+#+END_EXAMPLE
+
+Distribute the tar file.
+
+*** Distribute via git
+
+Put your code into GitHub or equivalent and make releases and then your user can download and install in one easy command:
+
+#+BEGIN_EXAMPLE
+  $ pip install git+git://github.com/me/mytool.git
+#+END_EXAMPLE
+
+Or a particular release:
+
+#+BEGIN_EXAMPLE
+  $ pip install git+git://github.com/me/mytool.git@X.Y.Z
+#+END_EXAMPLE
+
+Or, they can use your tool from their own =setup.py= just as this tool uses Worch.
+
+
+* Installing and using a tool
+
+If the above is followed then on need only install high level tools and the rest will be installed automatically.
+
+#+BEGIN_EXAMPLE
+  $ virtualenv venv
+  $ source venv/bin/activate
+  $ pip install git+git://github.com/me/mytool.git
+  (make wscript file, get configuration files)
+  $ waf --prefix=... --orch-config=... configure build
+#+END_EXAMPLE

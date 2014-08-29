@@ -29,6 +29,7 @@ Some features of worch:
 
 While waf supports all the way back to Python 2.3, worch requires at least Python 2.6 (eg, Sci. Linux 6).  A [[./scripts/install-python][script]] is provided to help build a modern version of python from source.  See [[./doc/python.org][this doc]] for more info.
 
+
 * Concepts
 
 Some of the terms and concepts used by Worch.  
@@ -54,11 +55,11 @@ Worch includes a copy of waf program in the top level directory but see the [[ht
 
 ** Install Worch
 
-Worch installs in the usual manner for Python packages.  
+Worch installs in the usual manner for Python packages with the exception that the code relies on the =waflib= module which is made available by importing the =orch= module via the =waf= command.
 
 *** Recommended installation method
 
-For ease of use and compartmentalizing, it is recommended to install it in a [[http://virtualenv.readthedocs.org][Virtual Environment]] by first doing:
+It is recommended to install Worch in a [[http://virtualenv.readthedocs.org][Virtual Environment]].  To create one do:
 
 #+BEGIN_EXAMPLE
   $ virtualenv venv
@@ -67,17 +68,17 @@ For ease of use and compartmentalizing, it is recommended to install it in a [[h
 
 If you do not have the =virtualenv= script, see [[http://virtualenv.readthedocs.org/en/latest/virtualenv.html#installation][this link]] for downloading it.
 
-Regardless, installing Worch itself is done like:
+Whether installing into a Virtual Environment or not, Worch may be installed like:
 
 #+BEGIN_EXAMPLE
   $ pip install git+git://github.com/brettviren/worch.git
 #+END_EXAMPLE
 
-This will give you the =HEAD= of the =master= branch which strives to always be in a working condition.  If you want a particular release of Worch indicate it by adding =@TAG= where =TAG= is the release tag.
+This will give you the =HEAD= of the =master= branch which strives to always be in a working condition.  If you want a particular release of Worch you may indicate it by adding =@TAG= where =TAG= is the release tag.
 
 *** Development installation
 
-To develop Worch itself, first set up a Virtual Environment as above and then:
+To develop Worch itself, first set up a Virtual Environment as above and then do:
 
 #+BEGIN_EXAMPLE
   $ git clone git://github.com/brettviren/worch.git
@@ -87,7 +88,7 @@ To develop Worch itself, first set up a Virtual Environment as above and then:
 
 This will allow changes in Worch files to be immediately available when running.  Note, this will "install" waf itself, but not in a way that makes it actually usable so for development, run it explicitly.
 
-*** First run
+*** First run of waf
 
 Regardless of the installation method (and of Worch itself) the first time waf is run by you it will unpack itself.  This means it needs to reside in a location that is writable by the user.  To trigger an unpacking one may run:
 
@@ -102,15 +103,19 @@ Worch provides some ready-to-use configuration files under the [[./examples][exa
 *** Configure
 
 #+BEGIN_EXAMPLE
-$ waf --prefix=/tmp/worch-simple-example \
-      --orch-config=examples/simple/*.cfg \
-      configure
-Setting top to  : /home/bviren/work/lbne/waffle/worch 
-Setting out to  : /home/bviren/work/lbne/waffle/worch/tmp 
-'configure' finished successfully (0.065s)
+  $ cd /path/to
+  $ git clone git://github.com/brettviren/worch.git
+  $ cd /path/to/work
+  $ cp /path/to/worch/wscript .   # <-- customize if desired
+  $ waf --prefix=/path/to/install \
+        --orch-config=/path/to/worch/examples/simple/*.cfg \
+        configure
+  Setting top to  : /path/to/work
+  Setting out to  : /path/to/work/tmp
+  'configure' finished successfully (0.065s)
 
-$ ls ./tmp
-c4che  config.log
+  $ ls ./tmp
+  c4che  config.log
 #+END_EXAMPLE
 
 Notes:
@@ -127,7 +132,7 @@ The =build= command is default and need not be explicitly stated.
 
 #+BEGIN_EXAMPLE
 $ waf [-j4] [-vvv] > log
-Waf: Entering directory `/home/bviren/work/lbne/waffle/worch/tmp'
+Waf: Entering directory `/path/to/work/tmp'
 [ 1/18] cmake_seturl:  -> tmp/cmake-2.8.8.url
 [ 2/18] cmake_download: tmp/cmake-2.8.8.url -> tmp/downloads/cmake-2.8.8.tar.gz
 [ 3/18] cmake_unpack: tmp/downloads/cmake-2.8.8.tar.gz -> tmp/sources/cmake-2.8.8/bootstrap
@@ -146,12 +151,12 @@ Waf: Entering directory `/home/bviren/work/lbne/waffle/worch/tmp'
 [16/18] bc_install: tmp/builds/bc-1.06-debug/bc/bc -> ../../../../../../tmp/worch-simple-example/bc/1.06/debug/bin/bc
 [17/18] hello_build: tmp/builds/hello-2.8-debug/config.status -> tmp/builds/hello-2.8-debug/src/hello
 [18/18] hello_install: tmp/builds/hello-2.8-debug/src/hello -> ../../../../../../tmp/worch-simple-example/hello/2.8/debug/bin/hello
-Waf: Leaving directory `/home/bviren/work/lbne/waffle/worch/tmp'
+Waf: Leaving directory `/path/to/work/tmp'
 'build' finished successfully (8m3.605s)
 
 $ waf
-Waf: Entering directory `/home/bviren/work/lbne/waffle/worch/tmp'
-Waf: Leaving directory `/home/bviren/work/lbne/waffle/worch/tmp'
+Waf: Entering directory `/path/to/work/tmp'
+Waf: Leaving directory `/path/to/work/tmp'
 'build' finished successfully (0.028s)
 
 $ ls ./tmp
@@ -384,6 +389,8 @@ This causes the =tarball= and =autoconf= features to look for a =bootstrap= inst
 
 
 ** Writing your own /feature/
+
+See [[./doc/tools.org]].
 
 
 * waf/worch tricks
