@@ -8,6 +8,8 @@ Some features of worch:
 
  - a simple, concise and flexible text-based configuration language which can fully describe the installation of a complex software suite.
 
+ - the Worch machinery itself is distributed in standard Python packages available in [[https://pypi.python.org/pypi][PyPI]] to allow for a flexible and automated installation.  Add-on tools or user configuration may be distributed likewise.
+
  - automated installation includes downloading of source archives in common formats, their unpacking, source preparation using popular configuration methods, building and finally installing and any additional steps the user defines
 
  - the user defines the conventions that set file/directory installation patterns.
@@ -62,8 +64,8 @@ Worch installs in the usual manner for Python packages with the exception that t
 It is recommended to install Worch in a [[http://virtualenv.readthedocs.org][Virtual Environment]].  To create one do:
 
 #+BEGIN_EXAMPLE
-  $ virtualenv venv
-  $ source venv/bin/activate
+  $ virtualenv /path/to/venv
+  $ source /path/to/venv/bin/activate
 #+END_EXAMPLE
 
 If you do not have the =virtualenv= script, see [[http://virtualenv.readthedocs.org/en/latest/virtualenv.html#installation][this link]] for downloading it.
@@ -71,10 +73,8 @@ If you do not have the =virtualenv= script, see [[http://virtualenv.readthedocs.
 Whether installing into a Virtual Environment or not, Worch may be installed like:
 
 #+BEGIN_EXAMPLE
-  $ pip install git+git://github.com/brettviren/worch.git
+  $ pip install worch
 #+END_EXAMPLE
-
-This will give you the =HEAD= of the =master= branch which strives to always be in a working condition.  If you want a particular release of Worch you may indicate it by adding =@TAG= where =TAG= is the release tag.
 
 *** Development installation
 
@@ -83,10 +83,13 @@ To develop Worch itself, first set up a Virtual Environment as above and then do
 #+BEGIN_EXAMPLE
   $ git clone git://github.com/brettviren/worch.git
   $ cd worch
-  $ python setup.py develop
+  $ python setup.py sdist
+  $ pip install dist/worch-X.Y.Z.tar.gz
+  (hack away)
+  $ pip uninstall -y worch
+  $ python setup.py sdist
+  $ pip install dist/worch-X.Y.Z.tar.gz
 #+END_EXAMPLE
-
-This will allow changes in Worch files to be immediately available when running.  Note, this will "install" waf itself, but not in a way that makes it actually usable so for development, run it explicitly.
 
 *** First run of waf
 
@@ -98,17 +101,17 @@ Regardless of the installation method (and of Worch itself) the first time waf i
 
 ** Run waf on the worch configuration files
 
-Worch provides some ready-to-use configuration files under the [[./examples][examples]] sub-directory and below use the [[./examples/simple][simple example]].
+Worch installs some example configuration files which you can browse in the [[./examples][examples]] source directory.  A configuration is given to Worch by specifying the main file.  If specified as a relative path the file will be searched for in the current working directory or, if not found, in the installed location.
 
 *** Configure
 
+Worch needs a waf =wscript= file to drive the build.  A generally suitable one is provided with the Worch distribution
+
 #+BEGIN_EXAMPLE
-  $ cd /path/to
-  $ git clone git://github.com/brettviren/worch.git
   $ cd /path/to/work
-  $ cp /path/to/worch/wscript .   # <-- customize if desired
+  $ cp /path/to/venv/share/worch/wscripts/worch/wscript .
   $ waf --prefix=/path/to/install \
-        --orch-config=/path/to/worch/examples/simple/*.cfg \
+        --orch-config=examples/simple/*.cfg \
         configure
   Setting top to  : /path/to/work
   Setting out to  : /path/to/work/tmp
@@ -120,8 +123,8 @@ Worch provides some ready-to-use configuration files under the [[./examples][exa
 
 Notes:
 
- - if multiple configuration files are given; they are effectively concatenated.  (=tcsh= users beware that your shell sucks)
- - often just a main file needs to be specified and any other ones are implicitly loaded
+ - if multiple configuration files are given; they are effectively concatenated and the wildcard character (=*=) will be interpreted by Worch.  (=tcsh= users: beware that your shell sucks)
+ - often just a main file needs to be specified and any other ones are implicitly loaded.
  - the =./tmp= directory is created as directed by the =out= variable in the main =wscript= file and holds all intermediate build files
  - if the =configure= step is repeated it requires repetition of the options as well.
  - =--zones=orch= can be passed (to =configure= and =build=) to get more verbose output from =waf=.
@@ -398,7 +401,7 @@ This causes the =tarball= and =autoconf= features to look for a =bootstrap= inst
 
 
 
-** Writing your own /feature/
+** Writing your own /tool/ providing /features/
 
 See [[./doc/tools.org]].
 
@@ -481,35 +484,6 @@ Here "=tmp/=" is the directory specified by the "=waf --out=tmp=" flag.
 
 If a command that is run by a step fails a shell script will be produced with everything that should reproduce the failure in-place (it is very much not portable).  The location of the shell script is the current working directory where the command ran and is reported by waf.  It should be run from the directory that holds it in order to reproduce the failure.
 
-* Bundles
-
-It is possible to bundle waf, worch and a set of configuration files into a single self-extracting python executable.  This single file caries all the information required to build the corresponding suite of software.  The =scripts/= directory contains an example of how to do this in the form of the =worch-bundle-header= script.  It can be run like:
-
-#+BEGIN_EXAMPLE
-$ cd worch/
-$ ./scripts/worch-prepare-bundle worch-test-bundle examples/simple-with-patch .
-#+END_EXAMPLE
-
-Note the last argument is the worch directory itself.  When the resulting bundle, =worch-test-bundle= in this case, contains 
-
- - a copy of waf
- - the main =wscript= file and =orch= module from the given =worch= directory
- - a copy of the given configuration directory
-
-When the resulting bundle file is run (note: avoid running it from inside the =worch= development directory) it will:
-
- 1) unpack waf, run it once to produce the =.waf-*= directory and then delete waf
- 2) unpack =wscript=, =orch= and configuration files
-
-You can then run it as if it were =waf= itself
-
-#+BEGIN_EXAMPLE
-$ mkdir /tmp/worch-test 
-$ cp worch-test-bundle 
-$ cd /tmp/worch-test
-$ ./worch-test-bundle --prefix=install --orch-config=examples/simple-with-patch/*.cfg configure
-$ waf
-#+END_EXAMPLE
 
 
 * Others in this space
