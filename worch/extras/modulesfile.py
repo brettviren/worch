@@ -17,8 +17,8 @@ def configure(cfg):
         modulesfile_dir = '{PREFIX}/modules',
         modulesfile_store_dir = '{PREFIX}',
         modulesfile_store_envvar = 'STOREDIR',
-        modulesfile = 'modulefile', # singular
-        modulesfile_path = '{modulesfile_dir}/{package}/{version}/{modulesfile}',
+        modulesfile = '{version}',
+        modulesfile_path = '{modulesfile_dir}/{package}/{version}',
     )
     return
 
@@ -67,6 +67,7 @@ def build(bld):
             vars = dict(sdpath = tgen.worch.modulesfile_store_dir,
                         sdvar = tgen.worch.modulesfile_store_envvar,
                         mver = tgen.worch.modulesfile_version,
+                        mfdir = tgen.make_node(tgen.worch.modulesfile_dir).path_from(mfd),
                     )
             sh = task.outputs[0].abspath()
 
@@ -74,7 +75,7 @@ def build(bld):
                 fp.write('''#!/bin/sh
 export %(sdvar)s MODULE_VERSION MODULESHOME LOADEDMODULES MODULEPATH
 %(sdvar)s=%(sdpath)s
-MODULEPATH=${%(sdvar)s}
+MODULEPATH=${%(sdvar)s}/%(mfdir)s
 MODULE_VERSION=%(mver)s
 MODULEHOME=${%(sdvar)s}/Modules/${MODULE_VERSION}
 module() { eval `${MODULEHOME}/bin/modulecmd sh $*`; }
