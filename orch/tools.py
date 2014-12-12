@@ -81,7 +81,11 @@ class WorchConfig(object):
             return list()
         for dep in string2list(deps):
             mystep, other = dep.split(':')
-            pkg,pkg_step = other.split('_',1)
+            try:
+                pkg,pkg_step = other.split('_',1)
+            except ValueError:
+                print '%s: step="%s", dep="%s"' % (self.package, mystep, other)
+                raise
             ret.append((mystep, pkg, pkg_step))
         return ret
 
