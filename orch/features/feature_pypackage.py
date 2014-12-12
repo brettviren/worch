@@ -33,7 +33,7 @@ def feature_pypackage(tgen):
     
     # dummy prepare step, for feature_patch's benefit and "depends = prepare:xxx_install"
     tgen.step('prepare',
-              rule = "/bin/true",
+              rule = "/bin/echo",
               source = tgen.control_node('unpack'),
               target = tgen.control_node('prepare'))
 
