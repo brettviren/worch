@@ -89,17 +89,23 @@ class WorchConfig(object):
             ret.append((mystep, pkg, pkg_step))
         return ret
 
-    def exports(self):
-        '''
-        Return all environment settings via export_* configuration items
+    def userenvs(self):
+        '''Return all environment settings via userenv_* configuration items
         return list of tuples: (variable, value, operator) for exports
         eg: ('PATH', '/blah/blah', 'prepend')
         '''
+        return self.exports('userenv_')
+
+    def exports(self, prefix='export_'):
+        '''Return all environment settings via export_* (or other <prefix>)
+        configuration items return list of tuples: (variable, value,
+        operator) for exports eg: ('PATH', '/blah/blah', 'prepend')
+        '''
         ret = list()
         for key,val in self._config.items():
-            if not key.startswith('export_'):
+            if not key.startswith(prefix):
                 continue
-            var = key[len('export_'):]
+            var = key[len(prefix):]
             oper = 'set'
             for maybe in ['prepend', 'append', 'set']:
                 if val.startswith(maybe+':'):
