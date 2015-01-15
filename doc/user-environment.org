@@ -18,7 +18,7 @@ The =<type>= may be one of:
 
  - =export= :: the variable will be set only on packages that depend on the given package.
 
- - =userenv= :: the variable will be associated with the given package but not explicitly set by worch on any tasks.
+ - =userenv= :: the variable will be associated with the given package but not otherwise used or acted on by Worch.  The name is a convention.
 
 The optional =method:= prefix is interpreted by Worch in setting the variable:
 

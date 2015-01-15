@@ -52,7 +52,7 @@ def build(bld):
                     load = w.format(load)
                     fp.write(load + '\n')
 
-                for var, val, oper in tgen.worch.exports():
+                for var, val, oper in tgen.worch.userenvs():
                     val = wash_path(val)
                     if oper == 'set':
                         fp.write('setenv %s %s\n' % (var, val))
