@@ -1,5 +1,14 @@
 #+TITLE: Worch and UPS
 
+* Caveat
+
+Much of the below has changed and no longer reflects reality but is kept for now.  See [[https://github.com/brettviren/worch-ups][worch-ups]] and [[https://github.com/brettviren/python-ups-utils/][ups-utils]] for more current ways of doing things.
+
+See also [[./user-environment.org]].
+
+
+* Intro
+
 [[https://github.com/brettviren/worch][Worch]] has support for building [[http://www.fnal.gov/docs/products/ups/][UPS]] as it does any other package.  In addition it can generate UPS "table", "version" and "chain" files for packages that it builds based on the information in the worch configuration.   In this way, worch-built suites may have their user environment set up using UPS (see also [[./modules.org]]). Worch itself does not rely on UPS to do any of this.
 
 Worch also provides a mechanism by which packages can be configured to build inside an environment that is augmented by UPS setup.
