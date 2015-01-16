@@ -1,0 +1,65 @@
+#+TITLE: Worch and User Environment
+
+Worch itself, like all that it does, doesn't impose any policy on how your end-users will use the software it builds.  Instead it provides the information that can be translated into some form of user environment management system such as is done in the =worch.extras.modulesfile= tool that comes with Worch.
+
+* Environment Variables in Worch
+
+Worch supports setting of environment variables for use in Worch tasks and these can be used by special Worch features to produce what might be needed for any given end-user environment system.  There are three ways to set environment variables and they differ in how the setting is applied.  A variable is defined as a parameter like:
+
+=<type>_<name> = [method[delim]]<value>=
+
+For example:
+
+=export_PATH = prepend:{install_dir}/bin=
+
+The =<type>= may be one of:
+
+ - =buildenv= :: the variable will be set only on the tasks that run for the given package
+
+ - =export= :: the variable will be set only on packages that depend on the given package.
+
+ - =userenv= :: the variable will be associated with the given package but not otherwise used or acted on by Worch.  The name is a convention.
+
+The optional =method:= prefix is interpreted by Worch in setting the variable:
+
+ - =set= :: indicates setting the variable, discarding any previously set value.  This is the default.
+
+ - =prepend= :: interpret the variable as a "=:="-separated (or =delim=-separate if another character is given) list and prepend the new value to any existing one or =set= it if not yet set.
+
+ - =append= :: as =prepend= but the value will be appended to any prior set value.
+
+
+* Recomendations for End-User Environment Management systems
+
+After Worch builds the software, the user needs to be able to use it.  This requires some kind of end-user environment and some system to manage it.  In general, the packages that are built by Worch need to be aggregated in some manner.  This aggregation may be through the user's environment variables such as is done by Environment Modules or it may be done through the file system such as is done by the approach of package systems like Debian, RPM, Nix/Guix, Conda.  The two aggregation approaches differ modly in how =PATH=-like variables are handled.  Packaging policy may also dictate that no special environment variables are allowed.  This section collects suggestions that authors of Worch features that implement end-user environment management systems or other packaging follow in order that such features may operate on the same source configuration.
+
+** Avoid Build Environment Polution
+
+In general attempt:
+
+ - keep environment variable needed only to build a package in a =buildenv= type setting
+ - avoid using =export= when instead you can define some parameter to pass explicitly to some command line (eg, =cmake -D{someparam} ...=)
+ - put into =userenv= just what is needed for a given package
+
+** Clean Environment Management Information
+
+When writing some Worch feature to provide an environment managemnt system it is suggested that:
+
+ - only information explicitly placed in a =userenv= type parameter be used.
+ - if your system supports it, leverage the dependency information in the worch configuration data and do not duplicate individual settings of a package for each package that may depend on it.
+
+** PATH conventions
+
+Package aggregation based on environment variables will usually need construct long =PATH=-like variables with one entry for each package.  File-system based ones will typically require adding a single entry pointing to some root directory.  In the case of locating libraries, different operating systems use different conventions.  It is thus recomended that =PATH=-like settings be handled specially and by naming the Worch configuration parameter like:
+
+#+begin_example
+userenv_path_<type> = {install_dir}/<subdir>
+#+end_example
+
+Where type is one of:
+
+ - =bin= :: points to the location of executable programs (usually with =subdir= set to =bin=)
+ - =lib= :: points to the location of libraries (usually with =subdir= set to =lib=) and with the Worch feature taking care to name the resulting environment variable based on the OS (eg, =LD_LIBRARY_PATH= for most Unix-like systems and =DYLD_LIBRARY_PATH= for Mac OS X).
+ - =python= :: to set =PYTHONPATH=
+
+
