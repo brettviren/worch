@@ -7,7 +7,7 @@ It requires no previous steps.  It provides the 'seturl', 'download' and 'unpack
 
 from waflib.TaskGen import feature
 
-from orch.util import get_unpacker, download
+from orch.util import get_unpacker, download_mirror
 from orch.wafutil import exec_command
 
 import orch.features
@@ -40,7 +40,7 @@ def feature_tarball(tgen):
         src = task.inputs[0]
         tgt = task.outputs[0]
         urls = [x.strip() for x in src.read().split()]
-        download(urls, tgt.abspath(), tgen.worch.source_archive_checksum)
+        download_mirror(urls, tgt.abspath(), tgen.worch.source_archive_checksum)
         return
 
     tgen.step('download',
