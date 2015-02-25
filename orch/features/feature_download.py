@@ -39,8 +39,8 @@ def feature_download(tgen):
     def dl_task(task):
         src = task.inputs[0]
         tgt = task.outputs[0]
-        url = src.read().strip()
-        download(url, tgt.abspath(), tgen.worch.download_checksum)
+        urls = [x.strip() for x in src.read().strip()]
+        download(urls, tgt.abspath(), tgen.worch.download_checksum)
         return
 
     tgen.step('download',

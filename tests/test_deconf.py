@@ -203,7 +203,8 @@ def test_iterate():
     assert len(packages) == len(got_packages)
     
 
-config_file = os.environ.get('WORCH_CONFIG_FILE','orka/suite-ilcroot.cfg')
+config_file = os.environ.get('WORCH_CONFIG_FILE',
+                             'g4root/all.cfg')
 print ('Using worch config file:', config_file) 
 
 fake_worch_data = dict( PREFIX = '/path/to/install',
@@ -283,33 +284,6 @@ def test_other():
     print g2p1['g1p1_version'], g2p2['g1p2_version'], 
     print g2p1['other_version1'], g2p1['other_version2']
 
-def test_load_config_file_old():
-    from common import FakeCfg
-    from orch import deconf as deconf_old
-    from orch import envmunge, pkgconf
-    t1 = time.time()
-    suite = deconf_old.load(os.path.join(exampledir, config_file), **fake_worch_data)
-    t2 = time.time()
-    print 'Created in %.3f' % (t2-t1)
-    
-    cfg = FakeCfg()
-    pkgconf.fold_in(suite)
-    t3 = time.time()
-    print 'Fold_in in %.3f' % (t3-t2)
-
-    ngroups = 0
-    npackages = 0
-    for g in suite['groups']:
-        for gk,gv in g.items():
-            ngroups += 1
-
-        for p in g['packages']:
-            for pk,pv in p.items():
-                npackages += 1
-
-    t4 = time.time()
-    print 'Iterated in %.3f (#g=%d, #p=%d)' % (t4-t3, ngroups, npackages)
-
 
 if '__main__' == __name__:
     test_other()
@@ -323,4 +297,3 @@ if '__main__' == __name__:
     test_stress()
     test_load_config_file()
 
-    #test_load_config_file_old()

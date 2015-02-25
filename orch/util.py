@@ -213,7 +213,7 @@ def download_any(url, target):
 
     raise IOError('unable to download %s to %s' % (url, target))
 
-def download(url, target, checksum=None):
+def download_url(url, target, checksum=None):
     '''Download <url> to <target>, return actual URL downloaded.
 
     If checksum is given compare it to the one formed from the
@@ -241,4 +241,25 @@ def download(url, target, checksum=None):
         raise IOError("download: checksum mismatch: %s != %s" % (data, ref))
 
     return goturl
+
+def download(urls, target, checksum=None):
+    '''
+    Download a file from a list of possible URLs.
+
+    Returns o first success or raises IOError.
+
+    The <urls> may be a single URL or a sequence of URLs.
+    '''
+
+    if type(urls) == type(""):
+        urls = [urls]
+
+    for url in urls:
+        try:
+            return download_url(url, target, checksum)
+        except IOError:
+            pass
+
+    raise IOError('download: unable to download "%s"' % \
+                  os.path.basename(target))
 
