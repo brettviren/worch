@@ -9,12 +9,11 @@ from orch import deconf, envmunge
 from pprint import PrettyPrinter
 pp = PrettyPrinter(indent=2)
 
-example_dir = '/'.join(os.path.realpath(__file__).split('/')[:-2] + ['examples'])
-
 from common import FakeEnv, FakeCfg
 
 def test_envmunge():
-    cfgs = glob('%s/*.cfg'%example_dir)
+    cfgs = glob(os.path.join(common.example_dir,'simple','*.cfg'))
+    assert cfgs
     print ('Using config files: %s' % str(cfgs))
     suite = deconf.load(cfgs)
     pp.pprint(suite)
@@ -24,7 +23,8 @@ def test_envmunge():
     pp.pprint(cfg.env.__dict__)
 
 def test_envmunger():
-    cfgs = glob('%s/test_envmunge.cfg'%example_dir)
+    cfgs = glob(os.path.join(common.example_dir, 'test_envmunge.cfg'))
+    assert cfgs
     print ('Using config files: %s' % str(cfgs))
     suite = deconf.load(cfgs)
     pp.pprint(suite)
@@ -41,7 +41,7 @@ def test_envmunger():
 
 def test_export():
     'Test the export_ mechanism'
-    suite = deconf.load(os.path.join(example_dir, 'test_envmunge.cfg'))
+    suite = deconf.load(os.path.join(common.example_dir, 'test_envmunge.cfg'))
 
     cfg = FakeCfg()
     envmunge.decompose(cfg, suite)
