@@ -8,7 +8,7 @@ It requires no previous steps.  It provides the 'download_seturl' and
 
 import os
 from waflib.TaskGen import feature
-from orch.util import download
+from orch.util import download_mirror
 
 import orch.features
 orch.features.register_defaults(
@@ -39,8 +39,8 @@ def feature_download(tgen):
     def dl_task(task):
         src = task.inputs[0]
         tgt = task.outputs[0]
-        urls = [x.strip() for x in src.read().strip()]
-        download(urls, tgt.abspath(), tgen.worch.download_checksum)
+        urls = [x.strip() for x in src.read().split()]
+        download_mirror(urls, tgt.abspath(), tgen.worch.download_checksum)
         return
 
     tgen.step('download',
