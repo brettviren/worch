@@ -1,7 +1,7 @@
 import os
 from setuptools import setup, find_packages
 setup(name = 'worch',
-      version = '1.3.3',
+      version = '1.3.3-dev',
       description = 'Build orchestration with waf.',
       author = 'Brett Viren',
       author_email = 'brett.viren@gmail.com',
