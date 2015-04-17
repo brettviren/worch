@@ -7,6 +7,7 @@ from waflib import Context, Options, Utils, Logs, Scripting
 
 import orch.tools
 
+
 def options(opt):
     #opt.load('orch.tools', tooldir='.')
     orch.tools.options(opt)
@@ -85,3 +86,60 @@ def start(cwd, version, wafdir):
     if 'build' in sys.argv:
         Scripting.run_command('build')
  
+
+
+# def _status(ctx): 
+#     "Provide status of current build"
+#     import orch.state 
+#     stat = orch.state.status(ctx)
+#     if not stat:
+#         print ("no build started")
+#     else:
+#         print stat
+
+# def nuke(ctx): 
+#     "Forcibly intermediate results"
+#     import orch.state 
+#     stat = orch.state.nuke(ctx)
+#     print stat
+
+from waflib.Build import BuildContext
+class StatusContext(BuildContext):
+    "shows current build status"
+    cmd = 'status'
+    def execute(self):
+        self.restore()
+        if not self.all_envs:
+            self.load_envs()
+        self.recurse([self.run_dir])
+        #self.pre_build()
+        #self.timer=Utils.Timer()
+        nametask = list()
+        for g in self.groups:
+            for tg in g:
+                nametask.append((tg.name, tg))
+                try:
+                    f=tg.post
+                except AttributeError:
+                    pass
+                else:
+                    f()
+        nametask.sort()
+        try:
+            self.get_tgen_by_name('')
+        except Exception:
+            pass
+        for name, tsk in nametask:
+            print name
+            for target in tsk.target:
+                ex = "no"
+                if type(target) != type(""): # node
+                    target = target.abspath()
+                    if os.path.exists(target):
+                        ex = "ok"
+                else:
+                    got = self.bldnode.ant_glob(target)
+                    if got: 
+                        ex = "ok"
+                print '%s %s' % (ex, target)
+
