@@ -1,0 +1,309 @@
+\documentclass[xcolor=dvipsnames]{beamer}
+
+\setbeamertemplate{navigation symbols}{}
+%\setbeamertemplate{background}[grid][step=1cm]
+\useoutertheme{infolines}
+
+\usepackage{listings}
+\usepackage{graphicx}
+\usepackage{xcolor}
+\usepackage{hyperref}
+
+\input{lststyles.tex}
+
+
+\author{Brett Viren}
+\institute[BNL]
+{
+  Physics Department
+
+    \includegraphics[height=1.5cm]{../common/bnl-logo}
+}
+\title{Worch = Waf + Orchestration}
+\date{2015-05-27}
+
+\newcommand{\fixme}[1]{\textbf{FIXME:} \textit{#1}}
+
+\newlength{\overlaywd}
+\newlength{\overlayht}
+\newcommand{\overlay}[4]{%
+  \settowidth{\overlaywd}{#2}\settoheight{\overlayht}{#2}%
+  \raisebox{#4\overlayht}{%
+    \makebox[0pt][l]{\hspace{#3\overlaywd}%
+      #1}}%
+  #2}%
+
+\lstdefinestyle{base}{
+  language=deconf,
+  moredelim=**[is][\only<+>{\color{red}}]{@}{@},
+}
+
+
+\begin{document}
+
+\begin{frame}
+  \frametitle{Worch Overview}
+
+  \textbf{Worch} = \textbf{W}af + \textbf{Orch}estration:
+
+  \begin{itemize}
+  \item \textbf{software suite builder} used to build large suites of
+    software composed of many packages from all different sources.
+  \item \textbf{configuration manager} using a simple declarative
+    language in order to precisely and concisely assert all build
+    parameters.
+  \item \textbf{workflow manager} using \href{https://waf.io}{Waf} to
+    run interdependent tasks in parallel
+  \item \textbf{software build features} ``batteries included'' for
+    exercising many common package-level build methods
+  \item \textbf{bootstrap aggregation} packaged using Python's
+    \texttt{setuputils} with support for developing domain-specific
+    extensions to easily create the build environment.
+  \item \textbf{policy-free} leaving issues such as installation
+    layout, target package formats, suite content, build parameters up
+    to the end user.
+  \end{itemize}
+
+\end{frame}
+
+\begin{frame}
+  \frametitle{Waf} 
+  \footnotesize
+
+  Waf is a Python-based dependency-driven task
+  scheduler (ie, \texttt{make}-replacement).
+
+  Some Waf concepts relevant to Worch:
+
+  \begin{description}
+  \item[task] one unit of processing, may have declared input and
+    output files.
+  \item[group] a logical set of \textit{tasks} that must complete
+    atomically and each of which are processed serially.
+  \item[feature] a named set of \textit{tasks}.
+  \item[tool] a Python module providing a \textit{feature}
+  \end{description}
+
+  Within a \textit{group} all \textit{tasks} are processed in a
+  parallel to the extent allowed by dependencies and number of CPUs
+  (or as governed by the familiar \textit{-jN} flag.)
+
+  \vspace{3mm}
+
+  Worch adds/extends:
+  \begin{description}
+  \item[package] a set of \textit{features} applied to a source package.
+    
+  \item[group] a Waf \textit{group} of a set of \textit{package}'s
+    \textit{tasks}.
+  \end{description}
+
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Waf invocation}
+Basic running of waf:
+\begin{verbatim}
+$ emacs wscript               # Waf's "Makefile"
+$ waf [--prefix=/path/to/install] configure
+$ waf
+$ waf install
+\end{verbatim}
+
+Worch extends Waf to accept additional command line arguments:
+
+\begin{verbatim}
+$ waf --orch-config=mysuite.cfg [...] configure
+\end{verbatim}
+
+And to provide some additional Waf commands:
+
+\begin{verbatim}
+$ waf dot  # produce graph of of tasks dependencies
+$ waf dump # dump parsed Worch configuration back out
+\end{verbatim}
+
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Configuration Overview}
+
+    \begin{semiverbatim} \scriptsize
+\only<+>{\color{red}}[package root]\color{black}
+\only<+>{\color{red}}version = 5.34.14\color{black}
+\only<+>{\color{red}}features = tarball, cmake, makemake, modulesfile\color{black}
+\only<+>{\color{red}}environment = group:buildtools, package:cmake, package:python, package:gccxml\color{black}
+\only<+>{\color{red}}depends = prepare:python_install, prepare:gccxml_install\color{black}
+\only<+>{\color{red}}source_url = ftp://root.cern.ch/\{package\}/\{source_archive_file\}\color{black}
+\only<+>{\color{red}}unpacked_target = CMakeLists.txt
+build_target = bin/root.exe
+install_target = bin/root.exe\color{black}
+\only<+>{\color{red}}export_ROOTSYS = set:\{install_dir\}
+buildenv_VERBOSE = set:1
+userenv_PATH = prepend:\{install_dir\}/bin\color{black}
+  \end{semiverbatim}
+
+  \footnotesize
+  \begin{minipage}[t][0.5\textheight]{1.0\linewidth}
+
+    \only<1>{
+      \begin{itemize}
+      \item     This snippet is from the \texttt{g4root} example, part of the Worch distribution.
+      \item     Each package gets a configuration section of a given name
+    (here ``\texttt{root}''). It need not match the actual package name.
+
+      \end{itemize}
+    }
+    \only<2>{Set \texttt{version} string as a variable for later reference.}
+    \only<3>{Assert which Waf features to apply, different features
+      expect different parameters.
+      Here:
+      
+      \begin{description}
+      \item[tarball] download source as a tar archive from the \texttt{sorce\_url}.
+      \item[cmake] prepare the source assuming it uses CMake.
+      \item[makemake] run \texttt{make} and \texttt{make install}.
+      \item[modulesfile] produce configuration for Environment Modules.
+      \end{description}
+    }
+    \only<4>{
+      \begin{itemize}
+      \item Allow build-time environment provided others packages.
+      \item Implicitly sets these packages as dependencies.
+      \item Can depend on an individual \textit{package} or a
+        Waf \textit{group} of packages.
+      \end{itemize}
+
+}
+    \only<5>{Explicitly depend on certain steps in other packages to
+      complete before running the stated step on this package: 
+
+      \begin{center}
+        \texttt{<mystep>:<other-package>\_<other-step>}.
+      \end{center}
+    }
+    \only<6>{
+      \begin{itemize}
+      \item Set a parameter used by a particular \textit{feature} (in this case
+        \texttt{tarball}).
+      \item Example of referencing other variables defined on the package using a
+        simple templating feature of the Worch configuration langauge.
+      \item Can also reference parameters from other sections by prefixing
+      their package name: \texttt{<package>\_<parameter-name>}.
+      \end{itemize}
+      
+    }
+    \only<7>{
+      \begin{itemize}
+      \item Worch implicitly uses per-\textit{task} ``touched'' output
+        files to provide a standard way of expressing dependencies.
+      \item Additional task output files can be declared to assure the
+        task completed successfully.
+      \end{itemize}
+    }
+    \only<8>{
+      Three ways to influence different environments
+      \begin{description}
+      \item[buildenv] during the building of this package
+      \item[export] used by any dependencies through setting an
+        \texttt{environment} parameter. 
+      \item[userenv] provided for any \textit{features} implementing
+        end-user environment management systems (eg, EM, UPS).
+      \end{description}
+}
+  \end{minipage}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Other Configuration Section Types}
+  \begin{description}
+  \item[\texttt{start}] the starting point for the interpreter, references
+    groups, include files, Waf tools to load
+  \item[\texttt{defaults}] provide global defaults
+  \item[\texttt{group}] name a group, reference a list of packages, provides
+    group-level default parameters (may override defaults)
+  \item[\texttt{package}] package-level parameters (may override defaults and group)
+  \item[\texttt{keytype}] special section defining the hierarchical nature of
+    the structure of groups and packages (could be extended). 
+  \end{description}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Distribution of Worch and Extensions}
+
+  Preferred installation method:
+  \begin{verbatim}
+$ virtualenv venv
+$ source venv/bin/activate
+$ pip install worch
+# or:
+$ pip install my-worch-extension
+$ waf --orch-config=mysuite.cfg configure build install
+  \end{verbatim}
+
+  \footnotesize
+  \begin{itemize}
+  \item Exploit Python packaging ecosystem (\texttt{setuptools}, PyPI,
+    \texttt{pip}, \texttt{virtualenv}).
+  \item Provide a copy of \texttt{waf}
+  \item Worch defines conventions for installation locations of
+    \textbf{configuration file sets}, any \textbf{patches} and
+    \textbf{Python modules} implementing Waf \textit{tools},
+    \textit{features}, and \textit{tasks}.
+  \item Experiments can extend Worch by providing their own Python
+    packages.
+  \item Trivial build environment setup.
+  \end{itemize}
+
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Defining \textit{features} - just to give the flavor}
+
+  \begin{lstlisting}[language=Python]
+import orch.features
+orch.features.register_defaults(  # parameter defaults
+    "featurename",                # overiden by Worch 
+    some_param = "myinputfile",   # configuration file
+)
+
+from waflib.TaskGen import feature
+@feature("featurename")
+def feature_featurename(tgen):    # access to Worch config
+    "Some docstring"
+    tgen.step("stepname",  # feature task as a shell command
+              rule="cp ${SRC} ${TGT}", # waf interprets
+              source = tgen.worch.some_param + ".in",
+              target = tgen.worch.some_param + ".copy")
+    tgen.step("otherstep", # this one takes a function
+              rule=some_function,
+              source = tgen.worch.some_param + ".copy", 
+              target = tgen.worch.some_output)
+    
+  \end{lstlisting}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Summary}
+  \begin{itemize}
+  \item Worch provides declarative, concise and comprehensive
+    configuration management which drive interdependent tasks
+    for automating the building of complex software suites.
+  \item It is general purpose and policy free.
+    \begin{itemize}
+    \item Does not dictate form of build products
+    \item Smooths putty over the varied upstream package-level build method.
+    \item Simultaneous support for single-rooted or version-tree
+      installation areas.
+    \item Simultaneous support for Environment Modules, UPS or add
+      your favorite packaging.
+    \end{itemize}
+  \item Comes with many batteries included.
+    \begin{itemize}
+    \item CMake, Autoconf, make, tarballs, git/svn/cvs/hg repos.
+    \end{itemize}
+  \item Extensible and in a way that preserves easy distribution.
+  \end{itemize}
+\end{frame}
+
+\end{document}
