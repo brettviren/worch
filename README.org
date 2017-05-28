@@ -1,5 +1,7 @@
 worch - Let the orchestration waf through the suite. 
 
+*Caveat*: worch is now considered obsolete and is not maintained.  Instead, please check out [[https://github.com/llnl/spack][Spack]].
+
 This package provides a [[https://code.google.com/p/waf/][waf]] based Python module [[./orch][orch]], short for "orchestrate", which allows the creation of a meta-build system for a suite of related packages.  The system is centered around a simple configuration language describing the installation and a number of interpreting methods to produce installation tasks.  Finally, these tasks are handed to waf for sequenced execution.
 
 * Features
